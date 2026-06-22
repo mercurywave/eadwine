@@ -1,0 +1,20 @@
+{
+  "name": "eadwine",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "npm-run-all --parallel dev:server dev:client",
+    "dev:client": "npm run dev --workspace=client",
+    "dev:server": "npm run dev --workspace=server",
+    "build": "npm run build --workspace=client && npm run build --workspace=server",
+    "start": "node server/dist/index.js",
+    "clean": "npm-run-all --parallel clean:client clean:server"
+  },
+  "workspaces": [
+    "client",
+    "server"
+  ],
+  "devDependencies": {
+    "npm-run-all2": "^7.0.2"
+  }
+}
