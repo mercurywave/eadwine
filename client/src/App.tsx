@@ -1,79 +1,88 @@
-import { useState, useEffect } from 'react'
-import './App.css'
+import { Routes, Route, Navigate, useParams } from 'react-router-dom'
+import { useState, useEffect, useCallback } from 'react'
+import { ProjectSelector } from './components/ProjectSelector'
+import { ProjectDetail } from './components/ProjectDetail'
+import { ToastProvider, ToastContainer, useToasts } from './components/Toast'
+import { Project } from './types'
+import { fetchProjects, createProject, deleteProject } from './api'
 
-interface MessageResponse {
-  message: string
-  uptime: number
+function ProjectSelectorPage() {
+  const [projects, setProjects] = useState<Project[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const { addToast } = useToasts()
+
+  const loadProjects = useCallback(async () => {
+    try {
+      setLoading(true)
+      setError(null)
+      const data = await fetchProjects()
+      setProjects(data)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load projects')
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    loadProjects()
+  }, [loadProjects])
+
+  const handleCreateProject = async () => {
+    try {
+      setError(null)
+      const newProject = await createProject()
+      setProjects(prev => [...prev, newProject])
+      window.location.href = `/project/${newProject.id}`
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to create project'
+      setError(message)
+      addToast(message, 'error')
+    }
+  }
+
+  const handleDeleteProject = async (id: string) => {
+    try {
+      setError(null)
+      await deleteProject(id)
+      setProjects(prev => prev.filter(p => p.id !== id))
+      addToast('Project deleted', 'success')
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to delete project'
+      setError(message)
+      addToast(message, 'error')
+    }
+  }
+
+  return (
+    <ProjectSelector
+      projects={projects}
+      onCreateProject={handleCreateProject}
+      onDeleteProject={handleDeleteProject}
+      loading={loading}
+      error={error}
+    />
+  )
 }
 
-interface HealthResponse {
-  status: string
-  timestamp: string
+function ProjectDetailRoute() {
+  const params = useParams()
+  const id = typeof params.id === 'string' ? params.id : undefined
+  if (!id) return <Navigate to="/" replace />
+  return <ProjectDetail projectId={id} />
 }
 
 function App() {
-  const [apiMessage, setApiMessage] = useState<string>('')
-  const [healthStatus, setHealthStatus] = useState<string>('')
-  const [loading, setLoading] = useState<boolean>(true)
-  const [error, setError] = useState<string>('')
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [messageRes, healthRes] = await Promise.all([
-          fetch('/api/message'),
-          fetch('/api/health'),
-        ])
-
-        if (!messageRes.ok || !healthRes.ok) {
-          throw new Error('Failed to fetch from server')
-        }
-
-        const messageData: MessageResponse = await messageRes.json()
-        const healthData: HealthResponse = await healthRes.json()
-
-        setApiMessage(messageData.message)
-        setHealthStatus(healthData.status)
-        setError('')
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Unknown error')
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchData()
-  }, [])
-
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank" rel="noopener noreferrer">
-          <img src="/vite.svg" className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank" rel="noopener noreferrer">
-          <img src="/react.svg" className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <p>
-          {loading ? (
-            'Connecting to server...'
-          ) : error ? (
-            <span style={{ color: 'red' }}>Error: {error}</span>
-          ) : (
-            <>
-              <p>Server Status: <strong>{healthStatus}</strong></p>
-              <p>Server Message: <strong>{apiMessage}</strong></p>
-            </>
-          )}
-        </p>
-        <p className="read-the-docs">
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-    </>
+    <ToastProvider>
+      <Routes>
+        <Route path="/" element={<ProjectSelectorPage />} />
+        <Route path="/project/:id" element={<ProjectDetailRoute />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+      <ToastContainer />
+    </ToastProvider>
   )
 }
 
