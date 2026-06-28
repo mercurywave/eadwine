@@ -1,3 +1,9 @@
+.project-detail {
+  padding: 1.5rem 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
 .detail-layout {
   display: flex;
   gap: 1.5rem;
