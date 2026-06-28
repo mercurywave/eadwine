@@ -43,7 +43,6 @@ function validateFilename(name: string): string | null {
   if (!name || !name.trim()) return 'Filename is required'
   const sanitized = sanitizeFilename(name)
   if (!sanitized) return 'Invalid filename'
-  if (sanitized === 'summary.md') return 'Cannot use reserved filename "summary.md"'
   return null
 }
 
@@ -184,7 +183,7 @@ app.get('/api/projects/:id/files', (req: Request, res: Response) => {
 
     const entries = fs.readdirSync(projectPath, { withFileTypes: true })
     const files = entries
-      .filter(e => e.isFile() && e.name.endsWith('.md') && e.name !== 'SUMMARY.md')
+      .filter(e => e.isFile() && e.name.endsWith('.md'))
       .map(e => ({ name: e.name, path: e.name }))
       .sort((a, b) => a.name.localeCompare(b.name))
 
