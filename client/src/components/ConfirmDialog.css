@@ -1,0 +1,52 @@
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal {
+  background-color: #2a2a2a;
+  border: 1px solid #555;
+  border-radius: 12px;
+  padding: 1.5rem;
+  width: 90%;
+  max-width: 420px;
+}
+
+.modal h2 {
+  font-size: 1.2rem;
+  margin-bottom: 0.75rem;
+}
+
+.modal p {
+  margin-bottom: 1rem;
+  color: #aaa;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.modal-input {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #555;
+  border-radius: 6px;
+  background-color: #1a1a1a;
+  color: inherit;
+  font-size: 0.95rem;
+  font-family: inherit;
+  outline: none;
+  margin-bottom: 0.5rem;
+}
+
+.modal-input:focus {
+  border-color: #646cff;
+}

@@ -1,0 +1,58 @@
+.project-selector {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem;
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.page-header h1 {
+  font-size: 1.8rem;
+  flex-shrink: 0;
+}
+
+.back-link {
+  color: #646cff;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 0.95rem;
+}
+
+.back-link:hover {
+  color: #535bf2;
+  text-decoration: underline;
+}
+
+.project-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+.error-banner {
+  background-color: rgba(220, 53, 69, 0.15);
+  border: 1px solid #dc3545;
+  color: #ff6b6b;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
+.loading {
+  color: #888;
+  padding: 1rem;
+}
+
+.empty-state {
+  color: #666;
+  padding: 2rem;
+  text-align: center;
+}

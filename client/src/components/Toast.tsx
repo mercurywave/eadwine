@@ -1,4 +1,6 @@
 import { createContext, useContext, useState, useCallback, ReactNode } from 'react'
+import './Toast.css'
+
 
 interface Toast {
   id: number

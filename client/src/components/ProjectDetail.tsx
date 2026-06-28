@@ -9,6 +9,8 @@ import {
   renameFile,
 } from '../api'
 import { ConfirmDialog } from './ConfirmDialog'
+import './ProjectDetail.css'
+
 
 interface ProjectDetailProps {
   projectId: string

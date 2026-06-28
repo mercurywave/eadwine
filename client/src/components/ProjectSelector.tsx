@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { Project } from '../types'
 import { ProjectCard } from './ProjectCard'
 import { ConfirmDialog } from './ConfirmDialog'
+import './ProjectSelector.css'
+
 
 interface ProjectSelectorProps {
   projects: Project[]
