@@ -241,6 +241,11 @@ app.put('/api/projects/:id/files/:filename', (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Invalid filename' })
     }
 
+    // Protect the summary file from being edited
+    if (filename.toLowerCase() === 'summary.md') {
+      return res.status(403).json({ error: 'Summary file cannot be edited' })
+    }
+
     const { content } = req.body
     if (typeof content !== 'string') {
       return res.status(400).json({ error: 'Content must be a string' })
@@ -311,6 +316,11 @@ app.delete('/api/projects/:id/files/:filename', (req: Request, res: Response) =>
       return res.status(400).json({ error: 'Invalid filename' })
     }
 
+    // Protect the summary file from being deleted
+    if (filename.toLowerCase() === 'summary.md') {
+      return res.status(403).json({ error: 'Summary file cannot be deleted' })
+    }
+
     if (!fs.existsSync(projectPath)) {
       return res.status(404).json({ error: 'Project not found' })
     }
@@ -336,6 +346,11 @@ app.put('/api/projects/:id/files/rename', (req: Request, res: Response) => {
 
     if (!from || !to || typeof from !== 'string' || typeof to !== 'string') {
       return res.status(400).json({ error: 'from and to are required' })
+    }
+
+    // Protect the summary file from being renamed
+    if (from.toLowerCase() === 'summary.md') {
+      return res.status(403).json({ error: 'Summary file cannot be renamed' })
     }
 
     const validationError = validateFilename(to)

@@ -24,30 +24,34 @@ export function FileSection({
       <div className="file-section-header">
         <h2 className="file-section-title">{file.name}</h2>
         <div className="file-section-actions">
-          <button
-            className="btn-secondary"
-            onClick={() => onEdit(file.name)}
-            aria-label={`Edit ${file.name}`}
-            title="Edit file"
-          >
-            ✏️ Edit
-          </button>
-          <button
-            className="btn-secondary"
-            onClick={() => onRename(file.name)}
-            aria-label={`Rename ${file.name}`}
-            title="Rename file"
-          >
-            📝 Rename
-          </button>
-          <button
-            className="btn-secondary"
-            onClick={() => onDelete(file.name)}
-            aria-label={`Delete ${file.name}`}
-            title="Delete file"
-          >
-            🗑
-          </button>
+          {!file.isSummary && (
+            <>
+              <button
+                className="btn-secondary"
+                onClick={() => onEdit(file.name)}
+                aria-label={`Edit ${file.name}`}
+                title="Edit file"
+              >
+                ✏️ Edit
+              </button>
+              <button
+                className="btn-secondary"
+                onClick={() => onRename(file.name)}
+                aria-label={`Rename ${file.name}`}
+                title="Rename file"
+              >
+                📝 Rename
+              </button>
+              <button
+                className="btn-secondary"
+                onClick={() => onDelete(file.name)}
+                aria-label={`Delete ${file.name}`}
+                title="Delete file"
+              >
+                🗑
+              </button>
+            </>
+          )}
         </div>
       </div>
 
