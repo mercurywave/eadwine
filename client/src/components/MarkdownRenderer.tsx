@@ -27,7 +27,7 @@ export function MarkdownRenderer({ content, filename }: MarkdownRendererProps) {
   if (error) {
     return (
       <div className="md-error" role="alert">
-        ⚠️ Failed to render {filename || 'file'}: {error}
+        ⚠️ Failed to render {filename?.replace(/\.md$/, '') || 'file'}: {error}
       </div>
     )
   }

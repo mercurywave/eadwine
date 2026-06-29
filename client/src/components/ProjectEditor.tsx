@@ -75,7 +75,7 @@ export function ProjectEditor({ projectId }: ProjectEditorProps) {
         <div className="loading">Loading editor...</div>
       ) : (
         <div className="editor-layout">
-          <div className="editor-filename">{filename}</div>
+          <div className="editor-filename">{filename.replace(/\.md$/, '')}</div>
           <textarea
             className="markdown-editor"
             value={content}

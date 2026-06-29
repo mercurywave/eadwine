@@ -177,7 +177,7 @@ export function ProjectReader({ projectId, onEdit }: ProjectReaderProps) {
             <input
               className="modal-input"
               type="text"
-              placeholder="filename.md"
+              placeholder="filename"
               value={newFileName}
               onChange={e => setNewFileName(e.target.value)}
               onKeyDown={e => {
@@ -198,7 +198,7 @@ export function ProjectReader({ projectId, onEdit }: ProjectReaderProps) {
       {confirmDeleteFile && (
         <ConfirmDialog
           title="Delete File"
-          message={`Are you sure you want to delete "${confirmDeleteFile}"?`}
+          message={`Are you sure you want to delete "${confirmDeleteFile.replace(/\.md$/, '')}"?`}
           onConfirm={handleDeleteFile}
           onCancel={() => setConfirmDeleteFile(null)}
         />
@@ -212,7 +212,7 @@ export function ProjectReader({ projectId, onEdit }: ProjectReaderProps) {
             <input
               className="modal-input"
               type="text"
-              value={renameTo}
+              value={renameTo.replace(/\.md$/, '')}
               onChange={e => setRenameTo(e.target.value)}
               onKeyDown={e => {
                 if (e.key === 'Enter') handleRename()

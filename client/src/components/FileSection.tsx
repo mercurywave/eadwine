@@ -19,15 +19,16 @@ export function FileSection({
   onDelete,
   onRename,
 }: FileSectionProps) {
+  const displayName = file.name.replace(/\.md$/, '')
   return (
-    <section className="file-section" aria-label={`File: ${file.name}`}>
+    <section className="file-section" aria-label={`File: ${displayName}`}>
       <div className="file-section-header">
-        <h2 className="file-section-title">{file.name}</h2>
+        <h2 className="file-section-title">{displayName}</h2>
         <div className="file-section-actions">
           <button
             className="btn-secondary"
             onClick={() => onEdit(file.name)}
-            aria-label={`Edit ${file.name}`}
+            aria-label={`Edit ${displayName}`}
             title="Edit file"
           >
             ✏️ Edit
@@ -37,7 +38,7 @@ export function FileSection({
               <button
                 className="btn-secondary"
                 onClick={() => onRename(file.name)}
-                aria-label={`Rename ${file.name}`}
+                aria-label={`Rename ${displayName}`}
                 title="Rename file"
               >
                 📝 Rename
@@ -45,7 +46,7 @@ export function FileSection({
               <button
                 className="btn-secondary"
                 onClick={() => onDelete(file.name)}
-                aria-label={`Delete ${file.name}`}
+                aria-label={`Delete ${displayName}`}
                 title="Delete file"
               >
                 🗑
@@ -59,7 +60,7 @@ export function FileSection({
         {loading ? (
           <div className="loading">Loading content...</div>
         ) : content ? (
-          <MarkdownRenderer content={content} filename={file.name} />
+          <MarkdownRenderer content={content} filename={displayName} />
         ) : (
           <div className="empty-state">No content to display.</div>
         )}
