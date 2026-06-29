@@ -1,0 +1,25 @@
+/* ── Project Reader ───────────────────────────────────────────────── */
+
+.project-reader {
+  padding: 1.5rem 2rem;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+/* ── Responsive ───────────────────────────────────────────────────── */
+
+@media (max-width: 768px) {
+  .project-reader {
+    padding: 1rem;
+  }
+
+  .file-section-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .file-section-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+}

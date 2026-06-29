@@ -184,8 +184,17 @@ app.get('/api/projects/:id/files', (req: Request, res: Response) => {
     const entries = fs.readdirSync(projectPath, { withFileTypes: true })
     const files = entries
       .filter(e => e.isFile() && e.name.endsWith('.md'))
-      .map(e => ({ name: e.name, path: e.name }))
-      .sort((a, b) => a.name.localeCompare(b.name))
+      .map(e => ({
+        name: e.name,
+        path: e.name,
+        isSummary: e.name.toLowerCase() === 'summary.md',
+      }))
+      .sort((a, b) => {
+        // Summary file first
+        if (a.isSummary) return -1
+        if (b.isSummary) return 1
+        return a.name.localeCompare(b.name, undefined, { sensitivity: 'base' })
+      })
 
     res.json(files)
   } catch (err: any) {

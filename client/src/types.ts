@@ -7,6 +7,7 @@ export interface Project {
 export interface FileItem {
   name: string
   path: string
+  isSummary?: boolean
 }
 
 export interface ApiResponse<T> {

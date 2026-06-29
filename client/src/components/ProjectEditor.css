@@ -1,0 +1,89 @@
+/* ── Project Editor ───────────────────────────────────────────────── */
+
+.project-editor {
+  padding: 1.5rem 2rem;
+  max-width: 900px;
+  margin: 0 auto;
+  min-height: 80vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.editor-layout {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.editor-filename {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #444;
+}
+
+.markdown-editor {
+  flex: 1;
+  width: 100%;
+  min-height: 50vh;
+  background-color: rgba(0, 0, 0, 0.2);
+  color: inherit;
+  border: 1px solid #444;
+  border-radius: 8px;
+  padding: 1rem;
+  font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  resize: none;
+  outline: none;
+  tab-size: 2;
+}
+
+.markdown-editor:focus {
+  border-color: #646cff;
+}
+
+.back-link {
+  background: none;
+  border: none;
+  color: #646cff;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 0.95rem;
+  padding: 0;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.back-link:hover {
+  color: #535bf2;
+  text-decoration: underline;
+}
+
+/* ── Light theme ──────────────────────────────────────────────────── */
+
+@media (prefers-color-scheme: light) {
+  .markdown-editor {
+    background-color: #fafafa;
+    border-color: #ddd;
+    color: #213547;
+  }
+
+  .markdown-editor:focus {
+    border-color: #646cff;
+  }
+
+  .editor-filename {
+    border-bottom-color: #ddd;
+  }
+}
+
+/* ── Responsive ───────────────────────────────────────────────────── */
+
+@media (max-width: 768px) {
+  .project-editor {
+    padding: 1rem;
+  }
+}
