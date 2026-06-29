@@ -1,15 +1,15 @@
-import { useParams, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { ProjectReader } from './ProjectReader'
 import { ProjectEditor } from './ProjectEditor'
 
 interface ProjectDetailProps {
   projectId: string
+  filename?: string
 }
 
-export function ProjectDetail({ projectId }: ProjectDetailProps) {
-  const params = useParams()
+export function ProjectDetail({ projectId, filename }: ProjectDetailProps) {
   const navigate = useNavigate()
-  const editFilename = params?.filename
+  const editFilename = filename
 
   // If we have an edit filename in the URL, render the editor
   if (editFilename) {

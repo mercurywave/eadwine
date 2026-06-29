@@ -69,8 +69,9 @@ function ProjectSelectorPage() {
 function ProjectDetailRoute() {
   const params = useParams()
   const id = typeof params.id === 'string' ? params.id : undefined
+  const filename = params?.filename
   if (!id) return <Navigate to="/" replace />
-  return <ProjectDetail projectId={id} />
+  return <ProjectDetail projectId={id} filename={filename} />
 }
 
 function App() {
@@ -79,6 +80,7 @@ function App() {
       <Routes>
         <Route path="/" element={<ProjectSelectorPage />} />
         <Route path="/project/:id" element={<ProjectDetailRoute />} />
+        <Route path="/project/:id/edit/:filename" element={<ProjectDetailRoute />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       <ToastContainer />
