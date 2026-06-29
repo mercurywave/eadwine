@@ -122,8 +122,6 @@ export function ProjectReader({ projectId, onEdit }: ProjectReaderProps) {
   }
 
   const handleEdit = (filename: string) => {
-    // Prevent editing the summary file
-    if (filename.toLowerCase() === 'summary.md') return
     onEdit(filename)
   }
 

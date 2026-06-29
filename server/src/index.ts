@@ -241,11 +241,6 @@ app.put('/api/projects/:id/files/:filename', (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Invalid filename' })
     }
 
-    // Protect the summary file from being edited
-    if (filename.toLowerCase() === 'summary.md') {
-      return res.status(403).json({ error: 'Summary file cannot be edited' })
-    }
-
     const { content } = req.body
     if (typeof content !== 'string') {
       return res.status(400).json({ error: 'Content must be a string' })
