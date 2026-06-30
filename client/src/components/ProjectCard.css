@@ -17,6 +17,24 @@
   margin-right: 2rem;
 }
 
+.project-card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-bottom: 0.5rem;
+}
+
+.tag-pill {
+  display: inline-block;
+  background-color: rgba(100, 108, 255, 0.15);
+  color: #646cff;
+  font-size: 0.7rem;
+  font-weight: 500;
+  padding: 0.15rem 0.5rem;
+  border-radius: 100px;
+  white-space: nowrap;
+}
+
 .project-card-title {
   font-size: 1.1rem;
   font-weight: 600;

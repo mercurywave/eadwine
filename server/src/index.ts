@@ -3,6 +3,7 @@ import path from 'path'
 import fs from 'fs'
 import { fileURLToPath } from 'url'
 import { v4 as uuidv4 } from 'uuid'
+import matter from 'gray-matter'
 
 // Express 5 type guard for req.params values
 function param(req: Request, key: string): string {
@@ -31,8 +32,8 @@ function sanitizeFilename(name: string): string {
   // Remove path traversal and dangerous characters
   // Allow: lowercase letters, numbers, hyphens, underscores, spaces
   const cleaned = name
-    .replace(/[\/\\]/g, '')     // strip slashes
-    .replace(/[^a-z0-9\-_ .]/gi, '') // strip anything not alphanumeric/hyphen/underscore/space
+    .replace(/[\\/\\\\]/g, '')     // strip slashes
+    .replace(/[^a-z0-9\\-_ .]/gi, '') // strip anything not alphanumeric/hyphen/underscore/space
     .replace(/\s+/g, ' ')       // collapse spaces
     .trim()
     .toLowerCase()
@@ -54,40 +55,59 @@ function resolveFilePath(projectPath: string, filename: string): string {
   return path.join(projectPath, filename)
 }
 
-function parseSummaryMd(content: string): { title: string; summary: string } {
-  const lines = content.split('\n').filter(l => l.trim())
-  let title = 'Untitled Project'
-  let summary = ''
-  if (lines.length > 0) {
-    title = lines[0].replace(/^#\s+/, '')
+function parseSummaryMd(content: string): { title: string; summary: string; tags: string[] } {
+  const result = matter(content)
+  const data = result.data as { title?: string; summary?: string; tags?: string[] }
+
+  // Read title and summary from frontmatter if present,
+  // otherwise fall back to the body content (original behavior)
+  let title: string
+  let summary: string
+  if (data.title) {
+    title = data.title
+  } else {
+    const lines = result.content.split('\n').filter(l => l.trim())
+    title = lines.length > 0 ? lines[0].replace(/^#\s+/, '') : 'Untitled Project'
   }
-  if (lines.length > 1) {
-    summary = lines[1].trim()
+  if (data.summary) {
+    summary = data.summary
+  } else {
+    const lines = result.content.split('\n').filter(l => l.trim())
+    summary = lines.length > 1 ? lines[1].trim() : ''
   }
-  return { title, summary }
+
+  const tags = Array.isArray(data?.tags) ? data.tags : []
+  return { title, summary, tags }
 }
 
-function createSummaryMd(title: string, summary: string): string {
-  let content = `# ${title}\n`
-  if (summary) {
-    content += `\n${summary}\n`
+function createSummaryMd(title: string, summary: string, tags: string[] = []): string {
+  const frontmatter: Record<string, unknown> = { title, summary }
+  if (tags.length > 0) {
+    frontmatter.tags = tags
   }
-  return content
+  const body = title ? `# ${title}\n${summary ? `\n${summary}\n` : ''}` : summary ? `\n${summary}\n` : '\n'
+  const fmString = matter.stringify(body, frontmatter)
+  return fmString
 }
 
-function readSummaryMd(projectPath: string): { title: string; summary: string } {
+function readSummaryMd(projectPath: string): { title: string; summary: string; tags: string[] } {
   const summaryPath = path.join(projectPath, 'SUMMARY.md')
   try {
     const content = fs.readFileSync(summaryPath, 'utf-8')
     return parseSummaryMd(content)
   } catch {
-    return { title: 'Untitled Project', summary: '' }
+    return { title: 'Untitled Project', summary: '', tags: [] }
   }
 }
 
-function writeSummaryMd(projectPath: string, title: string, summary: string): void {
+function writeSummaryMd(projectPath: string, title: string, summary: string, tags: string[] = []): void {
   const summaryPath = path.join(projectPath, 'SUMMARY.md')
-  fs.writeFileSync(summaryPath, createSummaryMd(title, summary), 'utf-8')
+  fs.writeFileSync(summaryPath, createSummaryMd(title, summary, tags), 'utf-8')
+}
+
+function stripFrontmatter(content: string): string {
+  const result = matter(content)
+  return result.content
 }
 
 // ── Error handler ────────────────────────────────────────────────────
@@ -117,14 +137,32 @@ app.get('/api/projects', (_req: Request, res: Response) => {
       .filter(e => e.isDirectory())
       .map(dir => {
         const projectPath = path.join(PROJECTS_ROOT, dir.name)
-        const { title, summary } = readSummaryMd(projectPath)
-        return { id: dir.name, title, summary }
+        const { title, summary, tags } = readSummaryMd(projectPath)
+        return { id: dir.name, title, summary, tags }
       })
       .sort((a, b) => a.title.localeCompare(b.title))
     res.json(projects)
   } catch (err: any) {
     console.error(err)
     res.status(500).json({ error: 'Failed to list projects' })
+  }
+})
+
+// GET /api/projects/:id
+app.get('/api/projects/:id', (req: Request, res: Response) => {
+  try {
+    const id = param(req, 'id')
+    const projectPath = resolveProjectPath(id)
+
+    if (!fs.existsSync(projectPath)) {
+      return res.status(404).json({ error: 'Project not found' })
+    }
+
+    const { title, summary, tags } = readSummaryMd(projectPath)
+    res.json({ id, title, summary, tags })
+  } catch (err: any) {
+    console.error(err)
+    res.status(500).json({ error: 'Failed to read project' })
   }
 })
 
@@ -139,9 +177,9 @@ app.post('/api/projects', (_req: Request, res: Response) => {
     }
 
     fs.mkdirSync(projectPath, { recursive: true })
-    writeSummaryMd(projectPath, '', '')
+    writeSummaryMd(projectPath, '', '', [])
 
-    res.status(201).json({ id, title: 'Untitled Project', summary: '' })
+    res.status(201).json({ id, title: 'Untitled Project', summary: '', tags: [] })
   } catch (err: any) {
     console.error(err)
     if (err.code === 'EEXIST') {
@@ -220,7 +258,11 @@ app.get('/api/projects/:id/files/:filename', (req: Request, res: Response) => {
       return res.status(404).json({ error: 'File not found' })
     }
 
-    const content = fs.readFileSync(filePath, 'utf-8')
+    const rawContent = fs.readFileSync(filePath, 'utf-8')
+    // Strip frontmatter from SUMMARY.md so the renderer doesn't display it
+    const content = filePath.toLowerCase().endsWith('summary.md')
+      ? stripFrontmatter(rawContent)
+      : rawContent
     res.json({ content })
   } catch (err: any) {
     console.error(err)

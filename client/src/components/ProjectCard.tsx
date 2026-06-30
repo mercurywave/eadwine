@@ -28,6 +28,11 @@ export function ProjectCard({ project, onDelete }: ProjectCardProps) {
       }}
     >
       <div className="project-card-content">
+        <div className="project-card-tags">
+          {project.tags.map(tag => (
+            <span key={tag} className="tag-pill">{tag}</span>
+          ))}
+        </div>
         <h3 className="project-card-title">{project.title || 'Untitled Project'}</h3>
         <p className="project-card-summary">{project.summary || 'No summary'}</p>
       </div>

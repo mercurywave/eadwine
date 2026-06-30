@@ -34,6 +34,10 @@ export async function deleteProject(id: string): Promise<void> {
   return request<void>(`/projects/${id}`, { method: 'DELETE' })
 }
 
+export async function fetchProject(id: string): Promise<Project> {
+  return request<Project>(`/projects/${id}`)
+}
+
 // ── Files ────────────────────────────────────────────────────────────
 
 export async function fetchFiles(projectId: string): Promise<FileItem[]> {

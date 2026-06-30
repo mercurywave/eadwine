@@ -1,8 +1,9 @@
 import { useState, useEffect, useCallback } from 'react'
-import { FileItem } from '../types'
+import { Project, FileItem } from '../types'
 import {
   fetchFiles,
   fetchFileContent,
+  fetchProject,
   createFile,
   deleteFile,
   renameFile,
@@ -17,11 +18,21 @@ interface ProjectReaderProps {
 }
 
 export function ProjectReader({ projectId, onEdit }: ProjectReaderProps) {
+  const [project, setProject] = useState<Project | null>(null)
   const [files, setFiles] = useState<FileItem[]>([])
   const [fileContents, setFileContents] = useState<Record<string, string>>({})
   const [loadingFiles, setLoadingFiles] = useState(true)
   const [loadingAll, setLoadingAll] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  const loadProject = useCallback(async () => {
+    try {
+      const data = await fetchProject(projectId)
+      setProject(data)
+    } catch {
+      // Non-blocking: project metadata failure shouldn't block file loading
+    }
+  }, [projectId])
 
   // Modal states
   const [showNewFile, setShowNewFile] = useState(false)
@@ -41,6 +52,10 @@ export function ProjectReader({ projectId, onEdit }: ProjectReaderProps) {
       setLoadingFiles(false)
     }
   }, [projectId])
+
+  useEffect(() => {
+    loadProject()
+  }, [loadProject])
 
   useEffect(() => {
     refreshFiles()
@@ -140,9 +155,16 @@ export function ProjectReader({ projectId, onEdit }: ProjectReaderProps) {
         <a href="/" className="back-link" aria-label="Back to projects">
           ← Projects
         </a>
-        <button className="btn-primary" onClick={() => setShowNewFile(true)}>
-          + New File
-        </button>
+        <div className="page-header-actions">
+          <div className="project-tags">
+            {project?.tags.map(tag => (
+              <span key={tag} className="tag-pill">{tag}</span>
+            ))}
+          </div>
+          <button className="btn-primary" onClick={() => setShowNewFile(true)}>
+            + New File
+          </button>
+        </div>
       </header>
 
       {error && <div className="error-banner">{error}</div>}

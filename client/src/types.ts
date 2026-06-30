@@ -2,6 +2,7 @@ export interface Project {
   id: string
   title: string
   summary: string
+  tags: string[]
 }
 
 export interface FileItem {

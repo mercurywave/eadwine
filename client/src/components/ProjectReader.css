@@ -6,6 +6,30 @@
   margin: 0 auto;
 }
 
+.page-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.project-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  flex: 1;
+}
+
+.tag-pill {
+  display: inline-block;
+  background-color: rgba(100, 108, 255, 0.15);
+  color: #646cff;
+  font-size: 0.75rem;
+  font-weight: 500;
+  padding: 0.2rem 0.6rem;
+  border-radius: 100px;
+  white-space: nowrap;
+}
+
 /* ── Responsive ───────────────────────────────────────────────────── */
 
 @media (max-width: 768px) {
