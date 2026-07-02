@@ -1,0 +1,18 @@
+/* ── Project Detail Layout ────────────────────────────────────────── */
+
+.project-detail-layout {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.project-detail-content {
+  flex: 1;
+  min-width: 0;
+  overflow: auto;
+}
+
+.project-detail-content.full-width {
+  flex: none;
+  width: 100%;
+}

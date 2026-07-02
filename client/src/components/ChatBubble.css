@@ -1,0 +1,196 @@
+/* ── Chat Bubble ──────────────────────────────────────────────────── */
+
+.chat-bubble {
+  display: flex;
+  margin: 0.5rem 0;
+  max-width: 88%;
+}
+
+.chat-bubble-user {
+  margin-left: auto;
+  flex-direction: row-reverse;
+}
+
+.chat-bubble-assistant {
+  margin-right: auto;
+}
+
+.chat-bubble-content {
+  padding: 0.75rem 1rem;
+  border-radius: 16px;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+.chat-bubble-user .chat-bubble-content {
+  background-color: #2d333b;
+  border-radius: 16px 16px 4px 16px;
+}
+
+.chat-bubble-assistant .chat-bubble-content {
+  background-color: #1e2329;
+  border-radius: 16px 16px 16px 4px;
+  width: 100%;
+}
+
+.chat-bubble-text {
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+.chat-bubble-markdown {
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.chat-bubble-markdown h1,
+.chat-bubble-markdown h2,
+.chat-bubble-markdown h3,
+.chat-bubble-markdown h4,
+.chat-bubble-markdown h5,
+.chat-bubble-markdown h6 {
+  margin: 0.6em 0 0.3em;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.chat-bubble-markdown h1 { font-size: 1.3rem; }
+.chat-bubble-markdown h2 { font-size: 1.15rem; }
+.chat-bubble-markdown h3 { font-size: 1.05rem; }
+
+.chat-bubble-markdown p {
+  margin: 0.5em 0;
+}
+
+.chat-bubble-markdown a {
+  color: #646cff;
+  text-decoration: none;
+}
+
+.chat-bubble-markdown a:hover {
+  text-decoration: underline;
+}
+
+.chat-bubble-markdown strong {
+  font-weight: 600;
+}
+
+.chat-bubble-markdown em {
+  font-style: italic;
+}
+
+.chat-bubble-markdown ul,
+.chat-bubble-markdown ol {
+  padding-left: 1.5em;
+  margin: 0.5em 0;
+}
+
+.chat-bubble-markdown li {
+  margin: 0.2em 0;
+}
+
+.chat-bubble-markdown code {
+  font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+  font-size: 0.85em;
+  background-color: rgba(100, 108, 255, 0.15);
+  padding: 0.1em 0.3em;
+  border-radius: 4px;
+}
+
+.chat-bubble-markdown pre {
+  background-color: rgba(0, 0, 0, 0.35);
+  border: 1px solid #444;
+  border-radius: 8px;
+  padding: 0.75rem;
+  overflow-x: auto;
+  margin: 0.6em 0;
+}
+
+.chat-bubble-markdown pre code {
+  background: none;
+  padding: 0;
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
+.chat-bubble-markdown blockquote {
+  border-left: 4px solid #646cff;
+  margin: 0.5em 0;
+  padding: 0.4em 0.8em;
+  color: #aaa;
+  background-color: rgba(100, 108, 255, 0.05);
+}
+
+.chat-bubble-markdown hr {
+  border: none;
+  border-top: 1px solid #444;
+  margin: 1em 0;
+}
+
+.chat-bubble-markdown table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0.5em 0;
+  font-size: 0.9em;
+}
+
+.chat-bubble-markdown th,
+.chat-bubble-markdown td {
+  border: 1px solid #444;
+  padding: 0.4em 0.6em;
+  text-align: left;
+}
+
+.chat-bubble-markdown th {
+  background-color: rgba(100, 108, 255, 0.1);
+  font-weight: 600;
+}
+
+.chat-bubble-markdown img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 4px;
+}
+
+.chat-cursor {
+  display: inline-block;
+  font-size: 1.1em;
+  animation: cursor-blink 1s step-end infinite;
+  margin-left: 2px;
+}
+
+@keyframes cursor-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+/* ── Light theme ──────────────────────────────────────────────────── */
+
+@media (prefers-color-scheme: light) {
+  .chat-bubble-user .chat-bubble-content {
+    background-color: #e8e8e8;
+  }
+
+  .chat-bubble-assistant .chat-bubble-content {
+    background-color: #f5f5f5;
+  }
+
+  .chat-bubble-markdown code {
+    background-color: rgba(100, 108, 255, 0.08);
+  }
+
+  .chat-bubble-markdown pre {
+    background-color: #f6f8fa;
+    border-color: #ddd;
+  }
+
+  .chat-bubble-markdown blockquote {
+    background-color: rgba(100, 108, 255, 0.03);
+  }
+
+  .chat-bubble-markdown th {
+    background-color: rgba(100, 108, 255, 0.06);
+  }
+}

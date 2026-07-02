@@ -1,0 +1,52 @@
+/* ── Splitter ─────────────────────────────────────────────────────── */
+
+.splitter {
+  flex-shrink: 0;
+  position: relative;
+  z-index: 10;
+  transition: background-color 0.2s ease;
+}
+
+.splitter-vertical {
+  width: 6px;
+  cursor: col-resize;
+}
+
+.splitter-vertical:hover,
+.splitter-vertical.splitter-dragging {
+  background-color: #646cff;
+}
+
+.splitter-vertical:hover::after,
+.splitter-vertical.splitter-dragging::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 2px;
+  background-color: rgba(255, 255, 255, 0.5);
+  border-radius: 1px;
+}
+
+/* ── Light theme ──────────────────────────────────────────────────── */
+
+@media (prefers-color-scheme: light) {
+  .splitter-vertical:hover,
+  .splitter-vertical.splitter-dragging {
+    background-color: #646cff;
+  }
+
+  .splitter-vertical:hover::after,
+  .splitter-vertical.splitter-dragging::after {
+    background-color: rgba(0, 0, 0, 0.2);
+  }
+}
+
+/* ── Prevent text selection while dragging ────────────────────────── */
+
+.splitter-dragging {
+  user-select: none;
+  -webkit-user-select: none;
+}

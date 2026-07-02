@@ -1,4 +1,4 @@
-import { Project, FileItem, Settings } from './types'
+import { Project, FileItem, Settings, ChatSession, ChatSessionSummary } from './types'
 
 const BASE_URL = '/api'
 
@@ -87,4 +87,93 @@ export async function saveSettings(settings: Settings): Promise<void> {
     method: 'PUT',
     body: JSON.stringify(settings),
   })
+}
+
+// ── Chat ─────────────────────────────────────────────────────────────
+
+export async function fetchChatSessions(projectId: string): Promise<ChatSessionSummary[]> {
+  return request<ChatSessionSummary[]>(`/projects/${projectId}/chats`)
+}
+
+export async function fetchChatSession(projectId: string, sessionId: string): Promise<ChatSession> {
+  return request<ChatSession>(`/projects/${projectId}/chats/${sessionId}`)
+}
+
+export async function createChatSession(projectId: string, title: string): Promise<ChatSession> {
+  return request<ChatSession>(`/projects/${projectId}/chats`, {
+    method: 'POST',
+    body: JSON.stringify({ title }),
+  })
+}
+
+export async function deleteChatSession(projectId: string, sessionId: string): Promise<void> {
+  return request<void>(`/projects/${projectId}/chats/${sessionId}`, {
+    method: 'DELETE',
+  })
+}
+
+export async function* streamChatMessage(
+  projectId: string,
+  sessionId: string,
+  userMessage: string,
+  endpoint: string,
+  signal?: AbortSignal
+): AsyncGenerator<string, string, unknown> {
+  const res = await fetch(`${BASE_URL}/projects/${projectId}/chats/${sessionId}/stream`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ message: userMessage, endpoint }),
+    signal,
+  })
+
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}))
+    throw new Error(body.error || `HTTP ${res.status}`)
+  }
+
+  const reader = res.body?.getReader()
+  if (!reader) {
+    throw new Error('No response body')
+  }
+
+  const decoder = new TextDecoder()
+  let fullAssistantContent = ''
+  let buffer = ''
+
+  try {
+    while (true) {
+      const { done, value } = await reader.read()
+      if (done) break
+
+      buffer += decoder.decode(value, { stream: true })
+      const lines = buffer.split('\n')
+      buffer = lines.pop() || ''
+
+      for (const line of lines) {
+        const trimmed = line.trim()
+        if (!trimmed.startsWith('data: ')) continue
+
+        const data = trimmed.slice(6)
+        if (data === '[DONE]') {
+          yield fullAssistantContent
+          return fullAssistantContent
+        }
+
+        try {
+          const parsed = JSON.parse(data)
+          const content = parsed.choices?.[0]?.delta?.content
+          if (content) {
+            fullAssistantContent += content
+            yield content
+          }
+        } catch {
+          // Skip non-JSON lines
+        }
+      }
+    }
+  } finally {
+    reader.releaseLock()
+  }
+
+  return fullAssistantContent
 }

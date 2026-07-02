@@ -9,6 +9,11 @@
   flex-direction: column;
 }
 
+.chat-toggle-btn {
+  font-size: 0.85rem;
+  padding: 0.35rem 0.7rem;
+}
+
 .editor-layout {
   flex: 1;
   display: flex;

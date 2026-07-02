@@ -1,4 +1,4 @@
-import express, { Request, Response, NextFunction } from 'express'
+import express, { Request, Response as ExpressResponse, NextFunction } from 'express'
 import path from 'path'
 import fs from 'fs'
 import { fileURLToPath } from 'url'
@@ -128,9 +128,26 @@ function stripFrontmatter(content: string): string {
   return result.content
 }
 
+// ── Chat Types ─────────────────────────────────────────────────────
+
+interface ChatMessageEntry {
+  id: string
+  role: 'user' | 'assistant' | 'system'
+  content: string
+  timestamp: string
+}
+
+interface ChatSessionData {
+  id: string
+  projectId: string
+  title: string
+  createdAt: string
+  updatedAt: string
+}
+
 // ── Error handler ────────────────────────────────────────────────────
 
-function errorHandler(err: any, _req: Request, res: Response, _next: NextFunction) {
+function errorHandler(err: any, _req: Request, res: ExpressResponse, _next: NextFunction) {
   console.error(err)
   if (err.code === 'EACCES' || err.code === 'EPERM') {
     res.status(500).json({ error: 'Permission denied' })
@@ -141,14 +158,14 @@ function errorHandler(err: any, _req: Request, res: Response, _next: NextFunctio
 
 // ── Health check ─────────────────────────────────────────────────────
 
-app.get('/api/health', (_req: Request, res: Response) => {
+app.get('/api/health', (_req: Request, res: ExpressResponse) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() })
 })
 
 // ── Projects API ─────────────────────────────────────────────────────
 
 // GET /api/projects
-app.get('/api/projects', (_req: Request, res: Response) => {
+app.get('/api/projects', (_req: Request, res: ExpressResponse) => {
   try {
     const entries = fs.readdirSync(PROJECTS_ROOT, { withFileTypes: true })
     const projects = entries
@@ -167,7 +184,7 @@ app.get('/api/projects', (_req: Request, res: Response) => {
 })
 
 // GET /api/projects/:id
-app.get('/api/projects/:id', (req: Request, res: Response) => {
+app.get('/api/projects/:id', (req: Request, res: ExpressResponse) => {
   try {
     const id = param(req, 'id')
     const projectPath = resolveProjectPath(id)
@@ -185,7 +202,7 @@ app.get('/api/projects/:id', (req: Request, res: Response) => {
 })
 
 // POST /api/projects
-app.post('/api/projects', (_req: Request, res: Response) => {
+app.post('/api/projects', (_req: Request, res: ExpressResponse) => {
   try {
     const id = uuidv4()
     const projectPath = resolveProjectPath(id)
@@ -208,7 +225,7 @@ app.post('/api/projects', (_req: Request, res: Response) => {
 })
 
 // DELETE /api/projects/:id
-app.delete('/api/projects/:id', (req: Request, res: Response) => {
+app.delete('/api/projects/:id', (req: Request, res: ExpressResponse) => {
   try {
     const id = param(req, 'id')
     const projectPath = resolveProjectPath(id)
@@ -228,7 +245,7 @@ app.delete('/api/projects/:id', (req: Request, res: Response) => {
 // ── Files API ────────────────────────────────────────────────────────
 
 // GET /api/projects/:id/files
-app.get('/api/projects/:id/files', (req: Request, res: Response) => {
+app.get('/api/projects/:id/files', (req: Request, res: ExpressResponse) => {
   try {
     const id = param(req, 'id')
     const projectPath = resolveProjectPath(id)
@@ -260,7 +277,7 @@ app.get('/api/projects/:id/files', (req: Request, res: Response) => {
 })
 
 // GET /api/projects/:id/files/:filename
-app.get('/api/projects/:id/files/:filename', (req: Request, res: Response) => {
+app.get('/api/projects/:id/files/:filename', (req: Request, res: ExpressResponse) => {
   try {
     const id = param(req, 'id')
     const filename = param(req, 'filename')
@@ -289,7 +306,7 @@ app.get('/api/projects/:id/files/:filename', (req: Request, res: Response) => {
 })
 
 // PUT /api/projects/:id/files/:filename
-app.put('/api/projects/:id/files/:filename', (req: Request, res: Response) => {
+app.put('/api/projects/:id/files/:filename', (req: Request, res: ExpressResponse) => {
   try {
     const id = param(req, 'id')
     const filename = param(req, 'filename')
@@ -319,7 +336,7 @@ app.put('/api/projects/:id/files/:filename', (req: Request, res: Response) => {
 })
 
 // POST /api/projects/:id/files
-app.post('/api/projects/:id/files', (req: Request, res: Response) => {
+app.post('/api/projects/:id/files', (req: Request, res: ExpressResponse) => {
   try {
     const id = param(req, 'id')
     const projectPath = resolveProjectPath(id)
@@ -359,7 +376,7 @@ app.post('/api/projects/:id/files', (req: Request, res: Response) => {
 })
 
 // DELETE /api/projects/:id/files/:filename
-app.delete('/api/projects/:id/files/:filename', (req: Request, res: Response) => {
+app.delete('/api/projects/:id/files/:filename', (req: Request, res: ExpressResponse) => {
   try {
     const id = param(req, 'id')
     const filename = param(req, 'filename')
@@ -393,7 +410,7 @@ app.delete('/api/projects/:id/files/:filename', (req: Request, res: Response) =>
 })
 
 // PUT /api/projects/:id/files/rename
-app.put('/api/projects/:id/files/rename', (req: Request, res: Response) => {
+app.put('/api/projects/:id/files/rename', (req: Request, res: ExpressResponse) => {
   try {
     const id = param(req, 'id')
     const projectPath = resolveProjectPath(id)
@@ -470,7 +487,7 @@ function writeSettings(data: SettingsData): void {
 }
 
 // GET /api/settings
-app.get('/api/settings', (_req: Request, res: Response) => {
+app.get('/api/settings', (_req: Request, res: ExpressResponse) => {
   try {
     const settings = readSettings()
     res.json(settings)
@@ -481,7 +498,7 @@ app.get('/api/settings', (_req: Request, res: Response) => {
 })
 
 // PUT /api/settings
-app.put('/api/settings', (req: Request, res: Response) => {
+app.put('/api/settings', (req: Request, res: ExpressResponse) => {
   try {
     const { openAiEndpoint } = req.body
     const settings: SettingsData = {}
@@ -496,6 +513,397 @@ app.put('/api/settings', (req: Request, res: Response) => {
   }
 })
 
+// ── Chat API ────────────────────────────────────────────────────────
+
+function readChatSession(projectId: string, sessionId: string): ChatSessionData | null {
+  const chatsDir = path.join(resolveProjectPath(projectId), 'chats')
+  const sessionFile = path.join(chatsDir, `${sessionId}.json`)
+  if (!fs.existsSync(sessionFile)) return null
+  return JSON.parse(fs.readFileSync(sessionFile, 'utf-8')) as ChatSessionData
+}
+
+function readChatMessages(projectId: string, sessionId: string): ChatMessageEntry[] {
+  const chatsDir = path.join(resolveProjectPath(projectId), 'chats')
+  const logFile = path.join(chatsDir, 'logs', `${sessionId}.jsonl`)
+  const messages: ChatMessageEntry[] = []
+  if (!fs.existsSync(logFile)) return messages
+  const content = fs.readFileSync(logFile, 'utf-8').trim()
+  if (!content) return messages
+  const lines = content.split('\n')
+  for (const line of lines) {
+    if (line.trim()) {
+      messages.push(JSON.parse(line) as ChatMessageEntry)
+    }
+  }
+  return messages
+}
+
+function buildSystemPrompt(projectTitle: string, projectId: string): string {
+  const projectPath = resolveProjectPath(projectId)
+  const summaryPath = path.join(projectPath, 'SUMMARY.md')
+  let summaryContent = ''
+  try {
+    const rawContent = fs.readFileSync(summaryPath, 'utf-8')
+    summaryContent = stripFrontmatter(rawContent)
+  } catch {
+    // No summary file
+  }
+
+  let fileList = ''
+  try {
+    const entries = fs.readdirSync(projectPath, { withFileTypes: true })
+    const mdFiles = entries
+      .filter(e => e.isFile() && e.name.endsWith('.md'))
+      .map(e => e.name)
+      .sort()
+    fileList = mdFiles.join(', ')
+  } catch {
+    // No files
+  }
+
+  return `You are a helpful assistant for the "${projectTitle}" project.
+
+Project Summary:
+${summaryContent}
+
+Project Files:
+${fileList}
+
+You can help answer questions about the project's content, suggest improvements, explain concepts, or assist with writing new Markdown files. Be concise and reference specific files when relevant.`
+}
+
+function persistSession(projectId: string, sessionId: string, messages: Array<{ role: string; content: string }>, assistantContent: string): void {
+  const chatsDir = path.join(resolveProjectPath(projectId), 'chats')
+  const logsDir = path.join(chatsDir, 'logs')
+  if (!fs.existsSync(chatsDir)) fs.mkdirSync(chatsDir, { recursive: true })
+  if (!fs.existsSync(logsDir)) fs.mkdirSync(logsDir, { recursive: true })
+
+  const logFile = path.join(logsDir, `${sessionId}.jsonl`)
+  const assistantMsg: ChatMessageEntry = {
+    id: uuidv4(),
+    role: 'assistant',
+    content: assistantContent,
+    timestamp: new Date().toISOString(),
+  }
+  fs.appendFileSync(logFile, JSON.stringify(assistantMsg) + '\n', 'utf-8')
+
+  const sessionFile = path.join(chatsDir, `${sessionId}.json`)
+  const session = JSON.parse(fs.readFileSync(sessionFile, 'utf-8')) as ChatSessionData
+  session.updatedAt = new Date().toISOString()
+  fs.writeFileSync(sessionFile, JSON.stringify(session, null, 2), 'utf-8')
+}
+
+function persistPartialSession(projectId: string, sessionId: string, messages: Array<{ role: string; content: string }>): void {
+  try {
+    const chatsDir = path.join(resolveProjectPath(projectId), 'chats')
+    const logsDir = path.join(chatsDir, 'logs')
+    if (!fs.existsSync(chatsDir)) fs.mkdirSync(chatsDir, { recursive: true })
+    if (!fs.existsSync(logsDir)) fs.mkdirSync(logsDir, { recursive: true })
+
+    const logFile = path.join(logsDir, `${sessionId}.jsonl`)
+    const sessionFile = path.join(chatsDir, `${sessionId}.json`)
+
+    // Read existing messages to avoid duplicates
+    const existingMessages = readChatMessages(projectId, sessionId)
+    const existingContentHashes = new Set(existingMessages.map(m => m.content))
+
+    // Append messages not already in the log
+    for (const msg of messages) {
+      if (!existingContentHashes.has(msg.content)) {
+        const msgWithId: ChatMessageEntry = {
+          id: uuidv4(),
+          role: msg.role as 'user' | 'assistant' | 'system',
+          content: msg.content,
+          timestamp: new Date().toISOString(),
+        }
+        fs.appendFileSync(logFile, JSON.stringify(msgWithId) + '\n', 'utf-8')
+      }
+    }
+
+    const session = JSON.parse(fs.readFileSync(sessionFile, 'utf-8')) as ChatSessionData
+    session.updatedAt = new Date().toISOString()
+    fs.writeFileSync(sessionFile, JSON.stringify(session, null, 2), 'utf-8')
+  } catch {
+    // Non-fatal: partial persistence failure
+  }
+}
+
+async function proxyStream(
+  openAiEndpoint: string,
+  sessionId: string,
+  projectId: string,
+  messages: Array<{ role: string; content: string }>,
+  expressRes: ExpressResponse
+): Promise<void> {
+  const abortController = new AbortController()
+
+  expressRes.on('close', () => {
+    abortController.abort()
+    persistPartialSession(projectId, sessionId, messages)
+  })
+
+  const apiUrl = `${openAiEndpoint}/v1/chat/completions`
+  let fetchResponse: globalThis.Response
+  try {
+    fetchResponse = await fetch(apiUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'bartowski/Qwen_Qwen3.6-35B-A3B-GGUF:Q4_K_M',
+        stream: true,
+        temperature: 0.7,
+        messages,
+      }),
+      signal: abortController.signal,
+    })
+  } catch {
+    expressRes.write(`data: ${JSON.stringify({ error: 'Failed to connect to LLM API' })}\n`)
+    expressRes.end()
+    return
+  }
+
+  if (!fetchResponse.ok) {
+    const errorBody = await fetchResponse.text().catch(() => '')
+    expressRes.write(`data: ${JSON.stringify({ error: `LLM API error: ${fetchResponse.status}` })}\n`)
+    expressRes.end()
+    return
+  }
+
+  const reader = fetchResponse.body?.getReader()
+  if (!reader) {
+    expressRes.end()
+    return
+  }
+
+  let fullAssistantContent = ''
+  const decoder = new TextDecoder()
+
+  try {
+    while (true) {
+      const { done, value } = await reader.read()
+      if (done) break
+
+      const chunk = decoder.decode(value, { stream: true })
+      const lines = chunk.split('\n').filter(l => l.trim().startsWith('data: '))
+
+      for (const line of lines) {
+        const data = line.slice(6) // strip 'data: '
+        if (data === '[DONE]') {
+          expressRes.write('data: [DONE]\n')
+          expressRes.end()
+          persistSession(projectId, sessionId, messages, fullAssistantContent)
+          return
+        }
+
+        try {
+          const parsed = JSON.parse(data)
+          const content = parsed.choices?.[0]?.delta?.content
+          if (content) {
+            fullAssistantContent += content
+            expressRes.write(`data: ${data}\n`)
+          }
+        } catch {
+          // Skip non-JSON lines
+        }
+      }
+    }
+  } catch (err) {
+    expressRes.write(`data: ${JSON.stringify({ error: 'Stream interrupted' })}\n`)
+    expressRes.end()
+    persistPartialSession(projectId, sessionId, messages)
+  }
+}
+
+// GET /api/projects/:id/chats
+app.get('/api/projects/:id/chats', (req: Request, res: ExpressResponse) => {
+  try {
+    const id = param(req, 'id')
+    const projectPath = resolveProjectPath(id)
+    const chatsDir = path.join(projectPath, 'chats')
+
+    if (!fs.existsSync(chatsDir)) {
+      return res.json([])
+    }
+
+    const entries = fs.readdirSync(chatsDir, { withFileTypes: true })
+    const jsonFiles = entries
+      .filter(e => e.isFile() && e.name.endsWith('.json'))
+      .map(e => e.name)
+      .sort((a, b) => {
+        try {
+          const aData = JSON.parse(fs.readFileSync(path.join(chatsDir, a), 'utf-8')) as ChatSessionData
+          const bData = JSON.parse(fs.readFileSync(path.join(chatsDir, b), 'utf-8')) as ChatSessionData
+          return new Date(bData.updatedAt).getTime() - new Date(aData.updatedAt).getTime()
+        } catch {
+          return 0
+        }
+      })
+
+    const summaries = jsonFiles.map(f => {
+      try {
+        const data = JSON.parse(fs.readFileSync(path.join(chatsDir, f), 'utf-8')) as ChatSessionData
+        const logFile = path.join(chatsDir, 'logs', `${data.id}.jsonl`)
+        let preview = ''
+        if (fs.existsSync(logFile)) {
+          const content = fs.readFileSync(logFile, 'utf-8').trim()
+          if (content) {
+            const firstLine = content.split('\n')[0]
+            if (firstLine) {
+              const firstMsg = JSON.parse(firstLine) as ChatMessageEntry
+              preview = firstMsg.content.slice(0, 80)
+            }
+          }
+        }
+        return { ...data, preview }
+      } catch {
+        return null
+      }
+    }).filter((s): s is NonNullable<typeof s> => s !== null)
+
+    res.json(summaries)
+  } catch (err: any) {
+    console.error(err)
+    res.status(500).json({ error: 'Failed to list chat sessions' })
+  }
+})
+
+// GET /api/projects/:id/chats/:sessionId
+app.get('/api/projects/:id/chats/:sessionId', (req: Request, res: ExpressResponse) => {
+  try {
+    const id = param(req, 'id')
+    const sessionId = param(req, 'sessionId')
+    const chatsDir = path.join(resolveProjectPath(id), 'chats')
+    const sessionFile = path.join(chatsDir, `${sessionId}.json`)
+    const logFile = path.join(chatsDir, 'logs', `${sessionId}.jsonl`)
+
+    if (!fs.existsSync(sessionFile)) {
+      return res.status(404).json({ error: 'Chat session not found' })
+    }
+
+    const session = JSON.parse(fs.readFileSync(sessionFile, 'utf-8')) as ChatSessionData
+    const messages = readChatMessages(id, sessionId)
+
+    res.json({ ...session, messages })
+  } catch (err: any) {
+    console.error(err)
+    res.status(500).json({ error: 'Failed to load chat session' })
+  }
+})
+
+// POST /api/projects/:id/chats
+app.post('/api/projects/:id/chats', (req: Request, res: ExpressResponse) => {
+  try {
+    const id = param(req, 'id')
+    const { title } = req.body
+    const sessionId = uuidv4()
+    const now = new Date().toISOString()
+
+    const chatsDir = path.join(resolveProjectPath(id), 'chats')
+    const logsDir = path.join(chatsDir, 'logs')
+
+    if (!fs.existsSync(chatsDir)) fs.mkdirSync(chatsDir, { recursive: true })
+    if (!fs.existsSync(logsDir)) fs.mkdirSync(logsDir, { recursive: true })
+
+    const session: ChatSessionData = {
+      id: sessionId,
+      projectId: id,
+      title: title || 'Untitled Chat',
+      createdAt: now,
+      updatedAt: now,
+    }
+
+    fs.writeFileSync(path.join(chatsDir, `${sessionId}.json`), JSON.stringify(session, null, 2), 'utf-8')
+    fs.writeFileSync(path.join(logsDir, `${sessionId}.jsonl`), '', 'utf-8')
+
+    res.status(201).json(session)
+  } catch (err: any) {
+    console.error(err)
+    res.status(500).json({ error: 'Failed to create chat session' })
+  }
+})
+
+// DELETE /api/projects/:id/chats/:sessionId
+app.delete('/api/projects/:id/chats/:sessionId', (req: Request, res: ExpressResponse) => {
+  try {
+    const id = param(req, 'id')
+    const sessionId = param(req, 'sessionId')
+    const chatsDir = path.join(resolveProjectPath(id), 'chats')
+
+    const sessionFile = path.join(chatsDir, `${sessionId}.json`)
+    const logFile = path.join(chatsDir, 'logs', `${sessionId}.jsonl`)
+
+    if (!fs.existsSync(sessionFile)) {
+      return res.status(404).json({ error: 'Chat session not found' })
+    }
+
+    fs.unlinkSync(sessionFile)
+    if (fs.existsSync(logFile)) fs.unlinkSync(logFile)
+
+    res.status(204).send()
+  } catch (err: any) {
+    console.error(err)
+    res.status(500).json({ error: 'Failed to delete chat session' })
+  }
+})
+
+// POST /api/projects/:id/chats/:sessionId/stream
+app.post('/api/projects/:id/chats/:sessionId/stream', (req: Request, res: ExpressResponse) => {
+  try {
+    const id = param(req, 'id')
+    const sessionId = param(req, 'sessionId')
+    const { message, endpoint: clientEndpoint } = req.body
+
+    if (!message || typeof message !== 'string') {
+      return res.status(400).json({ error: 'Message is required' })
+    }
+
+    // Use the endpoint from the client (passed securely from the frontend)
+    const endpointToUse = clientEndpoint || ''
+    if (!endpointToUse) {
+      return res.status(400).json({ error: 'OpenAI endpoint not configured' })
+    }
+
+    // Load session from disk
+    const session = readChatSession(id, sessionId)
+    if (!session) {
+      return res.status(404).json({ error: 'Chat session not found' })
+    }
+
+    // Build the request to the LLM
+    const projectPath = resolveProjectPath(id)
+    const messages = readChatMessages(id, sessionId)
+    const projectTitle = session.title
+
+    const apiMessages = [
+      {
+        role: 'system',
+        content: buildSystemPrompt(projectTitle, id),
+      },
+      ...messages.map(m => ({ role: m.role, content: m.content })),
+      { role: 'user', content: message },
+    ]
+
+    // Set streaming headers
+    res.setHeader('Content-Type', 'text/event-stream')
+    res.setHeader('Cache-Control', 'no-cache')
+    res.setHeader('Connection', 'keep-alive')
+    res.flushHeaders()
+
+    // Proxy the streaming request to the OpenAI-compatible endpoint
+    proxyStream(endpointToUse, sessionId, id, apiMessages, res).catch(err => {
+      console.error('Stream proxy error:', err)
+      if (!res.headersSent) {
+        res.status(500).json({ error: 'Failed to process chat request' })
+      }
+    })
+  } catch (err: any) {
+    console.error(err)
+    if (!res.headersSent) {
+      res.status(500).json({ error: 'Failed to process chat request' })
+    }
+  }
+})
+
 // ── Serve static files in production ─────────────────────────────────
 
 if (process.env.NODE_ENV === 'production') {
@@ -503,7 +911,7 @@ if (process.env.NODE_ENV === 'production') {
   app.use(express.static(clientDist))
 
   // Catch-all: serve index.html for SPA routing
-  app.get('*', (_req: Request, res: Response) => {
+  app.get('*', (_req: Request, res: ExpressResponse) => {
     res.sendFile(path.join(clientDist, 'index.html'))
   })
 }
