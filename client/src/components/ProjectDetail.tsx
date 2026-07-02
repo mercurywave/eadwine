@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { MessageSquare } from 'lucide-react'
 import { fetchSettings } from '../api'
 import { ProjectReader } from './ProjectReader'
 import { ProjectEditor } from './ProjectEditor'
@@ -109,7 +110,7 @@ export function ProjectDetail({ projectId, filename }: ProjectDetailProps) {
           aria-label="Open chat"
           title="Open chat"
         >
-          💬
+          <MessageSquare className="chat-fab-icon" />
         </button>
       )}
     </div>

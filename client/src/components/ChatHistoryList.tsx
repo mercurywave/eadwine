@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
+import { List, ChevronDown, Trash2 } from 'lucide-react'
 import { ChatSessionSummary } from '../types'
 import { useToasts } from './Toast'
 import { deleteChatSession } from '../api'
@@ -71,9 +72,9 @@ export function ChatHistoryList({
     <div className="chat-history-container" ref={dropdownRef}>
       <div className="chat-history-header">
         <div className="chat-history-toggle" onClick={() => setIsOpen(!isOpen)}>
-          <span className="chat-history-icon">📋</span>
+          <List className="chat-history-icon" />
           <span className="chat-history-label">Chat History</span>
-          <span className={`chat-history-chevron ${isOpen ? 'open' : ''}`}>▼</span>
+          <ChevronDown className={`chat-history-chevron ${isOpen ? 'open' : ''}`} />
         </div>
         <button className="chat-new-chat-btn" onClick={onNewChat} aria-label="New chat">
           + New Chat
@@ -119,7 +120,7 @@ export function ChatHistoryList({
                     }}
                     aria-label="Delete chat"
                   >
-                    🗑
+                    <Trash2 className="chat-history-delete-icon" />
                   </button>
                 </li>
               ))}

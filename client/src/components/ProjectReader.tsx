@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Project, FileItem } from '../types'
+import { ArrowLeft } from 'lucide-react'
 import {
   fetchFiles,
   fetchFileContent,
@@ -153,7 +154,8 @@ export function ProjectReader({ projectId, onEdit }: ProjectReaderProps) {
     <div className="project-reader">
       <header className="page-header">
         <a href="/" className="back-link" aria-label="Back to projects">
-          ← Projects
+          <ArrowLeft className="btn-icon" />
+          Projects
         </a>
         <div className="page-header-actions">
           <div className="project-tags">

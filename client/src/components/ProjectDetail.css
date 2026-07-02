@@ -29,7 +29,6 @@
   background-color: #1a1e24;
   color: #fff;
   border: none;
-  font-size: 1.5rem;
   cursor: pointer;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   display: flex;
@@ -37,6 +36,11 @@
   justify-content: center;
   transition: background-color 0.2s, transform 0.15s, box-shadow 0.2s;
   z-index: 100;
+}
+
+.chat-fab-icon {
+  width: 1.5rem;
+  height: 1.5rem;
 }
 
 .chat-fab:hover {

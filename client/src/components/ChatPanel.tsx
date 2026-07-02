@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { MessageSquare, AlertTriangle } from 'lucide-react'
 import { ChatMessage, ChatSession, ChatSessionSummary } from '../types'
 import {
   fetchChatSessions,
@@ -233,7 +234,10 @@ export function ChatPanel({ projectId, isOpen, onClose, endpoint, width }: ChatP
     <div className="chat-panel" style={{ width: width ? `${width}px` : undefined }} onClick={e => e.stopPropagation()}>
       {/* Header */}
       <div className="chat-panel-header">
-        <h2 className="chat-panel-title">💬 Chat</h2>
+        <h2 className="chat-panel-title">
+          <MessageSquare className="chat-panel-title-icon" />
+          Chat
+        </h2>
         <button
           className="chat-panel-close"
           onClick={onClose}
@@ -260,7 +264,8 @@ export function ChatPanel({ projectId, isOpen, onClose, endpoint, width }: ChatP
           <div className="chat-empty-state">
             <div className="chat-config-warning">
               <p>
-                ⚠️ Chat requires an{' '}
+                <AlertTriangle className="config-warning-icon" />
+                Chat requires an{' '}
                 <a href="/settings" onClick={e => { e.preventDefault(); openSettings(); }}>
                   OpenAI endpoint
                 </a>{' '}

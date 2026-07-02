@@ -1,5 +1,6 @@
 import { FileItem } from '../types'
 import { MarkdownRenderer } from './MarkdownRenderer'
+import { Pencil, FilePenLine, Trash2 } from 'lucide-react'
 import './FileSection.css'
 
 interface FileSectionProps {
@@ -31,7 +32,8 @@ export function FileSection({
             aria-label={`Edit ${displayName}`}
             title="Edit file"
           >
-            ✏️ Edit
+            <Pencil className="btn-icon" />
+            Edit
           </button>
           {!file.isSummary && (
             <>
@@ -41,7 +43,8 @@ export function FileSection({
                 aria-label={`Rename ${displayName}`}
                 title="Rename file"
               >
-                📝 Rename
+                <FilePenLine className="btn-icon" />
+                Rename
               </button>
               <button
                 className="btn-secondary"
@@ -49,7 +52,7 @@ export function FileSection({
                 aria-label={`Delete ${displayName}`}
                 title="Delete file"
               >
-                🗑
+                <Trash2 className="btn-icon" />
               </button>
             </>
           )}

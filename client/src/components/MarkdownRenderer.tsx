@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from 'react'
+import { AlertTriangle } from 'lucide-react'
 import { marked } from 'marked'
 import DOMPurify from 'dompurify'
 import './MarkdownRenderer.css'
@@ -27,7 +28,8 @@ export function MarkdownRenderer({ content, filename }: MarkdownRendererProps) {
   if (error) {
     return (
       <div className="md-error" role="alert">
-        ⚠️ Failed to render {filename?.replace(/\.md$/, '') || 'file'}: {error}
+        <AlertTriangle className="md-error-icon" />
+        Failed to render {filename?.replace(/\.md$/, '') || 'file'}: {error}
       </div>
     )
   }

@@ -1,4 +1,5 @@
 import { Project } from '../types'
+import { Trash2 } from 'lucide-react'
 import './ProjectCard.css'
 
 
@@ -42,7 +43,7 @@ export function ProjectCard({ project, onDelete }: ProjectCardProps) {
         aria-label={`Delete project ${project.title}`}
         title="Delete project"
       >
-        🗑
+        <Trash2 className="project-card-delete-icon" />
       </button>
     </div>
   )

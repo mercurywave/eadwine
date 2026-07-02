@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import { ArrowLeft } from 'lucide-react'
 import { saveFileContent } from '../api'
 import './ProjectEditor.css'
 
@@ -58,7 +59,8 @@ export function ProjectEditor({ projectId }: ProjectEditorProps) {
     <div className="project-editor">
       <header className="page-header">
         <button className="back-link" onClick={handleBack} aria-label="Back to project">
-          ← Back to project
+          <ArrowLeft className="btn-icon" />
+          Back to project
         </button>
         <button
           className="btn-primary"

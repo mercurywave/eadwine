@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, KeyboardEvent } from 'react'
+import { Send, Square } from 'lucide-react'
 import './ChatInput.css'
 
 interface ChatInputProps {
@@ -60,7 +61,8 @@ export function ChatInput({ onSend, onStop, isStreaming, disabled = false }: Cha
             onClick={onStop}
             aria-label="Stop streaming response"
           >
-            ■ Stop
+            <Square className="btn-icon" />
+            Stop
           </button>
         ) : (
           <button
@@ -69,7 +71,7 @@ export function ChatInput({ onSend, onStop, isStreaming, disabled = false }: Cha
             disabled={!text.trim() || disabled}
             aria-label="Send message"
           >
-            ▶
+            <Send className="btn-icon" />
           </button>
         )}
       </div>

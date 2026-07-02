@@ -61,11 +61,12 @@
   right: 0.75rem;
   background: none;
   border: none;
-  font-size: 1rem;
   padding: 0.25rem;
   opacity: 0.4;
   cursor: pointer;
   transition: opacity 0.2s;
+  display: flex;
+  align-items: center;
 }
 
 .project-card:hover .project-card-delete {
@@ -74,4 +75,10 @@
 
 .project-card-delete:hover {
   opacity: 1;
+  color: #ef4444;
+}
+
+.project-card-delete-icon {
+  width: 1.25rem;
+  height: 1.25rem;
 }

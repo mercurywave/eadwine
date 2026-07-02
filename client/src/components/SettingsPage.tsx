@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { ArrowLeft } from 'lucide-react'
 import { fetchSettings, saveSettings } from '../api'
 import { Settings } from '../types'
 import { useToasts } from './Toast'
@@ -71,7 +72,8 @@ export function SettingsPage() {
     <div className="settings-page">
       <header className="page-header">
         <button className="btn-secondary back-btn" onClick={() => navigate('/')}>
-          ← Back to Projects
+          <ArrowLeft className="btn-icon" />
+          Back to Projects
         </button>
         <h1>Settings</h1>
         <button

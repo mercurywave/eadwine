@@ -49,13 +49,18 @@
   align-items: center;
   justify-content: center;
   border-radius: 8px;
-  font-size: 0.85rem;
   padding: 0;
+  gap: 0.25rem;
 }
 
 .chat-send-btn .btn-danger {
   background-color: #dc3545;
   border-color: #dc3545;
+}
+
+.chat-send-btn .btn-icon {
+  width: 1.1rem;
+  height: 1.1rem;
 }
 
 .chat-send-btn .btn-danger:hover {

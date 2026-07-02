@@ -32,7 +32,9 @@
 }
 
 .chat-history-icon {
-  font-size: 0.9rem;
+  width: 1rem;
+  height: 1rem;
+  color: #888;
 }
 
 .chat-history-label {
@@ -40,7 +42,8 @@
 }
 
 .chat-history-chevron {
-  font-size: 0.6rem;
+  width: 0.75rem;
+  height: 0.75rem;
   transition: transform 0.2s;
   color: #888;
 }
@@ -141,12 +144,23 @@
   background: none;
   border: none;
   cursor: pointer;
-  font-size: 0.85rem;
   padding: 0.2rem;
   margin-left: 0.5rem;
   opacity: 0.5;
   transition: opacity 0.2s;
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+}
+
+.chat-history-delete:hover {
+  opacity: 1;
+  color: #ef4444;
+}
+
+.chat-history-delete-icon {
+  width: 1rem;
+  height: 1rem;
 }
 
 .chat-history-delete:hover {
