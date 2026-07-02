@@ -16,8 +16,25 @@ const __dirname = path.dirname(__filename)
 
 const app = express()
 const PORT = process.env.PORT || 3003
-const PROJECTS_ROOT = process.env.PROJECTS_ROOT || './projects'
-const SETTINGS_FILE = path.join(PROJECTS_ROOT, '..', 'settings.json')
+// ── Data directory resolution ──────────────────────────────────────
+// Priority: env var > default (relative to project root)
+const DATA_DIR = (() => {
+  const env = process.env.DATA_DIR
+  if (!env) {
+    // Default: server-data/ relative to project root (process.cwd)
+    return path.resolve(process.cwd(), 'server-data')
+  }
+  // Only treat paths with an explicit Windows drive letter (C:\) or
+  // UNC path (\\server\share) as absolute. Everything else is
+  // resolved relative to the project root (process.cwd).
+  if (/^[A-Z]:/i.test(env) || env.startsWith('\\\\')) {
+    return env
+  }
+  // Relative path (including leading / which is common from Linux/Docker)
+  return path.resolve(process.cwd(), env)
+})()
+const PROJECTS_ROOT = path.join(DATA_DIR, 'projects')
+const SETTINGS_FILE = path.join(DATA_DIR, 'settings.json')
 
 // Ensure projects directory exists
 if (!fs.existsSync(PROJECTS_ROOT)) {

@@ -1,6 +1,21 @@
+# Dependencies
 node_modules/
-dist/
-.env
-*.log
+
+# Build output
+server/dist/
+client/dist/
+
+# Server data (projects, settings)
+server-data/
+
+# Environment files (keep secrets out)
+server/.env
+client/.env
+
+# OS files
 .DS_Store
-server/projects/
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
