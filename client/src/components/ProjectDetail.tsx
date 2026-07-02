@@ -82,7 +82,6 @@ export function ProjectDetail({ projectId, filename }: ProjectDetailProps) {
         <ProjectReader
           projectId={projectId}
           onEdit={(filename) => navigate(`/project/${projectId}/edit/${encodeURIComponent(filename)}`)}
-          onOpenChat={() => setChatOpen(true)}
         />
       </div>
       {chatOpen && (
@@ -102,6 +101,16 @@ export function ProjectDetail({ projectId, filename }: ProjectDetailProps) {
             width={splitPosition}
           />
         </>
+      )}
+      {!chatOpen && (
+        <button
+          className="chat-fab"
+          onClick={() => setChatOpen(true)}
+          aria-label="Open chat"
+          title="Open chat"
+        >
+          💬
+        </button>
       )}
     </div>
   )

@@ -15,10 +15,9 @@ import './ProjectReader.css'
 interface ProjectReaderProps {
   projectId: string
   onEdit: (filename: string) => void
-  onOpenChat?: () => void
 }
 
-export function ProjectReader({ projectId, onEdit, onOpenChat }: ProjectReaderProps) {
+export function ProjectReader({ projectId, onEdit }: ProjectReaderProps) {
   const [project, setProject] = useState<Project | null>(null)
   const [files, setFiles] = useState<FileItem[]>([])
   const [fileContents, setFileContents] = useState<Record<string, string>>({})
@@ -157,16 +156,6 @@ export function ProjectReader({ projectId, onEdit, onOpenChat }: ProjectReaderPr
           ← Projects
         </a>
         <div className="page-header-actions">
-          {onOpenChat && (
-            <button
-              className="btn-secondary chat-toggle-btn"
-              onClick={onOpenChat}
-              aria-label="Open chat"
-              title="Open chat"
-            >
-              💬 Chat
-            </button>
-          )}
           <div className="project-tags">
             {project?.tags.map(tag => (
               <span key={tag} className="tag-pill">{tag}</span>
