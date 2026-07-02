@@ -1,4 +1,4 @@
-import { Project, FileItem } from './types'
+import { Project, FileItem, Settings } from './types'
 
 const BASE_URL = '/api'
 
@@ -73,5 +73,18 @@ export async function renameFile(projectId: string, from: string, to: string): P
   return request<FileItem>(`/projects/${projectId}/files/rename`, {
     method: 'PUT',
     body: JSON.stringify({ from, to }),
+  })
+}
+
+// ── Settings ─────────────────────────────────────────────────────────
+
+export async function fetchSettings(): Promise<Settings> {
+  return request<Settings>('/settings')
+}
+
+export async function saveSettings(settings: Settings): Promise<void> {
+  await request<void>('/settings', {
+    method: 'PUT',
+    body: JSON.stringify(settings),
   })
 }

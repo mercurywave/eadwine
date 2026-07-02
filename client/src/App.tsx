@@ -2,6 +2,7 @@ import { Routes, Route, Navigate, useParams } from 'react-router-dom'
 import { useState, useEffect, useCallback } from 'react'
 import { ProjectSelector } from './components/ProjectSelector'
 import { ProjectDetail } from './components/ProjectDetail'
+import { SettingsPage } from './components/SettingsPage'
 import { ToastProvider, ToastContainer, useToasts } from './components/Toast'
 import { Project } from './types'
 import { fetchProjects, createProject, deleteProject } from './api'
@@ -81,6 +82,7 @@ function App() {
         <Route path="/" element={<ProjectSelectorPage />} />
         <Route path="/project/:id" element={<ProjectDetailRoute />} />
         <Route path="/project/:id/edit/:filename" element={<ProjectDetailRoute />} />
+        <Route path="/settings" element={<SettingsPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       <ToastContainer />

@@ -1,0 +1,185 @@
+.settings-page {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem;
+}
+
+.settings-layout {
+  display: flex;
+  gap: 2rem;
+  min-height: 400px;
+}
+
+/* ── Sidebar ─────────────────────────────────────────────────────── */
+
+.settings-sidebar {
+  width: 200px;
+  flex-shrink: 0;
+  padding-top: 0.5rem;
+}
+
+.settings-sidebar ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.sidebar-link {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.95rem;
+  font-family: inherit;
+  padding: 0.6rem 1rem;
+  border-radius: 8px;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s;
+  width: 100%;
+}
+
+.sidebar-link:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.sidebar-link.active {
+  background-color: rgba(100, 108, 255, 0.15);
+  color: #646cff;
+}
+
+/* ── Content area ────────────────────────────────────────────────── */
+
+.settings-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.settings-section {
+  display: none;
+}
+
+.settings-section.visible {
+  display: block;
+}
+
+.settings-section h2 {
+  font-size: 1.4rem;
+  margin-bottom: 0.25rem;
+}
+
+.section-description {
+  color: #888;
+  font-size: 0.9rem;
+  margin-bottom: 1.5rem;
+}
+
+/* ── Setting fields ──────────────────────────────────────────────── */
+
+.setting-field {
+  margin-bottom: 1.5rem;
+}
+
+.setting-field label {
+  display: block;
+  font-weight: 500;
+  font-size: 0.95rem;
+  margin-bottom: 0.5rem;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.setting-field .modal-input {
+  width: 100%;
+  max-width: 500px;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #555;
+  border-radius: 6px;
+  background-color: #1a1a1a;
+  color: inherit;
+  font-size: 0.95rem;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.setting-field .modal-input:focus {
+  border-color: #646cff;
+}
+
+.field-hint {
+  display: block;
+  color: #777;
+  font-size: 0.8rem;
+  margin-top: 0.35rem;
+}
+
+/* ── Back button ─────────────────────────────────────────────────── */
+
+.back-btn {
+  background: none;
+  border: none;
+  color: #646cff;
+  font-size: 0.9rem;
+  padding: 0.3rem 0.5rem;
+  margin-right: 0.5rem;
+}
+
+.back-btn:hover {
+  color: #535bf2;
+  text-decoration: underline;
+  background: none;
+}
+
+/* ── Light theme overrides ───────────────────────────────────────── */
+
+@media (prefers-color-scheme: light) {
+  .sidebar-link:hover {
+    background-color: rgba(0, 0, 0, 0.04);
+    color: #213547;
+  }
+
+  .sidebar-link.active {
+    background-color: rgba(100, 108, 255, 0.12);
+    color: #646cff;
+  }
+
+  .setting-field label {
+    color: #213547;
+  }
+
+  .field-hint {
+    color: #666;
+  }
+
+  .section-description {
+    color: #666;
+  }
+}
+
+/* ── Responsive ──────────────────────────────────────────────────── */
+
+@media (max-width: 768px) {
+  .settings-layout {
+    flex-direction: column;
+  }
+
+  .settings-sidebar {
+    width: 100%;
+  }
+
+  .settings-sidebar ul {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .sidebar-link {
+    width: auto;
+  }
+
+  .setting-field .modal-input {
+    max-width: 100%;
+  }
+}

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Project } from '../types'
 import { ProjectCard } from './ProjectCard'
 import { ConfirmDialog } from './ConfirmDialog'
@@ -20,7 +21,12 @@ export function ProjectSelector({
   loading,
   error,
 }: ProjectSelectorProps) {
+  const navigate = useNavigate()
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
+
+  const handleOpenSettings = () => {
+    navigate('/settings')
+  }
 
   const handleConfirmDelete = () => {
     if (confirmDeleteId) {
@@ -33,9 +39,14 @@ export function ProjectSelector({
     <div className="project-selector">
       <header className="page-header">
         <h1>Projects</h1>
-        <button className="btn-primary" onClick={onCreateProject}>
-          + New Project
-        </button>
+        <div className="page-header-actions">
+          <button className="btn-secondary" onClick={handleOpenSettings}>
+            Settings
+          </button>
+          <button className="btn-primary" onClick={onCreateProject}>
+            + New Project
+          </button>
+        </div>
       </header>
 
       {error && <div className="error-banner">{error}</div>}

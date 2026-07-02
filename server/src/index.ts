@@ -17,6 +17,7 @@ const __dirname = path.dirname(__filename)
 const app = express()
 const PORT = process.env.PORT || 3003
 const PROJECTS_ROOT = process.env.PROJECTS_ROOT || './projects'
+const SETTINGS_FILE = path.join(PROJECTS_ROOT, '..', 'settings.json')
 
 // Ensure projects directory exists
 if (!fs.existsSync(PROJECTS_ROOT)) {
@@ -427,6 +428,56 @@ app.put('/api/projects/:id/files/rename', (req: Request, res: Response) => {
 // ── Error handler ────────────────────────────────────────────────────
 
 app.use(errorHandler)
+
+// ── Settings API ─────────────────────────────────────────────────────
+
+interface SettingsData {
+  openAiEndpoint?: string
+}
+
+function readSettings(): SettingsData {
+  try {
+    const raw = fs.readFileSync(SETTINGS_FILE, 'utf-8')
+    return JSON.parse(raw) as SettingsData
+  } catch {
+    return {}
+  }
+}
+
+function writeSettings(data: SettingsData): void {
+  const dir = path.dirname(SETTINGS_FILE)
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true })
+  }
+  fs.writeFileSync(SETTINGS_FILE, JSON.stringify(data, null, 2), 'utf-8')
+}
+
+// GET /api/settings
+app.get('/api/settings', (_req: Request, res: Response) => {
+  try {
+    const settings = readSettings()
+    res.json(settings)
+  } catch (err: any) {
+    console.error(err)
+    res.status(500).json({ error: 'Failed to read settings' })
+  }
+})
+
+// PUT /api/settings
+app.put('/api/settings', (req: Request, res: Response) => {
+  try {
+    const { openAiEndpoint } = req.body
+    const settings: SettingsData = {}
+    if (typeof openAiEndpoint === 'string') {
+      settings.openAiEndpoint = openAiEndpoint
+    }
+    writeSettings(settings)
+    res.json(settings)
+  } catch (err: any) {
+    console.error(err)
+    res.status(500).json({ error: 'Failed to save settings' })
+  }
+})
 
 // ── Serve static files in production ─────────────────────────────────
 
