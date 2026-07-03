@@ -5,6 +5,7 @@ import {
   fetchChatSessions,
   fetchChatSession,
   createChatSession,
+  persistChatMessage,
   streamChatMessage,
 } from '../api'
 import { ChatBubble } from './ChatBubble'
@@ -104,7 +105,7 @@ export function ChatPanel({ projectId, isOpen, onClose, endpoint, width }: ChatP
       }
     }
 
-    // Add user message
+    // Add user message locally
     const userMsg: ChatMessage = {
       id: crypto.randomUUID(),
       role: 'user',
@@ -112,6 +113,12 @@ export function ChatPanel({ projectId, isOpen, onClose, endpoint, width }: ChatP
       timestamp: new Date().toISOString(),
     }
     setMessages(prev => [...prev, userMsg])
+
+    // Persist user message to disk before streaming, so it's saved even if the stream fails
+    persistChatMessage(projectId, sessionId, userMessage).catch(() => {
+      // Non-fatal: continue with streaming even if persistence fails
+    })
+
     setIsStreaming(true)
 
     // Create assistant placeholder

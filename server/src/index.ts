@@ -572,7 +572,7 @@ ${fileList}
 You can help answer questions about the project's content, suggest improvements, explain concepts, or assist with writing new Markdown files. Be concise and reference specific files when relevant.`
 }
 
-function persistSession(projectId: string, sessionId: string, messages: Array<{ role: string; content: string }>, assistantContent: string): void {
+function persistSession(projectId: string, sessionId: string, assistantContent: string): void {
   const chatsDir = path.join(resolveProjectPath(projectId), 'chats')
   const logsDir = path.join(chatsDir, 'logs')
   if (!fs.existsSync(chatsDir)) fs.mkdirSync(chatsDir, { recursive: true })
@@ -593,7 +593,7 @@ function persistSession(projectId: string, sessionId: string, messages: Array<{ 
   fs.writeFileSync(sessionFile, JSON.stringify(session, null, 2), 'utf-8')
 }
 
-function persistPartialSession(projectId: string, sessionId: string, messages: Array<{ role: string; content: string }>): void {
+function persistPartialSession(projectId: string, sessionId: string, userMessage: { role: string; content: string } | null, assistantContent: string | null): void {
   try {
     const chatsDir = path.join(resolveProjectPath(projectId), 'chats')
     const logsDir = path.join(chatsDir, 'logs')
@@ -607,17 +607,26 @@ function persistPartialSession(projectId: string, sessionId: string, messages: A
     const existingMessages = readChatMessages(projectId, sessionId)
     const existingContentHashes = new Set(existingMessages.map(m => m.content))
 
-    // Append messages not already in the log
-    for (const msg of messages) {
-      if (!existingContentHashes.has(msg.content)) {
-        const msgWithId: ChatMessageEntry = {
-          id: uuidv4(),
-          role: msg.role as 'user' | 'assistant' | 'system',
-          content: msg.content,
-          timestamp: new Date().toISOString(),
-        }
-        fs.appendFileSync(logFile, JSON.stringify(msgWithId) + '\n', 'utf-8')
+    // Append the user message if provided and not already in the log
+    if (userMessage && !existingContentHashes.has(userMessage.content)) {
+      const msgWithId: ChatMessageEntry = {
+        id: uuidv4(),
+        role: userMessage.role as 'user' | 'assistant' | 'system',
+        content: userMessage.content,
+        timestamp: new Date().toISOString(),
       }
+      fs.appendFileSync(logFile, JSON.stringify(msgWithId) + '\n', 'utf-8')
+    }
+
+    // Append the assistant message if provided and not already in the log
+    if (assistantContent !== null && !existingContentHashes.has(assistantContent)) {
+      const msgWithId: ChatMessageEntry = {
+        id: uuidv4(),
+        role: 'assistant',
+        content: assistantContent,
+        timestamp: new Date().toISOString(),
+      }
+      fs.appendFileSync(logFile, JSON.stringify(msgWithId) + '\n', 'utf-8')
     }
 
     const session = JSON.parse(fs.readFileSync(sessionFile, 'utf-8')) as ChatSessionData
@@ -633,13 +642,14 @@ async function proxyStream(
   sessionId: string,
   projectId: string,
   messages: Array<{ role: string; content: string }>,
+  userMessageForPersist: { role: string; content: string },
   expressRes: ExpressResponse
 ): Promise<void> {
   const abortController = new AbortController()
 
   expressRes.on('close', () => {
     abortController.abort()
-    persistPartialSession(projectId, sessionId, messages)
+    persistPartialSession(projectId, sessionId, userMessageForPersist, null)
   })
 
   const apiUrl = `${openAiEndpoint}/v1/chat/completions`
@@ -691,7 +701,7 @@ async function proxyStream(
         if (data === '[DONE]') {
           expressRes.write('data: [DONE]\n')
           expressRes.end()
-          persistSession(projectId, sessionId, messages, fullAssistantContent)
+          persistSession(projectId, sessionId, fullAssistantContent)
           return
         }
 
@@ -710,7 +720,7 @@ async function proxyStream(
   } catch (err) {
     expressRes.write(`data: ${JSON.stringify({ error: 'Stream interrupted' })}\n`)
     expressRes.end()
-    persistPartialSession(projectId, sessionId, messages)
+    persistPartialSession(projectId, sessionId, userMessageForPersist, fullAssistantContent)
   }
 }
 
@@ -846,6 +856,34 @@ app.delete('/api/projects/:id/chats/:sessionId', (req: Request, res: ExpressResp
   }
 })
 
+// POST /api/projects/:id/chats/:sessionId/persist-message
+// Persists the user message to disk before streaming begins, ensuring it's saved even if the stream fails.
+app.post('/api/projects/:id/chats/:sessionId/persist-message', (req: Request, res: ExpressResponse) => {
+  try {
+    const id = param(req, 'id')
+    const sessionId = param(req, 'sessionId')
+    const { message } = req.body
+
+    if (!message || typeof message !== 'string') {
+      return res.status(400).json({ error: 'Message is required' })
+    }
+
+    const userMessage: ChatMessageEntry = {
+      id: uuidv4(),
+      role: 'user',
+      content: message,
+      timestamp: new Date().toISOString(),
+    }
+
+    persistPartialSession(id, sessionId, { role: 'user', content: message }, null)
+
+    res.json({ message: 'Message persisted' })
+  } catch (err: any) {
+    console.error(err)
+    res.status(500).json({ error: 'Failed to persist message' })
+  }
+})
+
 // POST /api/projects/:id/chats/:sessionId/stream
 app.post('/api/projects/:id/chats/:sessionId/stream', (req: Request, res: ExpressResponse) => {
   try {
@@ -883,6 +921,8 @@ app.post('/api/projects/:id/chats/:sessionId/stream', (req: Request, res: Expres
       { role: 'user', content: message },
     ]
 
+    const userMessageForPersist = { role: 'user', content: message }
+
     // Set streaming headers
     res.setHeader('Content-Type', 'text/event-stream')
     res.setHeader('Cache-Control', 'no-cache')
@@ -890,7 +930,7 @@ app.post('/api/projects/:id/chats/:sessionId/stream', (req: Request, res: Expres
     res.flushHeaders()
 
     // Proxy the streaming request to the OpenAI-compatible endpoint
-    proxyStream(endpointToUse, sessionId, id, apiMessages, res).catch(err => {
+    proxyStream(endpointToUse, sessionId, id, apiMessages, userMessageForPersist, res).catch(err => {
       console.error('Stream proxy error:', err)
       if (!res.headersSent) {
         res.status(500).json({ error: 'Failed to process chat request' })

@@ -155,7 +155,6 @@ export async function* streamChatMessage(
 
         const data = trimmed.slice(6)
         if (data === '[DONE]') {
-          yield fullAssistantContent
           return fullAssistantContent
         }
 
@@ -176,4 +175,11 @@ export async function* streamChatMessage(
   }
 
   return fullAssistantContent
+}
+
+export async function persistChatMessage(projectId: string, sessionId: string, message: string): Promise<void> {
+  await request<void>(`/projects/${projectId}/chats/${sessionId}/persist-message`, {
+    method: 'POST',
+    body: JSON.stringify({ message }),
+  })
 }
