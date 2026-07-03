@@ -1,0 +1,215 @@
+import fs from 'fs'
+import path from 'path'
+import { Router, Request, Response } from 'express'
+import { param, resolveProjectPath, resolveFilePath, validateFilename } from '../helpers.js'
+import { stripFrontmatter } from '../summary.js'
+
+const router = Router()
+
+// GET /api/projects/:id/files
+router.get('/:id/files', (req: Request, res: Response) => {
+  try {
+    const id = param(req, 'id')
+    const projectPath = resolveProjectPath(id)
+
+    if (!fs.existsSync(projectPath)) {
+      return res.status(404).json({ error: 'Project not found' })
+    }
+
+    const entries = fs.readdirSync(projectPath, { withFileTypes: true })
+    const files = entries
+      .filter(e => e.isFile() && e.name.endsWith('.md'))
+      .map(e => ({
+        name: e.name,
+        path: e.name,
+        isSummary: e.name.toLowerCase() === 'summary.md',
+      }))
+      .sort((a, b) => {
+        if (a.isSummary) return -1
+        if (b.isSummary) return 1
+        return a.name.localeCompare(b.name, undefined, { sensitivity: 'base' })
+      })
+
+    res.json(files)
+  } catch (err: any) {
+    console.error(err)
+    res.status(500).json({ error: 'Failed to list files' })
+  }
+})
+
+// GET /api/projects/:id/files/:filename
+router.get('/:id/files/:filename', (req: Request, res: Response) => {
+  try {
+    const id = param(req, 'id')
+    const filename = param(req, 'filename')
+    const projectPath = resolveProjectPath(id)
+    const filePath = resolveFilePath(projectPath, filename)
+
+    if (!filePath.startsWith(projectPath)) {
+      return res.status(400).json({ error: 'Invalid filename' })
+    }
+
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).json({ error: 'File not found' })
+    }
+
+    const rawContent = fs.readFileSync(filePath, 'utf-8')
+    const content = filePath.toLowerCase().endsWith('summary.md')
+      ? stripFrontmatter(rawContent)
+      : rawContent
+    res.json({ content })
+  } catch (err: any) {
+    console.error(err)
+    res.status(500).json({ error: 'Failed to read file' })
+  }
+})
+
+// PUT /api/projects/:id/files/:filename
+router.put('/:id/files/:filename', (req: Request, res: Response) => {
+  try {
+    const id = param(req, 'id')
+    const filename = param(req, 'filename')
+    const projectPath = resolveProjectPath(id)
+    const filePath = resolveFilePath(projectPath, filename)
+
+    if (!filePath.startsWith(projectPath)) {
+      return res.status(400).json({ error: 'Invalid filename' })
+    }
+
+    const { content } = req.body
+    if (typeof content !== 'string') {
+      return res.status(400).json({ error: 'Content must be a string' })
+    }
+
+    if (!fs.existsSync(projectPath)) {
+      return res.status(404).json({ error: 'Project not found' })
+    }
+
+    fs.writeFileSync(filePath, content, 'utf-8')
+    res.json({ message: 'File saved' })
+  } catch (err: any) {
+    console.error(err)
+    res.status(500).json({ error: 'Failed to save file' })
+  }
+})
+
+// POST /api/projects/:id/files
+router.post('/:id/files', (req: Request, res: Response) => {
+  try {
+    const id = param(req, 'id')
+    const projectPath = resolveProjectPath(id)
+    const { name } = req.body
+
+    if (!name || typeof name !== 'string') {
+      return res.status(400).json({ error: 'Filename is required' })
+    }
+
+    const validationError = validateFilename(name)
+    if (validationError) {
+      return res.status(400).json({ error: validationError })
+    }
+
+    const finalName = name.endsWith('.md') ? name : `${name}.md`
+    const filePath = resolveFilePath(projectPath, finalName)
+
+    if (!filePath.startsWith(projectPath)) {
+      return res.status(400).json({ error: 'Invalid filename' })
+    }
+
+    if (!fs.existsSync(projectPath)) {
+      return res.status(404).json({ error: 'Project not found' })
+    }
+
+    if (fs.existsSync(filePath)) {
+      return res.status(409).json({ error: 'File already exists' })
+    }
+
+    fs.writeFileSync(filePath, '', 'utf-8')
+    res.status(201).json({ name: finalName, path: finalName })
+  } catch (err: any) {
+    console.error(err)
+    res.status(500).json({ error: 'Failed to create file' })
+  }
+})
+
+// DELETE /api/projects/:id/files/:filename
+router.delete('/:id/files/:filename', (req: Request, res: Response) => {
+  try {
+    const id = param(req, 'id')
+    const filename = param(req, 'filename')
+    const projectPath = resolveProjectPath(id)
+    const filePath = resolveFilePath(projectPath, filename)
+
+    if (!filePath.startsWith(projectPath)) {
+      return res.status(400).json({ error: 'Invalid filename' })
+    }
+
+    if (filename.toLowerCase() === 'summary.md') {
+      return res.status(403).json({ error: 'Summary file cannot be deleted' })
+    }
+
+    if (!fs.existsSync(projectPath)) {
+      return res.status(404).json({ error: 'Project not found' })
+    }
+
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).json({ error: 'File not found' })
+    }
+
+    fs.unlinkSync(filePath)
+    res.status(204).send()
+  } catch (err: any) {
+    console.error(err)
+    res.status(500).json({ error: 'Failed to delete file' })
+  }
+})
+
+// PUT /api/projects/:id/files/rename
+router.put('/:id/files/rename', (req: Request, res: Response) => {
+  try {
+    const id = param(req, 'id')
+    const projectPath = resolveProjectPath(id)
+    const { from, to } = req.body
+
+    if (!from || !to || typeof from !== 'string' || typeof to !== 'string') {
+      return res.status(400).json({ error: 'from and to are required' })
+    }
+
+    if (from.toLowerCase() === 'summary.md') {
+      return res.status(403).json({ error: 'Summary file cannot be renamed' })
+    }
+
+    const validationError = validateFilename(to)
+    if (validationError) {
+      return res.status(400).json({ error: validationError })
+    }
+
+    const finalTo = to.endsWith('.md') ? to : `${to}.md`
+    const srcPath = resolveFilePath(projectPath, from)
+    const destPath = resolveFilePath(projectPath, finalTo)
+
+    if (!srcPath.startsWith(projectPath) || !destPath.startsWith(projectPath)) {
+      return res.status(400).json({ error: 'Invalid filename' })
+    }
+
+    if (!fs.existsSync(srcPath)) {
+      return res.status(404).json({ error: 'Source file not found' })
+    }
+
+    if (!fs.existsSync(projectPath)) {
+      return res.status(404).json({ error: 'Project not found' })
+    }
+
+    if (fs.existsSync(destPath)) {
+      return res.status(409).json({ error: 'Destination file already exists' })
+    }
+
+    fs.renameSync(srcPath, destPath)
+    res.json({ name: finalTo, path: finalTo })
+  } catch (err: any) {
+    console.error(err)
+    res.status(500).json({ error: 'Failed to rename file' })
+  }
+})
+
+export const filesRouter = router
