@@ -6,6 +6,7 @@ import { param } from '../helpers.js'
 import { resolveProjectPath } from '../helpers.js'
 import { readChatSession, readChatMessages, buildSystemPrompt, persistSession, persistPartialSession } from '../services/chat.js'
 import { proxyStream } from '../services/llm.js'
+import { runToolCallLoop } from '../services/agent.js'
 import { ChatMessageEntry } from '../types.js'
 
 const router = Router()
@@ -196,15 +197,24 @@ router.post('/:id/chats/:sessionId/stream', (req: Request, res: Response) => {
       { role: 'user', content: message },
     ]
 
-    const userMessageForPersist = { role: 'user', content: message }
-
     res.setHeader('Content-Type', 'text/event-stream')
     res.setHeader('Cache-Control', 'no-cache')
     res.setHeader('Connection', 'keep-alive')
     res.flushHeaders()
 
-    proxyStream(endpointToUse, sessionId, id, apiMessages, userMessageForPersist, res).catch((err: unknown) => {
-      console.error('Stream proxy error:', err)
+    runToolCallLoop({
+      openAiEndpoint: endpointToUse,
+      sessionId,
+      projectId: id,
+      projectPath: resolveProjectPath(id),
+      projectTitle,
+      systemPrompt: apiMessages[0].content,
+      conversationHistory: apiMessages.slice(1).map(m => ({ role: m.role, content: m.content })),
+      userMessage: message,
+      expressRes: res,
+      maxIterations: 50,
+    }).catch((err: unknown) => {
+      console.error('Agent stream error:', err)
       if (!res.headersSent) {
         res.status(500).json({ error: 'Failed to process chat request' })
       }

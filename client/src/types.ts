@@ -20,11 +20,19 @@ export interface Settings {
   openAiEndpoint: string
 }
 
+export interface ToolCallInfo {
+  id: string
+  name: string
+  arguments: string // JSON string of arguments
+}
+
 export interface ChatMessage {
   id: string
-  role: 'user' | 'assistant' | 'system'
+  role: 'user' | 'assistant' | 'system' | 'tool'
   content: string
   timestamp: string
+  tool_calls?: ToolCallInfo[]
+  tool_call_id?: string
 }
 
 export interface ChatSession {

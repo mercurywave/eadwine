@@ -144,35 +144,72 @@ export function ChatPanel({ projectId, isOpen, onClose, endpoint, width }: ChatP
       abortControllerRef.current = controller
 
       let fullContent = ''
-      for await (const chunk of generator) {
-        fullContent += chunk
+      let hasError = false
+
+      for await (const event of generator) {
+        if (event.type === 'content') {
+          fullContent += event.content
+          setMessages(prev => {
+            const updated = [...prev]
+            const idx = updated.length - 1
+            if (updated[idx]?.role === 'assistant') {
+              updated[idx] = { ...updated[idx], content: fullContent }
+            }
+            return updated
+          })
+        } else if (event.type === 'tool_call') {
+          // Add a new assistant message with tool calls
+          const toolCallMsg: ChatMessage = {
+            id: crypto.randomUUID(),
+            role: 'assistant',
+            content: '',
+            tool_calls: event.toolCalls,
+            timestamp: new Date().toISOString(),
+          }
+          setMessages(prev => [...prev, toolCallMsg])
+        } else if (event.type === 'error') {
+          hasError = true
+          const errorMessage = `Error: ${event.message}`
+          setMessages(prev => {
+            const updated = [...prev]
+            const idx = updated.length - 1
+            if (updated[idx]?.role === 'assistant') {
+              updated[idx] = { ...updated[idx], content: errorMessage }
+            }
+            return updated
+          })
+          addToast(event.message, 'error')
+          break
+        } else if (event.type === 'done') {
+          fullContent = event.fullContent
+          break
+        }
+      }
+
+      // Update the session with the full message
+      if (!hasError) {
         setMessages(prev => {
           const updated = [...prev]
           const lastIdx = updated.length - 1
-          if (updated[lastIdx]?.role === 'assistant') {
+          if (lastIdx >= 0 && updated[lastIdx]?.role === 'assistant') {
+            // Update the last assistant message in place (preserves its ID)
             updated[lastIdx] = { ...updated[lastIdx], content: fullContent }
           }
           return updated
         })
-      }
 
-      // Update the session with the full message
-      if (fullContent) {
-        const updatedMsg: ChatMessage = { ...assistantMsg, content: fullContent }
-        setMessages(prev => {
-          const updated = [...prev]
-          updated[updated.length - 1] = updatedMsg
-          return updated
-        })
-
-        // Update current session
+        // Update current session (read the last message first)
+        const lastMsg: ChatMessage | undefined = messages[messages.length - 1]
         setCurrentSession(prev => {
           if (!prev) return prev
-          return {
-            ...prev,
-            messages: [...(prev.messages || []), userMsg, updatedMsg],
-            updatedAt: new Date().toISOString(),
+          if (lastMsg?.role === 'assistant') {
+            return {
+              ...prev,
+              messages: [...(prev.messages || []), userMsg, lastMsg],
+              updatedAt: new Date().toISOString(),
+            }
           }
+          return prev
         })
 
         // Update session in history list
@@ -181,6 +218,16 @@ export function ChatPanel({ projectId, isOpen, onClose, endpoint, width }: ChatP
             s.id === sessionId ? { ...s, updatedAt: new Date().toISOString() } : s
           )
         )
+      } else if (fullContent) {
+        // There was an error but we got some content
+        setMessages(prev => {
+          const updated = [...prev]
+          const lastIdx = updated.length - 1
+          if (lastIdx >= 0 && updated[lastIdx]?.role === 'assistant') {
+            updated[lastIdx] = { ...updated[lastIdx], content: fullContent }
+          }
+          return updated
+        })
       } else {
         // Empty response
         setMessages(prev => {
@@ -290,8 +337,9 @@ export function ChatPanel({ projectId, isOpen, onClose, endpoint, width }: ChatP
             {messages.map((msg, idx) => (
               <ChatBubble
                 key={msg.id}
-                role={msg.role as 'user' | 'assistant'}
+                role={msg.role as 'user' | 'assistant' | 'tool'}
                 content={msg.content}
+                tool_calls={msg.tool_calls}
                 isStreaming={isStreaming && idx === messages.length - 1 && msg.role === 'assistant'}
               />
             ))}

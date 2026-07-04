@@ -4,6 +4,19 @@ import { resolveProjectPath } from '../helpers.js'
 import { ChatMessageEntry, ChatSessionData } from '../types.js'
 import { stripFrontmatter } from '../summary.js'
 
+export interface ToolCallPersist {
+  toolCalls: Array<{
+    id: string
+    name: string
+    args: Record<string, unknown>
+  }>
+}
+
+export interface ToolResultPersist {
+  toolCallId: string
+  content: string
+}
+
 export function readChatSession(projectId: string, sessionId: string): ChatSessionData | null {
   const chatsDir = path.join(resolveProjectPath(projectId), 'chats')
   const sessionFile = path.join(chatsDir, `${sessionId}.json`)
@@ -125,5 +138,85 @@ export function persistPartialSession(
     fs.writeFileSync(sessionFile, JSON.stringify(session, null, 2), 'utf-8')
   } catch {
     // Non-fatal: partial persistence failure
+  }
+}
+
+// ── Tool call persistence ────────────────────────────────────────────
+
+export function persistToolCalls(
+  projectId: string,
+  sessionId: string,
+  toolCalls: Array<{
+    id: string
+    name: string
+    args: Record<string, unknown>
+  }>
+): void {
+  try {
+    const chatsDir = path.join(resolveProjectPath(projectId), 'chats')
+    const logsDir = path.join(chatsDir, 'logs')
+    if (!fs.existsSync(chatsDir)) fs.mkdirSync(chatsDir, { recursive: true })
+    if (!fs.existsSync(logsDir)) fs.mkdirSync(logsDir, { recursive: true })
+
+    const logFile = path.join(logsDir, `${sessionId}.jsonl`)
+    const sessionFile = path.join(chatsDir, `${sessionId}.json`)
+
+    // Write assistant message with tool_calls — use the LLM's original IDs
+    const toolCallEntries = toolCalls.map(tc => ({
+      id: tc.id,
+      type: 'function' as const,
+      function: {
+        name: tc.name,
+        arguments: JSON.stringify(tc.args),
+      },
+    }))
+
+    const assistantMsg: ChatMessageEntry = {
+      id: crypto.randomUUID(),
+      role: 'assistant',
+      content: '',
+      tool_calls: toolCallEntries,
+      timestamp: new Date().toISOString(),
+    }
+    fs.appendFileSync(logFile, JSON.stringify(assistantMsg) + '\n', 'utf-8')
+
+    // Update session
+    const session = JSON.parse(fs.readFileSync(sessionFile, 'utf-8')) as ChatSessionData
+    session.updatedAt = new Date().toISOString()
+    fs.writeFileSync(sessionFile, JSON.stringify(session, null, 2), 'utf-8')
+  } catch {
+    // Non-fatal
+  }
+}
+
+export function persistToolResult(
+  projectId: string,
+  sessionId: string,
+  toolCallId: string,
+  content: string
+): void {
+  try {
+    const chatsDir = path.join(resolveProjectPath(projectId), 'chats')
+    const logsDir = path.join(chatsDir, 'logs')
+    if (!fs.existsSync(chatsDir)) fs.mkdirSync(chatsDir, { recursive: true })
+    if (!fs.existsSync(logsDir)) fs.mkdirSync(logsDir, { recursive: true })
+
+    const logFile = path.join(logsDir, `${sessionId}.jsonl`)
+    const sessionFile = path.join(chatsDir, `${sessionId}.json`)
+
+    const toolResultMsg: ChatMessageEntry = {
+      id: crypto.randomUUID(),
+      role: 'tool',
+      content,
+      tool_call_id: toolCallId,
+      timestamp: new Date().toISOString(),
+    }
+    fs.appendFileSync(logFile, JSON.stringify(toolResultMsg) + '\n', 'utf-8')
+
+    const session = JSON.parse(fs.readFileSync(sessionFile, 'utf-8')) as ChatSessionData
+    session.updatedAt = new Date().toISOString()
+    fs.writeFileSync(sessionFile, JSON.stringify(session, null, 2), 'utf-8')
+  } catch {
+    // Non-fatal
   }
 }

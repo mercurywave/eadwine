@@ -1,0 +1,181 @@
+/* ── Tool Call Bubble ─────────────────────────────────────────────── */
+
+.tool-call-bubble {
+  margin: 0.25rem 0;
+  border-radius: 8px;
+  border: 1px solid rgba(100, 108, 255, 0.3);
+  background-color: rgba(100, 108, 255, 0.05);
+  overflow: hidden;
+}
+
+.tool-call-bubble.streaming {
+  border-color: rgba(100, 108, 255, 0.5);
+  animation: tool-call-pulse 2s ease-in-out infinite;
+}
+
+@keyframes tool-call-pulse {
+  0%, 100% { border-color: rgba(100, 108, 255, 0.3); }
+  50% { border-color: rgba(100, 108, 255, 0.6); }
+}
+
+/* ── Header (collapsed state) ─────────────────────────────────────── */
+
+.tool-call-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  background: none;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  padding: 0.5rem 0.75rem;
+  font-family: inherit;
+  font-size: 0.85rem;
+  text-align: left;
+  transition: background-color 0.15s;
+}
+
+.tool-call-header:hover {
+  background-color: rgba(100, 108, 255, 0.1);
+}
+
+.tool-call-icon {
+  width: 1rem;
+  height: 1rem;
+  color: #646cff;
+  flex-shrink: 0;
+}
+
+.tool-call-summary {
+  flex: 1;
+  min-width: 0;
+  font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+  font-size: 0.8rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tool-call-name {
+  font-weight: 600;
+  color: #646cff;
+}
+
+.tool-call-args {
+  color: #aaa;
+}
+
+.tool-call-more {
+  color: #888;
+  font-style: italic;
+}
+
+.tool-call-status {
+  font-size: 0.75rem;
+  color: #f0ad4e;
+  flex-shrink: 0;
+}
+
+.tool-call-chevron {
+  width: 0.85rem;
+  height: 0.85rem;
+  color: #888;
+  flex-shrink: 0;
+  transition: transform 0.2s;
+}
+
+/* ── Details (expanded state) ─────────────────────────────────────── */
+
+.tool-call-details {
+  border-top: 1px solid rgba(100, 108, 255, 0.15);
+  padding: 0.5rem 0.75rem;
+}
+
+.tool-call-detail-item {
+  margin-top: 0.5rem;
+}
+
+.tool-call-detail-item:first-child {
+  margin-top: 0;
+}
+
+.tool-call-detail-header {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-bottom: 0.35rem;
+}
+
+.tool-call-detail-icon {
+  width: 0.85rem;
+  height: 0.85rem;
+  color: #646cff;
+  flex-shrink: 0;
+}
+
+.tool-call-detail-name {
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: #646cff;
+}
+
+.tool-call-detail-args {
+  background-color: rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(100, 108, 255, 0.15);
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
+  margin: 0;
+  overflow-x: auto;
+  font-size: 0.75rem;
+  line-height: 1.5;
+}
+
+.tool-call-detail-args code {
+  font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+  color: #ccc;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+/* ── Light theme ──────────────────────────────────────────────────── */
+
+@media (prefers-color-scheme: light) {
+  .tool-call-bubble {
+    background-color: rgba(100, 108, 255, 0.04);
+    border-color: rgba(100, 108, 255, 0.25);
+  }
+
+  .tool-call-header:hover {
+    background-color: rgba(100, 108, 255, 0.08);
+  }
+
+  .tool-call-icon {
+    color: #535bf2;
+  }
+
+  .tool-call-name {
+    color: #535bf2;
+  }
+
+  .tool-call-args {
+    color: #777;
+  }
+
+  .tool-call-chevron {
+    color: #666;
+  }
+
+  .tool-call-details {
+    border-top-color: rgba(100, 108, 255, 0.1);
+  }
+
+  .tool-call-detail-args {
+    background-color: #f6f8fa;
+    border-color: #ddd;
+  }
+
+  .tool-call-detail-args code {
+    color: #333;
+  }
+}

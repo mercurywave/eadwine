@@ -2,7 +2,8 @@
 
 .chat-bubble {
   display: flex;
-  margin: 0.5rem 0;
+  flex-direction: column;
+  margin: 0;
 }
 
 .chat-bubble-assistant {
@@ -12,10 +13,36 @@
 .chat-bubble-user {
   margin-left: auto;
   flex-direction: row-reverse;
+  margin-bottom: 4px;
 }
 
 .chat-bubble-assistant {
   margin-right: 0;
+}
+
+/* ── Tool result ──────────────────────────────────────────────────── */
+
+.chat-bubble-tool {
+  margin-left: 1.5rem;
+}
+
+.chat-bubble-tool .chat-bubble-content {
+  background-color: transparent;
+  border-radius: 0;
+  padding: 0.35rem 0;
+}
+
+.tool-result {
+  font-size: 0.85rem;
+  color: #888;
+  padding: 0.35rem 0.5rem;
+  border-left: 2px solid #444;
+}
+
+.tool-result-text {
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
 .chat-bubble-content {
@@ -35,7 +62,7 @@
 .chat-bubble-assistant .chat-bubble-content {
   background-color: transparent;
   border-radius: 0;
-  padding: 0.5rem 0;
+  padding: 0;
   width: 100%;
 }
 
@@ -196,5 +223,10 @@
 
   .chat-bubble-markdown th {
     background-color: rgba(100, 108, 255, 0.06);
+  }
+
+  .tool-result {
+    border-left-color: #ccc;
+    color: #777;
   }
 }

@@ -1,4 +1,4 @@
-import { Project, FileItem, Settings, ChatSession, ChatSessionSummary } from './types'
+import { Project, FileItem, Settings, ChatSession, ChatSessionSummary, ToolCallInfo } from './types'
 
 const BASE_URL = '/api'
 
@@ -112,13 +112,21 @@ export async function deleteChatSession(projectId: string, sessionId: string): P
   })
 }
 
+// ── Stream Event Types ───────────────────────────────────────────────
+
+export type StreamEvent =
+  | { type: 'content'; content: string }
+  | { type: 'tool_call'; toolCalls: ToolCallInfo[] }
+  | { type: 'error'; message: string }
+  | { type: 'done'; fullContent: string }
+
 export async function* streamChatMessage(
   projectId: string,
   sessionId: string,
   userMessage: string,
   endpoint: string,
   signal?: AbortSignal
-): AsyncGenerator<string, string, unknown> {
+): AsyncGenerator<StreamEvent, string, unknown> {
   const res = await fetch(`${BASE_URL}/projects/${projectId}/chats/${sessionId}/stream`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -155,15 +163,38 @@ export async function* streamChatMessage(
 
         const data = trimmed.slice(6)
         if (data === '[DONE]') {
+          yield { type: 'done', fullContent: fullAssistantContent }
           return fullAssistantContent
         }
 
         try {
           const parsed = JSON.parse(data)
+
+          // Structured event (tool_call, error, etc.)
+          if (parsed.type) {
+            if (parsed.type === 'tool_call') {
+              const toolCalls: ToolCallInfo[] = parsed.toolCalls.map((tc: any) => ({
+                id: tc.id,
+                name: tc.name,
+                arguments: tc.arguments,
+              }))
+              yield { type: 'tool_call', toolCalls }
+            } else if (parsed.type === 'error') {
+              yield { type: 'error', message: parsed.error || 'Unknown error' }
+            }
+            continue
+          }
+
+          // Content delta from LLM
           const content = parsed.choices?.[0]?.delta?.content
           if (content) {
             fullAssistantContent += content
-            yield content
+            yield { type: 'content', content }
+          }
+
+          // Error from LLM
+          if (parsed.error) {
+            yield { type: 'error', message: parsed.error }
           }
         } catch {
           // Skip non-JSON lines
