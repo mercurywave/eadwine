@@ -94,6 +94,15 @@ export function useChat(projectId: string): ChatState {
       // in a single request. We pass the current sessionIdRef to continue an existing session.
       const sessionId = sessionIdRef.current
 
+      // Add user message immediately so it appears in the chat panel during streaming
+      const userMsg: ChatMessage = {
+        id: crypto.randomUUID(),
+        role: 'user',
+        content: message,
+        timestamp: new Date().toISOString(),
+      }
+      setMessages((prev) => [...prev, userMsg])
+
       // Create assistant placeholder for streaming display
       const assistantMsg: ChatMessage = {
         id: crypto.randomUUID(),
