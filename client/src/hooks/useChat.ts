@@ -20,6 +20,7 @@ interface ChatState {
   selectSession: (sessionId: string) => Promise<void>
   sendMessage: (message: string, endpoint: string) => Promise<void>
   stopStreaming: () => void
+  newChat: () => void
 }
 
 export function useChat(projectId: string): ChatState {
@@ -218,6 +219,14 @@ export function useChat(projectId: string): ChatState {
     setIsStreaming(false)
   }, [])
 
+  const newChat = useCallback(() => {
+    abortControllerRef.current?.abort()
+    setIsStreaming(false)
+    setCurrentSession(null)
+    setMessages([])
+    sessionIdRef.current = null
+  }, [])
+
   return {
     sessions,
     currentSession,
@@ -230,5 +239,6 @@ export function useChat(projectId: string): ChatState {
     selectSession,
     sendMessage,
     stopStreaming,
+    newChat,
   }
 }

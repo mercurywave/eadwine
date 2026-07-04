@@ -28,6 +28,7 @@ export function ChatPanel({ projectId, isOpen, onClose, endpoint, width }: ChatP
     selectSession,
     sendMessage,
     stopStreaming,
+    newChat,
   } = useChat(projectId)
 
   const [showSettingsConfirm, setShowSettingsConfirm] = useState(false)
@@ -50,8 +51,7 @@ export function ChatPanel({ projectId, isOpen, onClose, endpoint, width }: ChatP
   }
 
   const handleNewChat = () => {
-    // Clear current session - the hook manages this
-    // We trigger a re-select with no session by just clearing
+    newChat()
   }
 
   const handleSend = (userMessage: string) => {
