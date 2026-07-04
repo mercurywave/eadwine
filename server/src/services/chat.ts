@@ -141,6 +141,19 @@ export function persistPartialSession(
 
     // Persist any tool calls that were accumulated but not yet finalized
     if (toolCalls && toolCalls.length > 0) {
+      // Guard: skip if these tool calls already exist in the log
+      const existingToolCallIds = new Set(
+        existingMessages
+          .filter(m => m.role === 'assistant' && m.tool_calls)
+          .flatMap(m => m.tool_calls!.map(tc => tc.id))
+      )
+      const toolCallIds = new Set(toolCalls.map(tc => tc.id))
+      const alreadyPersisted = [...toolCallIds].some(id => existingToolCallIds.has(id))
+      if (alreadyPersisted) {
+        // Some tool calls already written — skip to avoid duplicates
+        return
+      }
+
       const toolCallEntries = toolCalls.map(tc => ({
         id: tc.id,
         type: 'function' as const,

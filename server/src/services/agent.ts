@@ -56,7 +56,7 @@ export async function runToolCallLoop(options: ToolCallLoopOptions): Promise<voi
       return msg
     }),
     { role: 'user', content: userMessage },
-  ]
+  ];
 
   let iteration = 0
   let fullAssistantContent = ''
@@ -193,9 +193,9 @@ export async function runToolCallLoop(options: ToolCallLoopOptions): Promise<voi
                 })
               }
 
-              // Accumulate for partial persistence on disconnect
-              accumulatedToolCalls = entries
-              accumulatedToolResults = results
+              // Clear accumulated tool calls/results since they are now persisted
+              accumulatedToolCalls = []
+              accumulatedToolResults = []
 
               // Continue loop — LLM will decide next action
               currentContent = ''
@@ -318,9 +318,9 @@ export async function runToolCallLoop(options: ToolCallLoopOptions): Promise<voi
         })
       }
 
-      // Accumulate for partial persistence on disconnect
-      accumulatedToolCalls = entries
-      accumulatedToolResults = results
+      // Clear accumulated tool calls/results since they are now persisted
+      accumulatedToolCalls = []
+      accumulatedToolResults = []
 
       // Continue loop — LLM will decide next action
       continue
