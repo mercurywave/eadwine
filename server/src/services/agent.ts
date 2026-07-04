@@ -76,6 +76,8 @@ export async function runToolCallLoop(options: ToolCallLoopOptions): Promise<voi
       projectId, sessionId, { role: 'user', content: userMessage }, finalContent,
       accumulatedToolCalls, accumulatedToolResults
     )
+    // Emit session ID event for client to track the session
+    expressRes.write(`data: ${JSON.stringify({ type: 'session_id', sessionId })}\n`)
     expressRes.write('data: [DONE]\n')
     expressRes.end()
   }

@@ -125,9 +125,9 @@ export async function fetchChatSessions(projectId: string): Promise<ChatSessionS
 export async function fetchChatSession(projectId: string, sessionId: string): Promise<ChatSession> {
   const raw = await request<RawChatSession>(`/projects/${projectId}/chats/${sessionId}`)
   // Transform server's OpenAI-format tool_calls to client format
-  const messages: ChatMessage[] = raw.messages.map(msg => ({
+  const messages: ChatMessage[] = raw.messages.map((msg) => ({
     ...msg,
-    tool_calls: msg.tool_calls?.map(tc => ({
+    tool_calls: msg.tool_calls?.map((tc) => ({
       id: tc.id,
       name: tc.function.name,
       arguments: tc.function.arguments,
@@ -155,19 +155,25 @@ export type StreamEvent =
   | { type: 'content'; content: string }
   | { type: 'tool_call'; toolCalls: ToolCallInfo[] }
   | { type: 'error'; message: string }
+  | { type: 'session_id'; sessionId: string }
   | { type: 'done'; fullContent: string }
 
+/**
+ * Sends a message to the chat and streams the response in a single request.
+ * The server handles session creation (if no sessionId is provided),
+ * message persistence, agent execution, and final persistence.
+ */
 export async function* streamChatMessage(
   projectId: string,
   sessionId: string,
   userMessage: string,
   endpoint: string,
-  signal?: AbortSignal
+  signal?: AbortSignal,
 ): AsyncGenerator<StreamEvent, string, unknown> {
-  const res = await fetch(`${BASE_URL}/projects/${projectId}/chats/${sessionId}/stream`, {
+  const res = await fetch(`${BASE_URL}/projects/${projectId}/chats/stream`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ message: userMessage, endpoint }),
+    body: JSON.stringify({ message: userMessage, sessionId, endpoint }),
     signal,
   })
 
@@ -207,7 +213,7 @@ export async function* streamChatMessage(
         try {
           const parsed = JSON.parse(data)
 
-          // Structured event (tool_call, error, etc.)
+          // Structured event (tool_call, error, session_id, etc.)
           if (parsed.type) {
             if (parsed.type === 'tool_call') {
               const toolCalls: ToolCallInfo[] = parsed.toolCalls.map((tc: any) => ({
@@ -218,6 +224,8 @@ export async function* streamChatMessage(
               yield { type: 'tool_call', toolCalls }
             } else if (parsed.type === 'error') {
               yield { type: 'error', message: parsed.error || 'Unknown error' }
+            } else if (parsed.type === 'session_id') {
+              yield { type: 'session_id', sessionId: parsed.sessionId }
             }
             continue
           }
@@ -243,11 +251,4 @@ export async function* streamChatMessage(
   }
 
   return fullAssistantContent
-}
-
-export async function persistChatMessage(projectId: string, sessionId: string, message: string): Promise<void> {
-  await request<void>(`/projects/${projectId}/chats/${sessionId}/persist-message`, {
-    method: 'POST',
-    body: JSON.stringify({ message }),
-  })
 }

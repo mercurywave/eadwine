@@ -74,6 +74,33 @@ ${fileList}
 You can help answer questions about the project's content, suggest improvements, explain concepts, or assist with writing new Markdown files. Be concise and reference specific files when relevant.`
 }
 
+export function persistUserMessage(projectId: string, sessionId: string, userMessage: string): void {
+  try {
+    const chatsDir = path.join(resolveProjectPath(projectId), 'chats')
+    const logsDir = path.join(chatsDir, 'logs')
+    if (!fs.existsSync(chatsDir)) fs.mkdirSync(chatsDir, { recursive: true })
+    if (!fs.existsSync(logsDir)) fs.mkdirSync(logsDir, { recursive: true })
+
+    const logFile = path.join(logsDir, `${sessionId}.jsonl`)
+
+    // Only write if this user message isn't already in the log
+    const existingMessages = readChatMessages(projectId, sessionId)
+    const existingContentHashes = new Set(existingMessages.map(m => m.content))
+
+    if (!existingContentHashes.has(userMessage)) {
+      const msgWithId: ChatMessageEntry = {
+        id: crypto.randomUUID(),
+        role: 'user' as const,
+        content: userMessage,
+        timestamp: new Date().toISOString(),
+      }
+      fs.appendFileSync(logFile, JSON.stringify(msgWithId) + '\n', 'utf-8')
+    }
+  } catch {
+    // Non-fatal
+  }
+}
+
 export function persistSession(projectId: string, sessionId: string, assistantContent: string): void {
   const chatsDir = path.join(resolveProjectPath(projectId), 'chats')
   const logsDir = path.join(chatsDir, 'logs')
@@ -119,15 +146,8 @@ export function persistPartialSession(
     const existingMessages = readChatMessages(projectId, sessionId)
     const existingContentHashes = new Set(existingMessages.map(m => m.content))
 
-    if (userMessage && !existingContentHashes.has(userMessage.content)) {
-      const msgWithId: ChatMessageEntry = {
-        id: crypto.randomUUID(),
-        role: userMessage.role as 'user' | 'assistant' | 'system',
-        content: userMessage.content,
-        timestamp: new Date().toISOString(),
-      }
-      fs.appendFileSync(logFile, JSON.stringify(msgWithId) + '\n', 'utf-8')
-    }
+    // Note: user message is now persisted separately via persistUserMessage() at the start of the stream
+    // This function only handles assistant content and tool calls for partial/error recovery
 
     if (assistantContent !== null && !existingContentHashes.has(assistantContent)) {
       const msgWithId: ChatMessageEntry = {
