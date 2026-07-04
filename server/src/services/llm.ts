@@ -16,6 +16,8 @@ export async function proxyStream(
     persistPartialSession(projectId, sessionId, userMessageForPersist, null)
   })
 
+  // Note: proxyStream doesn't support tool calls, so accumulatedToolCalls/Results remain empty
+
   const apiUrl = `${openAiEndpoint}/v1/chat/completions`
   let fetchResponse: globalThis.Response
   try {

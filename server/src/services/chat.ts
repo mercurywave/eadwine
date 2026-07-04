@@ -99,7 +99,13 @@ export function persistPartialSession(
   projectId: string,
   sessionId: string,
   userMessage: { role: string; content: string } | null,
-  assistantContent: string | null
+  assistantContent: string | null,
+  toolCalls?: Array<{
+    id: string
+    name: string
+    args: Record<string, unknown>
+  }>,
+  toolResults?: Array<{ tool_call_id: string; content: string }>
 ): void {
   try {
     const chatsDir = path.join(resolveProjectPath(projectId), 'chats')
@@ -131,6 +137,41 @@ export function persistPartialSession(
         timestamp: new Date().toISOString(),
       }
       fs.appendFileSync(logFile, JSON.stringify(msgWithId) + '\n', 'utf-8')
+    }
+
+    // Persist any tool calls that were accumulated but not yet finalized
+    if (toolCalls && toolCalls.length > 0) {
+      const toolCallEntries = toolCalls.map(tc => ({
+        id: tc.id,
+        type: 'function' as const,
+        function: {
+          name: tc.name,
+          arguments: JSON.stringify(tc.args),
+        },
+      }))
+
+      const assistantMsg: ChatMessageEntry = {
+        id: crypto.randomUUID(),
+        role: 'assistant',
+        content: '',
+        tool_calls: toolCallEntries,
+        timestamp: new Date().toISOString(),
+      }
+      fs.appendFileSync(logFile, JSON.stringify(assistantMsg) + '\n', 'utf-8')
+
+      // Also persist the tool results
+      if (toolResults) {
+        for (const result of toolResults) {
+          const toolResultMsg: ChatMessageEntry = {
+            id: crypto.randomUUID(),
+            role: 'tool',
+            content: result.content,
+            tool_call_id: result.tool_call_id,
+            timestamp: new Date().toISOString(),
+          }
+          fs.appendFileSync(logFile, JSON.stringify(toolResultMsg) + '\n', 'utf-8')
+        }
+      }
     }
 
     const session = JSON.parse(fs.readFileSync(sessionFile, 'utf-8')) as ChatSessionData

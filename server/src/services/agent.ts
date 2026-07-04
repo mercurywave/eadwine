@@ -43,11 +43,17 @@ export async function runToolCallLoop(options: ToolCallLoopOptions): Promise<voi
   let iteration = 0
   let fullAssistantContent = ''
   let abortController: AbortController | null = null
+  // Track accumulated tool calls and results for partial persistence
+  let accumulatedToolCalls: Array<{ id: string; name: string; args: Record<string, unknown> }> = []
+  let accumulatedToolResults: Array<{ tool_call_id: string; content: string }> = []
 
   // Handle client disconnect
   expressRes.on('close', () => {
     abortController?.abort()
-    persistPartialSession(projectId, sessionId, { role: 'user', content: userMessage }, fullAssistantContent)
+    persistPartialSession(
+      projectId, sessionId, { role: 'user', content: userMessage }, fullAssistantContent,
+      accumulatedToolCalls, accumulatedToolResults
+    )
   })
 
   while (iteration < maxIterations) {
@@ -77,7 +83,10 @@ export async function runToolCallLoop(options: ToolCallLoopOptions): Promise<voi
     } catch {
       expressRes.write(`data: ${JSON.stringify({ error: 'Failed to connect to LLM API' })}\n`)
       expressRes.end()
-      persistPartialSession(projectId, sessionId, { role: 'user', content: userMessage }, fullAssistantContent)
+      persistPartialSession(
+        projectId, sessionId, { role: 'user', content: userMessage }, fullAssistantContent,
+        accumulatedToolCalls, accumulatedToolResults
+      )
       return
     }
 
@@ -85,14 +94,20 @@ export async function runToolCallLoop(options: ToolCallLoopOptions): Promise<voi
       const errorBody = await fetchResponse.text().catch(() => '')
       expressRes.write(`data: ${JSON.stringify({ error: `LLM API error: ${fetchResponse.status} - ${errorBody}` })}\n`)
       expressRes.end()
-      persistPartialSession(projectId, sessionId, { role: 'user', content: userMessage }, fullAssistantContent)
+      persistPartialSession(
+        projectId, sessionId, { role: 'user', content: userMessage }, fullAssistantContent,
+        accumulatedToolCalls, accumulatedToolResults
+      )
       return
     }
 
     const reader = fetchResponse.body?.getReader()
     if (!reader) {
       expressRes.end()
-      persistPartialSession(projectId, sessionId, { role: 'user', content: userMessage }, fullAssistantContent)
+      persistPartialSession(
+        projectId, sessionId, { role: 'user', content: userMessage }, fullAssistantContent,
+        accumulatedToolCalls, accumulatedToolResults
+      )
       return
     }
 
@@ -153,6 +168,10 @@ export async function runToolCallLoop(options: ToolCallLoopOptions): Promise<voi
                   content: result.content,
                 })
               }
+
+              // Accumulate for partial persistence on disconnect
+              accumulatedToolCalls = entries
+              accumulatedToolResults = results
 
               // Continue loop — LLM will decide next action
               currentContent = ''
@@ -231,7 +250,10 @@ export async function runToolCallLoop(options: ToolCallLoopOptions): Promise<voi
       // Stream interrupted
       expressRes.write(`data: ${JSON.stringify({ error: 'Stream interrupted' })}\n`)
       expressRes.end()
-      persistPartialSession(projectId, sessionId, { role: 'user', content: userMessage }, fullAssistantContent)
+      persistPartialSession(
+        projectId, sessionId, { role: 'user', content: userMessage }, fullAssistantContent,
+        accumulatedToolCalls, accumulatedToolResults
+      )
       reader.releaseLock()
       return
     }
@@ -276,6 +298,10 @@ export async function runToolCallLoop(options: ToolCallLoopOptions): Promise<voi
         })
       }
 
+      // Accumulate for partial persistence on disconnect
+      accumulatedToolCalls = entries
+      accumulatedToolResults = results
+
       // Continue loop — LLM will decide next action
       continue
     }
@@ -284,7 +310,10 @@ export async function runToolCallLoop(options: ToolCallLoopOptions): Promise<voi
   // Max iterations reached
   expressRes.write(`data: ${JSON.stringify({ error: 'Max tool call iterations reached' })}\n`)
   expressRes.end()
-  persistPartialSession(projectId, sessionId, { role: 'user', content: userMessage }, fullAssistantContent)
+  persistPartialSession(
+    projectId, sessionId, { role: 'user', content: userMessage }, fullAssistantContent,
+    accumulatedToolCalls, accumulatedToolResults
+  )
 }
 
 function parseArgs(raw: string): Record<string, unknown> {

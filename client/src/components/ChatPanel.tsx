@@ -34,6 +34,12 @@ export function ChatPanel({ projectId, isOpen, onClose, endpoint, width, onFiles
   const { addToast } = useToasts()
   const abortControllerRef = useRef<AbortController | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const sessionIdRef = useRef<string | null>(null)
+  const latestMessagesRef = useRef<ChatMessage[]>([])
+  // Keep the ref in sync with state
+  useEffect(() => {
+    latestMessagesRef.current = messages
+  }, [messages])
 
   // Load history when panel opens
   useEffect(() => {
@@ -89,7 +95,11 @@ export function ChatPanel({ projectId, isOpen, onClose, endpoint, width, onFiles
       return
     }
 
-    let sessionId = currentSession?.id
+    // Abort any previous streaming request first
+    abortControllerRef.current?.abort()
+
+    // Use the session ID from the ref to avoid creating duplicate sessions
+    let sessionId = sessionIdRef.current
 
     // If no session, create one
     if (!sessionId) {
@@ -97,6 +107,7 @@ export function ChatPanel({ projectId, isOpen, onClose, endpoint, width, onFiles
         const title = userMessage.replace(/\.md$/, '')
         const session = await createChatSession(projectId, title)
         sessionId = session.id
+        sessionIdRef.current = sessionId
         setCurrentSession(session)
         setSessions(prev => [{ ...session, preview: userMessage.slice(0, 80) }, ...prev])
       } catch (err) {
@@ -132,17 +143,17 @@ export function ChatPanel({ projectId, isOpen, onClose, endpoint, width, onFiles
     setMessages(prev => [...prev, assistantMsg])
 
     try {
+      // Create a new AbortController for this request
+      const controller = new AbortController()
+      abortControllerRef.current = controller
+
       const generator = streamChatMessage(
         projectId,
         sessionId,
         userMessage,
         endpoint,
-        // Abort signal will be set below
+        controller.signal,
       )
-
-      // Create a new AbortController for this request
-      const controller = new AbortController()
-      abortControllerRef.current = controller
 
       let fullContent = ''
       let hasError = false
@@ -159,15 +170,30 @@ export function ChatPanel({ projectId, isOpen, onClose, endpoint, width, onFiles
             return updated
           })
         } else if (event.type === 'tool_call') {
-          // Add a new assistant message with tool calls
-          const toolCallMsg: ChatMessage = {
-            id: crypto.randomUUID(),
-            role: 'assistant',
-            content: '',
-            tool_calls: event.toolCalls,
-            timestamp: new Date().toISOString(),
-          }
-          setMessages(prev => [...prev, toolCallMsg])
+          // Accumulate tool calls on the last assistant message (the placeholder)
+          // rather than creating separate messages for each tool call event
+          setMessages(prev => {
+            const updated = [...prev]
+            // Find the last assistant message and append tool calls to it
+            for (let i = updated.length - 1; i >= 0; i--) {
+              if (updated[i]?.role === 'assistant' && !updated[i].tool_calls) {
+                updated[i] = {
+                  ...updated[i],
+                  tool_calls: event.toolCalls,
+                }
+                return updated
+              }
+            }
+            // Fallback: create a new message (shouldn't happen if placeholder exists)
+            const toolCallMsg: ChatMessage = {
+              id: crypto.randomUUID(),
+              role: 'assistant',
+              content: '',
+              tool_calls: event.toolCalls,
+              timestamp: new Date().toISOString(),
+            }
+            return [...prev, toolCallMsg]
+          })
         } else if (event.type === 'error') {
           hasError = true
           const errorMessage = `Error: ${event.message}`
@@ -199,19 +225,20 @@ export function ChatPanel({ projectId, isOpen, onClose, endpoint, width, onFiles
           return updated
         })
 
-        // Update current session (read the last message first)
-        const lastMsg: ChatMessage | undefined = messages[messages.length - 1]
-        setCurrentSession(prev => {
-          if (!prev) return prev
-          if (lastMsg?.role === 'assistant') {
+        // Update current session using the ref (avoids stale closure)
+        const finalMessages = latestMessagesRef.current
+        const lastMsg = finalMessages[finalMessages.length - 1]
+        if (lastMsg?.role === 'assistant') {
+          const sessionMessages = [...finalMessages.slice(0, -1), userMsg, lastMsg]
+          setCurrentSession(prev => {
+            if (!prev) return prev
             return {
               ...prev,
-              messages: [...(prev.messages || []), userMsg, lastMsg],
+              messages: sessionMessages,
               updatedAt: new Date().toISOString(),
             }
-          }
-          return prev
-        })
+          })
+        }
 
         // Update session in history list
         setSessions(prev =>
