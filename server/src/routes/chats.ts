@@ -7,7 +7,7 @@ import { resolveProjectPath } from '../helpers.js'
 import { readChatSession, readChatMessages, buildSystemPrompt, persistSession, persistPartialSession } from '../services/chat.js'
 import { proxyStream } from '../services/llm.js'
 import { runToolCallLoop } from '../services/agent.js'
-import { ChatMessageEntry } from '../types.js'
+import { ChatMessageEntry, ToolCallEntry } from '../types.js'
 
 const router = Router()
 
@@ -30,7 +30,7 @@ router.get('/:id/chats', (req: Request, res: Response) => {
         try {
           const aData = JSON.parse(fs.readFileSync(path.join(chatsDir, a), 'utf-8'))
           const bData = JSON.parse(fs.readFileSync(path.join(chatsDir, b), 'utf-8'))
-          return new Date(bData.updatedAt).getTime() - new Date(aData.updatedAt).getTime()
+          return new Date(bData.updatedAt).getTime() - new Date(bData.updatedAt).getTime()
         } catch {
           return 0
         }
@@ -188,12 +188,22 @@ router.post('/:id/chats/:sessionId/stream', (req: Request, res: Response) => {
     const messages = readChatMessages(id, sessionId)
     const projectTitle = session.title
 
-    const apiMessages = [
+    const apiMessages: Array<{
+      role: string
+      content: string
+      tool_calls?: ToolCallEntry[]
+      tool_call_id?: string
+    }> = [
       {
         role: 'system',
         content: buildSystemPrompt(projectTitle, id),
       },
-      ...messages.map((m: ChatMessageEntry) => ({ role: m.role, content: m.content })),
+      ...messages.map((m: ChatMessageEntry) => ({
+        role: m.role,
+        content: m.content,
+        tool_calls: m.tool_calls,
+        tool_call_id: m.tool_call_id,
+      })),
       { role: 'user', content: message },
     ]
 
@@ -209,7 +219,12 @@ router.post('/:id/chats/:sessionId/stream', (req: Request, res: Response) => {
       projectPath: resolveProjectPath(id),
       projectTitle,
       systemPrompt: apiMessages[0].content,
-      conversationHistory: apiMessages.slice(1).map(m => ({ role: m.role, content: m.content })),
+      conversationHistory: messages.map(m => ({
+        role: m.role,
+        content: m.content,
+        tool_calls: m.tool_calls,
+        tool_call_id: m.tool_call_id,
+      })),
       userMessage: message,
       expressRes: res,
       maxIterations: 50,

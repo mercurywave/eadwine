@@ -3,6 +3,15 @@ import { getToolDefinitions, executeTool } from '../tools/registry.js'
 import { parseToolCallDelta, executeToolCalls } from '../tools/executor.js'
 import { persistSession, persistPartialSession, persistToolCalls, persistToolResult } from './chat.js'
 
+export interface ToolCallEntry {
+  id: string
+  type: 'function'
+  function: {
+    name: string
+    arguments: string
+  }
+}
+
 export interface ToolCallLoopOptions {
   openAiEndpoint: string
   sessionId: string
@@ -10,7 +19,7 @@ export interface ToolCallLoopOptions {
   projectPath: string
   projectTitle: string
   systemPrompt: string
-  conversationHistory: Array<{ role: string; content: string }>
+  conversationHistory: Array<{ role: string; content: string; tool_calls?: ToolCallEntry[]; tool_call_id?: string }>
   userMessage: string
   expressRes: ExpressResponse
   maxIterations?: number
@@ -36,7 +45,16 @@ export async function runToolCallLoop(options: ToolCallLoopOptions): Promise<voi
   // Build initial message array
   const messages: Array<Record<string, unknown>> = [
     { role: 'system', content: systemPrompt },
-    ...conversationHistory.map(m => ({ role: m.role, content: m.content })),
+    ...conversationHistory.map(m => {
+      const msg: Record<string, unknown> = { role: m.role, content: m.content }
+      if (m.tool_calls) {
+        msg.tool_calls = m.tool_calls
+      }
+      if (m.tool_call_id) {
+        msg.tool_call_id = m.tool_call_id
+      }
+      return msg
+    }),
     { role: 'user', content: userMessage },
   ]
 
