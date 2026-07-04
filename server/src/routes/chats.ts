@@ -30,7 +30,7 @@ router.get('/:id/chats', (req: Request, res: Response) => {
         try {
           const aData = JSON.parse(fs.readFileSync(path.join(chatsDir, a), 'utf-8'))
           const bData = JSON.parse(fs.readFileSync(path.join(chatsDir, b), 'utf-8'))
-          return new Date(bData.updatedAt).getTime() - new Date(bData.updatedAt).getTime()
+          return new Date(bData.updatedAt).getTime() - new Date(aData.updatedAt).getTime()
         } catch {
           return 0
         }
