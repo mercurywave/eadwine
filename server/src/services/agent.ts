@@ -47,13 +47,30 @@ export async function runToolCallLoop(options: ToolCallLoopOptions): Promise<voi
   let accumulatedToolCalls: Array<{ id: string; name: string; args: Record<string, unknown> }> = []
   let accumulatedToolResults: Array<{ tool_call_id: string; content: string }> = []
 
-  // Handle client disconnect
-  expressRes.on('close', () => {
-    abortController?.abort()
+  // Guard to ensure end() is called exactly once, preventing race conditions
+  // between normal completion paths and the async 'close' event handler.
+  let responseEnded = false
+
+  const endResponse = (finalContent: string): void => {
+    if (responseEnded) return
+    responseEnded = true
     persistPartialSession(
-      projectId, sessionId, { role: 'user', content: userMessage }, fullAssistantContent,
+      projectId, sessionId, { role: 'user', content: userMessage }, finalContent,
       accumulatedToolCalls, accumulatedToolResults
     )
+    expressRes.end()
+  }
+
+  // Handle client disconnect — only persists partial state; does NOT call end()
+  // since the response may already be closed by a normal completion path.
+  expressRes.on('close', () => {
+    abortController?.abort()
+    if (!responseEnded) {
+      persistPartialSession(
+        projectId, sessionId, { role: 'user', content: userMessage }, fullAssistantContent,
+        accumulatedToolCalls, accumulatedToolResults
+      )
+    }
   })
 
   while (iteration < maxIterations) {
@@ -82,32 +99,20 @@ export async function runToolCallLoop(options: ToolCallLoopOptions): Promise<voi
       })
     } catch {
       expressRes.write(`data: ${JSON.stringify({ error: 'Failed to connect to LLM API' })}\n`)
-      expressRes.end()
-      persistPartialSession(
-        projectId, sessionId, { role: 'user', content: userMessage }, fullAssistantContent,
-        accumulatedToolCalls, accumulatedToolResults
-      )
+      endResponse(fullAssistantContent)
       return
     }
 
     if (!fetchResponse.ok) {
       const errorBody = await fetchResponse.text().catch(() => '')
       expressRes.write(`data: ${JSON.stringify({ error: `LLM API error: ${fetchResponse.status} - ${errorBody}` })}\n`)
-      expressRes.end()
-      persistPartialSession(
-        projectId, sessionId, { role: 'user', content: userMessage }, fullAssistantContent,
-        accumulatedToolCalls, accumulatedToolResults
-      )
+      endResponse(fullAssistantContent)
       return
     }
 
     const reader = fetchResponse.body?.getReader()
     if (!reader) {
-      expressRes.end()
-      persistPartialSession(
-        projectId, sessionId, { role: 'user', content: userMessage }, fullAssistantContent,
-        accumulatedToolCalls, accumulatedToolResults
-      )
+      endResponse(fullAssistantContent)
       return
     }
 
@@ -186,7 +191,7 @@ export async function runToolCallLoop(options: ToolCallLoopOptions): Promise<voi
               persistSession(projectId, sessionId, fullAssistantContent)
             }
             reader.releaseLock()
-            expressRes.end()
+            endResponse(fullAssistantContent)
             return
           }
 
@@ -249,12 +254,8 @@ export async function runToolCallLoop(options: ToolCallLoopOptions): Promise<voi
     } catch {
       // Stream interrupted
       expressRes.write(`data: ${JSON.stringify({ error: 'Stream interrupted' })}\n`)
-      expressRes.end()
-      persistPartialSession(
-        projectId, sessionId, { role: 'user', content: userMessage }, fullAssistantContent,
-        accumulatedToolCalls, accumulatedToolResults
-      )
       reader.releaseLock()
+      endResponse(fullAssistantContent)
       return
     }
 
@@ -309,11 +310,7 @@ export async function runToolCallLoop(options: ToolCallLoopOptions): Promise<voi
 
   // Max iterations reached
   expressRes.write(`data: ${JSON.stringify({ error: 'Max tool call iterations reached' })}\n`)
-  expressRes.end()
-  persistPartialSession(
-    projectId, sessionId, { role: 'user', content: userMessage }, fullAssistantContent,
-    accumulatedToolCalls, accumulatedToolResults
-  )
+  endResponse(fullAssistantContent)
 }
 
 function parseArgs(raw: string): Record<string, unknown> {
