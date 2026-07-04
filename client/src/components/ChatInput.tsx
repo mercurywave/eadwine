@@ -62,7 +62,6 @@ export function ChatInput({ onSend, onStop, isStreaming, disabled = false }: Cha
             aria-label="Stop streaming response"
           >
             <Square className="btn-icon" />
-            Stop
           </button>
         ) : (
           <button
