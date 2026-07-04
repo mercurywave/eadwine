@@ -39,17 +39,9 @@ export function ChatBubble({ role, content, tool_calls, isStreaming = false }: C
   const isTool = role === 'tool'
   const hasToolCalls = tool_calls && tool_calls.length > 0
 
+  // Tool result messages are internal — don't display them
   if (isTool) {
-    // Tool result messages — render as a subtle info block
-    return (
-      <div className="chat-bubble chat-bubble-tool" role="article">
-        <div className="chat-bubble-content markdown-body" ref={containerRef}>
-          <div className="tool-result">
-            <p className="tool-result-text">{content}</p>
-          </div>
-        </div>
-      </div>
-    )
+    return null
   }
 
   const hasContent = isUser || (content && content.trim().length > 0)

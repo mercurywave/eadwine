@@ -1,4 +1,4 @@
-import { Project, FileItem, Settings, ChatSession, ChatSessionSummary, ToolCallInfo } from './types'
+import { Project, FileItem, Settings, ChatSession, ChatSessionSummary, ToolCallInfo, ChatMessage } from './types'
 
 const BASE_URL = '/api'
 
@@ -91,12 +91,49 @@ export async function saveSettings(settings: Settings): Promise<void> {
 
 // ── Chat ─────────────────────────────────────────────────────────────
 
+interface RawToolCallEntry {
+  id: string
+  type: 'function'
+  function: {
+    name: string
+    arguments: string
+  }
+}
+
+interface RawChatMessage {
+  id: string
+  role: 'user' | 'assistant' | 'system' | 'tool'
+  content: string
+  timestamp: string
+  tool_calls?: RawToolCallEntry[]
+  tool_call_id?: string
+}
+
+interface RawChatSession {
+  id: string
+  projectId: string
+  title: string
+  createdAt: string
+  updatedAt: string
+  messages: RawChatMessage[]
+}
+
 export async function fetchChatSessions(projectId: string): Promise<ChatSessionSummary[]> {
   return request<ChatSessionSummary[]>(`/projects/${projectId}/chats`)
 }
 
 export async function fetchChatSession(projectId: string, sessionId: string): Promise<ChatSession> {
-  return request<ChatSession>(`/projects/${projectId}/chats/${sessionId}`)
+  const raw = await request<RawChatSession>(`/projects/${projectId}/chats/${sessionId}`)
+  // Transform server's OpenAI-format tool_calls to client format
+  const messages: ChatMessage[] = raw.messages.map(msg => ({
+    ...msg,
+    tool_calls: msg.tool_calls?.map(tc => ({
+      id: tc.id,
+      name: tc.function.name,
+      arguments: tc.function.arguments,
+    })),
+  }))
+  return { ...raw, messages }
 }
 
 export async function createChatSession(projectId: string, title: string): Promise<ChatSession> {
