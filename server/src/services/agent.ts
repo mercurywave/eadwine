@@ -164,7 +164,6 @@ export async function runToolCallLoop(options: ToolCallLoopOptions): Promise<voi
 
             // Final content response
             if (fullAssistantContent || currentContent) {
-              fullAssistantContent += currentContent
               persistSession(projectId, sessionId, fullAssistantContent)
             }
             reader.releaseLock()
