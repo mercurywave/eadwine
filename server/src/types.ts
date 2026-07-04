@@ -26,4 +26,6 @@ export interface ChatSessionData {
 
 export interface SettingsData {
   openAiEndpoint?: string
+  selectedModel?: string
+  defaultModel?: string
 }

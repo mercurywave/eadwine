@@ -18,7 +18,7 @@ interface ChatState {
 
   loadSessions: () => Promise<void>
   selectSession: (sessionId: string) => Promise<void>
-  sendMessage: (message: string, endpoint: string) => Promise<void>
+  sendMessage: (message: string, endpoint: string, selectedModel: string) => Promise<void>
   stopStreaming: () => void
   newChat: () => void
 }
@@ -82,7 +82,7 @@ export function useChat(projectId: string): ChatState {
   )
 
   const sendMessage = useCallback(
-    async (message: string, endpoint: string) => {
+    async (message: string, endpoint: string, selectedModel: string) => {
       setIsStreaming(true)
       setError(null)
 
@@ -116,7 +116,7 @@ export function useChat(projectId: string): ChatState {
         const controller = new AbortController()
         abortControllerRef.current = controller
 
-        const generator = streamChatMessage(projectId, sessionId!, message, endpoint, controller.signal)
+        const generator = streamChatMessage(projectId, sessionId!, message, endpoint, selectedModel, controller.signal)
 
         let fullContent = ''
         let hasError = false

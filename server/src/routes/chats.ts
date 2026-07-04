@@ -7,6 +7,7 @@ import { resolveProjectPath } from '../helpers.js'
 import { readChatSession, readChatMessages, buildSystemPrompt, persistSession, persistPartialSession, persistUserMessage } from '../services/chat.js'
 import { proxyStream } from '../services/llm.js'
 import { runToolCallLoop } from '../services/agent.js'
+import { readSettings } from './settings.js'
 import { ChatMessageEntry, ToolCallEntry } from '../types.js'
 
 const router = Router()
@@ -147,7 +148,7 @@ router.delete('/:id/chats/:sessionId', (req: Request, res: Response) => {
 router.post('/:id/chats/stream', (req: Request, res: Response) => {
   try {
     const id = param(req, 'id')
-    const { message, sessionId: clientSessionId, endpoint: clientEndpoint } = req.body
+    const { message, sessionId: clientSessionId, endpoint: clientEndpoint, selectedModel: clientSelectedModel } = req.body
 
     if (!message || typeof message !== 'string') {
       return res.status(400).json({ error: 'Message is required' })
@@ -156,6 +157,10 @@ router.post('/:id/chats/stream', (req: Request, res: Response) => {
     const endpointToUse = clientEndpoint || ''
     if (!endpointToUse) {
       return res.status(400).json({ error: 'OpenAI endpoint not configured' })
+    }
+
+    if (!clientSelectedModel || typeof clientSelectedModel !== 'string') {
+      return res.status(400).json({ error: 'No model selected. Please configure a model in Settings.' })
     }
 
     // Auto-create a session if none provided
@@ -233,6 +238,7 @@ router.post('/:id/chats/stream', (req: Request, res: Response) => {
       userMessage: message,
       expressRes: res,
       maxIterations: 50,
+      selectedModel: clientSelectedModel,
     }).catch((err: unknown) => {
       console.error('Agent stream error:', err)
       if (!res.headersSent) {
@@ -252,7 +258,7 @@ router.post('/:id/chats/:sessionId/stream', (req: Request, res: Response) => {
   try {
     const id = param(req, 'id')
     const sessionId = param(req, 'sessionId')
-    const { message, endpoint: clientEndpoint } = req.body
+    const { message, endpoint: clientEndpoint, selectedModel: clientSelectedModel } = req.body
 
     if (!message || typeof message !== 'string') {
       return res.status(400).json({ error: 'Message is required' })
@@ -261,6 +267,10 @@ router.post('/:id/chats/:sessionId/stream', (req: Request, res: Response) => {
     const endpointToUse = clientEndpoint || ''
     if (!endpointToUse) {
       return res.status(400).json({ error: 'OpenAI endpoint not configured' })
+    }
+
+    if (!clientSelectedModel || typeof clientSelectedModel !== 'string') {
+      return res.status(400).json({ error: 'No model selected. Please configure a model in Settings.' })
     }
 
     const session = readChatSession(id, sessionId)
@@ -312,6 +322,7 @@ router.post('/:id/chats/:sessionId/stream', (req: Request, res: Response) => {
       userMessage: message,
       expressRes: res,
       maxIterations: 50,
+      selectedModel: clientSelectedModel,
     }).catch((err: unknown) => {
       console.error('Agent stream error:', err)
       if (!res.headersSent) {

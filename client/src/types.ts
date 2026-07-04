@@ -18,6 +18,8 @@ export interface ApiResponse<T> {
 
 export interface Settings {
   openAiEndpoint: string
+  selectedModel: string
+  defaultModel: string
 }
 
 export interface ToolCallInfo {

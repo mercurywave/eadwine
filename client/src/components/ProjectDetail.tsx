@@ -18,6 +18,7 @@ export function ProjectDetail({ projectId, filename }: ProjectDetailProps) {
   const editFilename = filename
   const [chatOpen, setChatOpen] = useState(true)
   const [endpoint, setEndpoint] = useState<string | undefined>(undefined)
+  const [selectedModel, setSelectedModel] = useState<string | undefined>(undefined)
   const projectReaderRef = useRef<{ refreshFiles: () => void } | null>(null)
 
   // Split position state with localStorage persistence
@@ -26,18 +27,20 @@ export function ProjectDetail({ projectId, filename }: ProjectDetailProps) {
     return saved ? Number(saved) : 380 // default 380px for chat panel
   })
 
-  const loadEndpoint = useCallback(async () => {
+  const loadSettings = useCallback(async () => {
     try {
       const settings = await fetchSettings()
       setEndpoint(settings.openAiEndpoint || undefined)
+      setSelectedModel(settings.selectedModel || undefined)
     } catch {
       setEndpoint(undefined)
+      setSelectedModel(undefined)
     }
   }, [])
 
   useEffect(() => {
-    loadEndpoint()
-  }, [loadEndpoint])
+    loadSettings()
+  }, [loadSettings])
 
   // Persist split position
   useEffect(() => {
@@ -73,6 +76,7 @@ export function ProjectDetail({ projectId, filename }: ProjectDetailProps) {
               isOpen={chatOpen}
               onClose={() => setChatOpen(false)}
               endpoint={endpoint}
+              selectedModel={selectedModel}
               width={splitPosition}
               onFilesChanged={handleFilesChanged}
             />
@@ -106,6 +110,7 @@ export function ProjectDetail({ projectId, filename }: ProjectDetailProps) {
             isOpen={chatOpen}
             onClose={() => setChatOpen(false)}
             endpoint={endpoint}
+            selectedModel={selectedModel}
             width={splitPosition}
             onFilesChanged={handleFilesChanged}
           />

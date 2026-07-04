@@ -7,7 +7,8 @@ export async function proxyStream(
   projectId: string,
   messages: Array<{ role: string; content: string }>,
   userMessageForPersist: { role: string; content: string },
-  expressRes: ExpressResponse
+  expressRes: ExpressResponse,
+  selectedModel?: string,
 ): Promise<void> {
   const abortController = new AbortController()
 
@@ -18,14 +19,21 @@ export async function proxyStream(
 
   // Note: proxyStream doesn't support tool calls, so accumulatedToolCalls/Results remain empty
 
+  if (!selectedModel) {
+    expressRes.write(`data: ${JSON.stringify({ error: 'No model selected. Please configure a model in Settings.' })}\n`)
+    expressRes.end()
+    return
+  }
+
   const apiUrl = `${openAiEndpoint}/v1/chat/completions`
+  const model = selectedModel
   let fetchResponse: globalThis.Response
   try {
     fetchResponse = await fetch(apiUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: 'bartowski/Qwen_Qwen3.6-35B-A3B-GGUF:Q4_K_M',
+        model,
         stream: true,
         temperature: 0.7,
         messages,

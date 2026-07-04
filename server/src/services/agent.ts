@@ -23,6 +23,7 @@ export interface ToolCallLoopOptions {
   userMessage: string
   expressRes: ExpressResponse
   maxIterations?: number
+  selectedModel?: string
 }
 
 const DEFAULT_MAX_ITERATIONS = 50
@@ -38,6 +39,7 @@ export async function runToolCallLoop(options: ToolCallLoopOptions): Promise<voi
     userMessage,
     expressRes,
     maxIterations = DEFAULT_MAX_ITERATIONS,
+    selectedModel,
   } = options
 
   const toolDefinitions = getToolDefinitions()
@@ -103,13 +105,20 @@ export async function runToolCallLoop(options: ToolCallLoopOptions): Promise<voi
     const apiUrl = `${openAiEndpoint}/v1/chat/completions`
     const abortSignal = abortController.signal
 
+    if (!selectedModel) {
+      expressRes.write(`data: ${JSON.stringify({ error: 'No model selected. Please configure a model in Settings.' })}\n`)
+      endResponse(fullAssistantContent)
+      return
+    }
+
+    const model = selectedModel
     let fetchResponse: globalThis.Response
     try {
       fetchResponse = await fetch(apiUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          model: 'bartowski/Qwen_Qwen3.6-35B-A3B-GGUF:Q4_K_M',
+          model,
           stream: true,
           temperature: 0.7,
           messages,

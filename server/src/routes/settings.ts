@@ -4,7 +4,7 @@ import { Router, Request, Response } from 'express'
 import { SETTINGS_FILE } from '../config.js'
 import { SettingsData } from '../types.js'
 
-function readSettings(): SettingsData {
+export function readSettings(): SettingsData {
   try {
     const raw = fs.readFileSync(SETTINGS_FILE, 'utf-8')
     return JSON.parse(raw) as SettingsData
@@ -37,10 +37,16 @@ router.get('/', (_req: Request, res: Response) => {
 // PUT /api/settings
 router.put('/', (req: Request, res: Response) => {
   try {
-    const { openAiEndpoint } = req.body
+    const { openAiEndpoint, selectedModel, defaultModel } = req.body
     const settings: SettingsData = {}
     if (typeof openAiEndpoint === 'string') {
       settings.openAiEndpoint = openAiEndpoint
+    }
+    if (typeof selectedModel === 'string') {
+      settings.selectedModel = selectedModel
+    }
+    if (typeof defaultModel === 'string') {
+      settings.defaultModel = defaultModel
     }
     writeSettings(settings)
     res.json(settings)

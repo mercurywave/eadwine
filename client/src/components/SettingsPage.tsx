@@ -1,13 +1,15 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
-import { fetchSettings, saveSettings } from '../api'
+import { fetchSettings, saveSettings, fetchModels } from '../api'
 import { Settings } from '../types'
 import { useToasts } from './Toast'
 import './SettingsPage.css'
 
 const DEFAULT_SETTINGS: Settings = {
   openAiEndpoint: '',
+  selectedModel: '',
+  defaultModel: '',
 }
 
 const sections = [
@@ -25,6 +27,8 @@ export function SettingsPage() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [activeSection, setActiveSection] = useState(sections[0].id)
+  const [models, setModels] = useState<string[]>([])
+  const [loadingModels, setLoadingModels] = useState(false)
 
   useEffect(() => {
     loadSettings()
@@ -35,6 +39,8 @@ export function SettingsPage() {
       const data = await fetchSettings()
       setSettings({
         openAiEndpoint: data.openAiEndpoint ?? '',
+        selectedModel: data.selectedModel ?? '',
+        defaultModel: data.defaultModel ?? '',
       })
     } catch {
       // Silently use defaults — settings file may not exist yet
@@ -43,7 +49,33 @@ export function SettingsPage() {
     }
   }
 
+  const loadModels = async () => {
+    if (!settings.openAiEndpoint) {
+      setModels([])
+      return
+    }
+    try {
+      setLoadingModels(true)
+      const modelList = await fetchModels()
+      setModels(modelList)
+    } catch {
+      // Silently handle — model list may not be available
+      setModels([])
+    } finally {
+      setLoadingModels(false)
+    }
+  }
+
+  // Reload models when endpoint changes
+  useEffect(() => {
+    loadModels()
+  }, [settings.openAiEndpoint])
+
   const handleSave = async () => {
+    if (!settings.selectedModel) {
+      addToast('Please select a model before saving', 'error')
+      return
+    }
     try {
       setSaving(true)
       await saveSettings(settings)
@@ -58,6 +90,10 @@ export function SettingsPage() {
 
   const handleOpenAiEndpointChange = (value: string) => {
     setSettings(prev => ({ ...prev, openAiEndpoint: value }))
+  }
+
+  const handleSelectedModelChange = (value: string) => {
+    setSettings(prev => ({ ...prev, selectedModel: value }))
   }
 
   if (loading) {
@@ -113,20 +149,46 @@ export function SettingsPage() {
               <p className="section-description">{section.description}</p>
 
               {section.id === 'ai' && (
-                <div className="setting-field">
-                  <label htmlFor="openAiEndpoint">OpenAI API Endpoint</label>
-                  <input
-                    id="openAiEndpoint"
-                    type="text"
-                    className="modal-input"
-                    placeholder="https://api.openai.com/v1"
-                    value={settings.openAiEndpoint}
-                    onChange={e => handleOpenAiEndpointChange(e.target.value)}
-                  />
-                  <span className="field-hint">
-                    Enter the base URL for your OpenAI-compatible API endpoint.
-                  </span>
-                </div>
+                <>
+                  <div className="setting-field">
+                    <label htmlFor="openAiEndpoint">OpenAI API Endpoint</label>
+                    <input
+                      id="openAiEndpoint"
+                      type="text"
+                      className="modal-input"
+                      placeholder="https://api.openai.com/v1"
+                      value={settings.openAiEndpoint}
+                      onChange={e => handleOpenAiEndpointChange(e.target.value)}
+                    />
+                    <span className="field-hint">
+                      Enter the base URL for your OpenAI-compatible API endpoint.
+                    </span>
+                  </div>
+
+                  <div className="setting-field">
+                    <label htmlFor="selectedModel">Model</label>
+                    {loadingModels ? (
+                      <div className="loading">Loading models...</div>
+                    ) : (
+                      <select
+                        id="selectedModel"
+                        className="modal-input"
+                        value={settings.selectedModel}
+                        onChange={e => handleSelectedModelChange(e.target.value)}
+                      >
+                        <option value="">-- Select a model --</option>
+                        {models.map(model => (
+                          <option key={model} value={model}>
+                            {model}
+                          </option>
+                        ))}
+                      </select>
+                    )}
+                    <span className="field-hint">
+                      Select the AI model to use for chat. This is required to use the chat feature.
+                    </span>
+                  </div>
+                </>
               )}
             </section>
           ))}

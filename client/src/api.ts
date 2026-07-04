@@ -89,6 +89,12 @@ export async function saveSettings(settings: Settings): Promise<void> {
   })
 }
 
+// ── Models ───────────────────────────────────────────────────────────
+
+export async function fetchModels(): Promise<string[]> {
+  return request<string[]>('/models')
+}
+
 // ── Chat ─────────────────────────────────────────────────────────────
 
 interface RawToolCallEntry {
@@ -168,12 +174,13 @@ export async function* streamChatMessage(
   sessionId: string,
   userMessage: string,
   endpoint: string,
+  selectedModel: string,
   signal?: AbortSignal,
 ): AsyncGenerator<StreamEvent, string, unknown> {
   const res = await fetch(`${BASE_URL}/projects/${projectId}/chats/stream`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ message: userMessage, sessionId, endpoint }),
+    body: JSON.stringify({ message: userMessage, sessionId, endpoint, selectedModel }),
     signal,
   })
 

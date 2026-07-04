@@ -12,11 +12,12 @@ interface ChatPanelProps {
   isOpen: boolean
   onClose: () => void
   endpoint: string | undefined
+  selectedModel: string | undefined
   width?: number
   onFilesChanged?: () => void
 }
 
-export function ChatPanel({ projectId, isOpen, onClose, endpoint, width }: ChatPanelProps) {
+export function ChatPanel({ projectId, isOpen, onClose, endpoint, selectedModel, width }: ChatPanelProps) {
   const {
     sessions,
     currentSession,
@@ -31,7 +32,7 @@ export function ChatPanel({ projectId, isOpen, onClose, endpoint, width }: ChatP
     newChat,
   } = useChat(projectId)
 
-  const [showSettingsConfirm, setShowSettingsConfirm] = useState(false)
+  const [showSettingsConfirm, setShowSettingsConfirm] = useState<'endpoint' | 'model' | false>(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   // Load history when panel opens
@@ -56,10 +57,14 @@ export function ChatPanel({ projectId, isOpen, onClose, endpoint, width }: ChatP
 
   const handleSend = (userMessage: string) => {
     if (!endpoint) {
-      setShowSettingsConfirm(true)
+      setShowSettingsConfirm('endpoint')
       return
     }
-    sendMessage(userMessage, endpoint)
+    if (!selectedModel) {
+      setShowSettingsConfirm('model')
+      return
+    }
+    sendMessage(userMessage, endpoint, selectedModel)
   }
 
   const handleStop = () => {
@@ -70,7 +75,7 @@ export function ChatPanel({ projectId, isOpen, onClose, endpoint, width }: ChatP
     window.location.href = '/settings'
   }
 
-  const isDisabled = !endpoint
+  const isDisabled = !endpoint || !selectedModel
 
   return (
     <div className="chat-panel" style={{ width: width ? `${width}px` : undefined }} onClick={e => e.stopPropagation()}>
@@ -105,14 +110,26 @@ export function ChatPanel({ projectId, isOpen, onClose, endpoint, width }: ChatP
         ) : isDisabled ? (
           <div className="chat-empty-state">
             <div className="chat-config-warning">
-              <p>
-                <AlertTriangle className="config-warning-icon" />
-                Chat requires an{' '}
-                <a href="/settings" onClick={e => { e.preventDefault(); openSettings(); }}>
-                  OpenAI endpoint
-                </a>{' '}
-                configured in Settings.
-              </p>
+              {!endpoint && (
+                <p>
+                  <AlertTriangle className="config-warning-icon" />
+                  Chat requires an{' '}
+                  <a href="/settings" onClick={e => { e.preventDefault(); openSettings(); }}>
+                    OpenAI endpoint
+                  </a>{' '}
+                  configured in Settings.
+                </p>
+              )}
+              {!selectedModel && endpoint && (
+                <p>
+                  <AlertTriangle className="config-warning-icon" />
+                  Chat requires a{' '}
+                  <a href="/settings" onClick={e => { e.preventDefault(); openSettings(); }}>
+                    model
+                  </a>{' '}
+                  selected in Settings.
+                </p>
+              )}
             </div>
           </div>
         ) : messages.length === 0 && !currentSession ? (
@@ -145,10 +162,19 @@ export function ChatPanel({ projectId, isOpen, onClose, endpoint, width }: ChatP
       />
 
       {/* Settings confirmation */}
-      {showSettingsConfirm && (
+      {showSettingsConfirm === 'endpoint' && (
         <ConfirmDialog
           title="Endpoint Not Configured"
           message="Chat requires an OpenAI endpoint configured in Settings."
+          onConfirm={openSettings}
+          onCancel={() => setShowSettingsConfirm(false)}
+          confirmLabel="Open Settings"
+        />
+      )}
+      {showSettingsConfirm === 'model' && (
+        <ConfirmDialog
+          title="Model Not Selected"
+          message="Chat requires a model selected in Settings."
           onConfirm={openSettings}
           onCancel={() => setShowSettingsConfirm(false)}
           confirmLabel="Open Settings"
