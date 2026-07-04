@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { MessageSquare } from 'lucide-react'
 import { fetchSettings } from '../api'
@@ -18,6 +18,7 @@ export function ProjectDetail({ projectId, filename }: ProjectDetailProps) {
   const editFilename = filename
   const [chatOpen, setChatOpen] = useState(true)
   const [endpoint, setEndpoint] = useState<string | undefined>(undefined)
+  const projectReaderRef = useRef<{ refreshFiles: () => void } | null>(null)
 
   // Split position state with localStorage persistence
   const [splitPosition, setSplitPosition] = useState<number>(() => {
@@ -47,6 +48,10 @@ export function ProjectDetail({ projectId, filename }: ProjectDetailProps) {
     setSplitPosition(chatWidth)
   }, [])
 
+  const handleFilesChanged = useCallback(() => {
+    projectReaderRef.current?.refreshFiles()
+  }, [])
+
   // If we have an edit filename in the URL, render the editor
   if (editFilename) {
     return (
@@ -69,6 +74,7 @@ export function ProjectDetail({ projectId, filename }: ProjectDetailProps) {
               onClose={() => setChatOpen(false)}
               endpoint={endpoint}
               width={splitPosition}
+              onFilesChanged={handleFilesChanged}
             />
           </>
         )}
@@ -81,6 +87,7 @@ export function ProjectDetail({ projectId, filename }: ProjectDetailProps) {
     <div className="project-detail-layout">
       <div className={`project-detail-content ${chatOpen ? '' : 'full-width'}`}>
         <ProjectReader
+          ref={projectReaderRef}
           projectId={projectId}
           onEdit={(filename) => navigate(`/project/${projectId}/edit/${encodeURIComponent(filename)}`)}
         />
@@ -100,6 +107,7 @@ export function ProjectDetail({ projectId, filename }: ProjectDetailProps) {
             onClose={() => setChatOpen(false)}
             endpoint={endpoint}
             width={splitPosition}
+            onFilesChanged={handleFilesChanged}
           />
         </>
       )}

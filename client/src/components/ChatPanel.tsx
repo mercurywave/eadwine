@@ -21,9 +21,10 @@ interface ChatPanelProps {
   onClose: () => void
   endpoint: string | undefined
   width?: number
+  onFilesChanged?: () => void
 }
 
-export function ChatPanel({ projectId, isOpen, onClose, endpoint, width }: ChatPanelProps) {
+export function ChatPanel({ projectId, isOpen, onClose, endpoint, width, onFilesChanged }: ChatPanelProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [isStreaming, setIsStreaming] = useState(false)
   const [sessions, setSessions] = useState<ChatSessionSummary[]>([])
@@ -218,6 +219,9 @@ export function ChatPanel({ projectId, isOpen, onClose, endpoint, width }: ChatP
             s.id === sessionId ? { ...s, updatedAt: new Date().toISOString() } : s
           )
         )
+
+        // Notify parent that files may have changed (tool calls could create/modify files)
+        onFilesChanged?.()
       } else if (fullContent) {
         // There was an error but we got some content
         setMessages(prev => {

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { forwardRef, useState, useEffect, useCallback, useImperativeHandle } from 'react'
 import { Project, FileItem } from '../types'
 import { ArrowLeft } from 'lucide-react'
 import {
@@ -18,13 +18,17 @@ interface ProjectReaderProps {
   onEdit: (filename: string) => void
 }
 
-export function ProjectReader({ projectId, onEdit }: ProjectReaderProps) {
+export const ProjectReader = forwardRef<{ refreshFiles: () => void }, ProjectReaderProps>(function ProjectReader({ projectId, onEdit }, ref) {
   const [project, setProject] = useState<Project | null>(null)
   const [files, setFiles] = useState<FileItem[]>([])
   const [fileContents, setFileContents] = useState<Record<string, string>>({})
   const [loadingFiles, setLoadingFiles] = useState(true)
   const [loadingAll, setLoadingAll] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  useImperativeHandle(ref, () => ({
+    refreshFiles,
+  }), [])
 
   const loadProject = useCallback(async () => {
     try {
@@ -253,4 +257,4 @@ export function ProjectReader({ projectId, onEdit }: ProjectReaderProps) {
       )}
     </div>
   )
-}
+})
