@@ -58,6 +58,7 @@ export async function runToolCallLoop(options: ToolCallLoopOptions): Promise<voi
       projectId, sessionId, { role: 'user', content: userMessage }, finalContent,
       accumulatedToolCalls, accumulatedToolResults
     )
+    expressRes.write('data: [DONE]\n')
     expressRes.end()
   }
 
