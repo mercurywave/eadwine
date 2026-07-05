@@ -192,30 +192,10 @@ router.post('/:id/chats/stream', (req: Request, res: Response) => {
     }
 
     // Persist the user message FIRST, before any other messages are written
-    persistUserMessage(id, sessionId, message)
-
-    const projectPath = resolveProjectPath(id)
+    persistUserMessage(id, sessionId, message);
+    
     const messages = readChatMessages(id, sessionId)
     const projectTitle = session.title
-
-    const apiMessages: Array<{
-      role: string
-      content: string
-      tool_calls?: ToolCallEntry[]
-      tool_call_id?: string
-    }> = [
-      {
-        role: 'system',
-        content: buildSystemPrompt(projectTitle, id),
-      },
-      ...messages.map((m: ChatMessageEntry) => ({
-        role: m.role,
-        content: m.content,
-        tool_calls: m.tool_calls,
-        tool_call_id: m.tool_call_id,
-      })),
-      { role: 'user', content: message },
-    ]
 
     res.setHeader('Content-Type', 'text/event-stream')
     res.setHeader('Cache-Control', 'no-cache')
@@ -228,13 +208,8 @@ router.post('/:id/chats/stream', (req: Request, res: Response) => {
       projectId: id,
       projectPath: resolveProjectPath(id),
       projectTitle,
-      systemPrompt: apiMessages[0].content,
-      conversationHistory: messages.map(m => ({
-        role: m.role,
-        content: m.content,
-        tool_calls: m.tool_calls,
-        tool_call_id: m.tool_call_id,
-      })),
+      systemPrompt: buildSystemPrompt(projectTitle, id),
+      conversationHistory: messages,
       userMessage: message,
       expressRes: res,
       maxIterations: 50,

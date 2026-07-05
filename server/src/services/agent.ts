@@ -2,6 +2,7 @@ import type { Response as ExpressResponse } from 'express'
 import { getToolDefinitions } from '../tools/registry.js'
 import { parseToolCallDelta, executeToolCalls } from '../tools/executor.js'
 import { persistSession, persistPartialSession, persistToolCalls, persistToolResult } from './chat.js'
+import type { ChatMessageEntry } from '../types.js'
 
 export interface ToolCallEntry {
   id: string
@@ -19,7 +20,7 @@ export interface ToolCallLoopOptions {
   projectPath: string
   projectTitle: string
   systemPrompt: string
-  conversationHistory: Array<{ role: string; content: string; tool_calls?: ToolCallEntry[]; tool_call_id?: string }>
+  conversationHistory: ChatMessageEntry[]
   userMessage: string
   expressRes: ExpressResponse
   maxIterations?: number
@@ -57,8 +58,9 @@ export async function runToolCallLoop(options: ToolCallLoopOptions): Promise<voi
       }
       return msg
     }),
-    { role: 'user', content: userMessage },
+    //{ role: 'user', content: userMessage }, // persisted from caller
   ];
+  //console.log(conversationHistory,"\n\n\n\n", messages);
 
   let iteration = 0
   let fullAssistantContent = ''
@@ -114,6 +116,7 @@ export async function runToolCallLoop(options: ToolCallLoopOptions): Promise<voi
     const model = selectedModel
     let fetchResponse: globalThis.Response
     try {
+      //console.log(messages,"\n\n\n\n");
       fetchResponse = await fetch(apiUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -167,7 +170,7 @@ export async function runToolCallLoop(options: ToolCallLoopOptions): Promise<voi
           const data = line.slice(6)
           if (data === '[DONE]') {
             // Check for tool calls first (before returning)
-            if (hasToolCallDelta && !hasContentDelta && toolCallIndexMap.size > 0) {
+            if (hasToolCallDelta && toolCallIndexMap.size > 0) {
               // Sort by index to maintain call order, skip the -1 fallback key
               const entries = Array.from(toolCallIndexMap.entries())
                 .filter(([key]) => key >= 0)
@@ -191,6 +194,21 @@ export async function runToolCallLoop(options: ToolCallLoopOptions): Promise<voi
                   })}\n`,
                 )
               }
+
+              // Push assistant message with tool calls BEFORE tool results
+              // This ensures the LLM can correlate tool results with the original request
+              const assistantMsg = {
+                role: 'assistant',
+                tool_calls: entries.map(tc => ({
+                  id: tc.id,
+                  type: 'function' as const,
+                  function: {
+                    name: tc.name,
+                    arguments: JSON.stringify(tc.args),
+                  },
+                })),
+              }
+              messages.push(assistantMsg)
 
               // Execute tools — they emit their own events (e.g., file_changed) via the emit callback
               const results = executeToolCalls(entries, projectId, projectPath, (event) => {
@@ -294,8 +312,8 @@ export async function runToolCallLoop(options: ToolCallLoopOptions): Promise<voi
 
     reader.releaseLock()
 
-    // If we finished the stream with tool calls but no content, process them
-    if (hasToolCallDelta && !hasContentDelta && toolCallIndexMap.size > 0) {
+    // If we finished the stream with tool calls, process them (even if content was also produced)
+    if (hasToolCallDelta && toolCallIndexMap.size > 0) {
       // Sort by index to maintain call order, skip the -1 fallback key
       const entries = Array.from(toolCallIndexMap.entries())
         .filter(([key]) => key >= 0)
@@ -319,6 +337,21 @@ export async function runToolCallLoop(options: ToolCallLoopOptions): Promise<voi
           })}\n`,
         )
       }
+
+      // Push assistant message with tool calls BEFORE tool results
+      // This ensures the LLM can correlate tool results with the original request
+      const assistantMsg = {
+        role: 'assistant',
+        tool_calls: entries.map(tc => ({
+          id: tc.id,
+          type: 'function' as const,
+          function: {
+            name: tc.name,
+            arguments: JSON.stringify(tc.args),
+          },
+        })),
+      }
+      messages.push(assistantMsg)
 
       // Execute tools — they emit their own events (e.g., file_changed) via the emit callback
       const results = executeToolCalls(entries, projectId, projectPath, (event) => {
