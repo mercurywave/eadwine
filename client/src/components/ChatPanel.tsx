@@ -5,6 +5,7 @@ import { ChatBubble } from './ChatBubble'
 import { ChatInput } from './ChatInput'
 import { ChatHistoryList } from './ChatHistoryList'
 import { ConfirmDialog } from './ConfirmDialog'
+import { FileChange } from '../types'
 import './ChatPanel.css'
 
 interface ChatPanelProps {
@@ -15,9 +16,10 @@ interface ChatPanelProps {
   selectedModel: string | undefined
   width?: number
   onFilesChanged?: () => void
+  onAgentFileChanges?: (files: FileChange[]) => void
 }
 
-export function ChatPanel({ projectId, isOpen, onClose, endpoint, selectedModel, width }: ChatPanelProps) {
+export function ChatPanel({ projectId, isOpen, onClose, endpoint, selectedModel, width, onAgentFileChanges }: ChatPanelProps) {
   const {
     sessions,
     currentSession,
@@ -30,7 +32,7 @@ export function ChatPanel({ projectId, isOpen, onClose, endpoint, selectedModel,
     sendMessage,
     stopStreaming,
     newChat,
-  } = useChat(projectId)
+  } = useChat(projectId, { onFilesChanged: onAgentFileChanges })
 
   const [showSettingsConfirm, setShowSettingsConfirm] = useState<'endpoint' | 'model' | false>(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)

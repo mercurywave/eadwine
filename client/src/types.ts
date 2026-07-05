@@ -53,3 +53,13 @@ export interface ChatSessionSummary {
   updatedAt: string
   preview: string
 }
+
+export interface FileChange {
+  filename: string
+  operation: 'edited' | 'created' | 'deleted' | 'renamed'
+}
+
+export interface FileChangeEvent {
+  type: 'file_changed'
+  files: FileChange[]
+}

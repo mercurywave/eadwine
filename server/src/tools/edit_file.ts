@@ -6,6 +6,7 @@ export function editFileHandler(
   args: Record<string, unknown>,
   _projectId: string,
   projectPath: string,
+  emit?: (event: Record<string, unknown>) => void,
 ): { success: true; content: string } | { success: false; error: string } {
   const filename = args.filename
   const oldText = args.oldText
@@ -46,6 +47,15 @@ export function editFileHandler(
 
     const updatedContent = existingContent.replace(oldText, newText)
     fs.writeFileSync(filePath, updatedContent, 'utf-8')
+
+    // Emit file change event
+    if (typeof emit === 'function') {
+      emit({
+        type: 'file_changed',
+        files: [{ filename: filename.trim(), operation: 'edited' }],
+      })
+    }
+
     return { success: true, content: `File "${filename}" edited successfully. Replaced: "${oldText}" → "${newText}"` }
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Unknown error'

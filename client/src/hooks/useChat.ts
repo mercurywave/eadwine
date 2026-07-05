@@ -1,11 +1,15 @@
 import { useState, useCallback, useRef, useEffect } from 'react'
-import { ChatMessage, ChatSession, ChatSessionSummary } from '../types'
+import { ChatMessage, ChatSession, ChatSessionSummary, FileChange } from '../types'
 import {
   fetchChatSessions,
   fetchChatSession,
   streamChatMessage,
 } from '../api'
 import { useToasts } from '../components/Toast'
+
+interface UseChatOptions {
+  onFilesChanged?: (files: FileChange[]) => void
+}
 
 interface ChatState {
   sessions: ChatSessionSummary[]
@@ -23,7 +27,7 @@ interface ChatState {
   newChat: () => void
 }
 
-export function useChat(projectId: string): ChatState {
+export function useChat(projectId: string, options?: UseChatOptions): ChatState {
   const [sessions, setSessions] = useState<ChatSessionSummary[]>([])
   const [currentSession, setCurrentSession] = useState<ChatSession | null>(null)
   const [messages, setMessages] = useState<ChatMessage[]>([])
@@ -168,6 +172,10 @@ export function useChat(projectId: string): ChatState {
           } else if (event.type === 'session_id') {
             // Server created a new session — update our tracking
             sessionIdRef.current = event.sessionId
+          } else if (event.type === 'file_changed') {
+            if (options?.onFilesChanged) {
+              options.onFilesChanged(event.files)
+            }
           } else if (event.type === 'done') {
             fullContent = event.fullContent
             break

@@ -17,6 +17,7 @@ export type ToolHandler = (
   args: Record<string, unknown>,
   projectId: string,
   projectPath: string,
+  emit?: (event: Record<string, unknown>) => void,
 ) => { success: true; content: string } | { success: false; error: string }
 
 interface RegisteredTool {
@@ -45,12 +46,13 @@ export function executeTool(
   args: Record<string, unknown>,
   projectId: string,
   projectPath: string,
+  emit?: (event: Record<string, unknown>) => void,
 ): { success: true; content: string } | { success: false; error: string } {
   const registered = tools.get(toolName)
   if (!registered) {
     return { success: false, error: `Unknown tool: "${toolName}"` }
   }
-  return registered.handler(args, projectId, projectPath)
+  return registered.handler(args, projectId, projectPath, emit)
 }
 
 export function registerTool(tool: ToolDefinition, handler: ToolHandler): void {

@@ -6,6 +6,7 @@ import { ProjectReader } from './ProjectReader'
 import { ProjectEditor } from './ProjectEditor'
 import { ChatPanel } from './ChatPanel'
 import { Splitter } from './Splitter'
+import { FileChange } from '../types'
 import './ProjectDetail.css'
 
 interface ProjectDetailProps {
@@ -19,7 +20,7 @@ export function ProjectDetail({ projectId, filename }: ProjectDetailProps) {
   const [chatOpen, setChatOpen] = useState(true)
   const [endpoint, setEndpoint] = useState<string | undefined>(undefined)
   const [selectedModel, setSelectedModel] = useState<string | undefined>(undefined)
-  const projectReaderRef = useRef<{ refreshFiles: () => void } | null>(null)
+  const projectReaderRef = useRef<{ refreshFiles: () => void; refreshFileContent: (filename: string) => void } | null>(null)
 
   // Split position state with localStorage persistence
   const [splitPosition, setSplitPosition] = useState<number>(() => {
@@ -55,6 +56,15 @@ export function ProjectDetail({ projectId, filename }: ProjectDetailProps) {
     projectReaderRef.current?.refreshFiles()
   }, [])
 
+  const handleAgentFileChanges = useCallback((files: FileChange[]) => {
+    // Refresh the file list
+    projectReaderRef.current?.refreshFiles()
+    // Refresh content for each modified file
+    for (const file of files) {
+      projectReaderRef.current?.refreshFileContent(file.filename)
+    }
+  }, [])
+
   // If we have an edit filename in the URL, render the editor
   if (editFilename) {
     return (
@@ -79,6 +89,7 @@ export function ProjectDetail({ projectId, filename }: ProjectDetailProps) {
               selectedModel={selectedModel}
               width={splitPosition}
               onFilesChanged={handleFilesChanged}
+              onAgentFileChanges={handleAgentFileChanges}
             />
           </>
         )}
@@ -113,6 +124,7 @@ export function ProjectDetail({ projectId, filename }: ProjectDetailProps) {
             selectedModel={selectedModel}
             width={splitPosition}
             onFilesChanged={handleFilesChanged}
+            onAgentFileChanges={handleAgentFileChanges}
           />
         </>
       )}

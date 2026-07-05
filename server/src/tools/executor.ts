@@ -46,17 +46,19 @@ export function parseToolCallDelta(
 
 /**
  * Execute a list of parsed tool calls and return results.
+ * Passes the emit callback to each tool so tools can raise their own events.
  */
 export function executeToolCalls(
   toolCalls: ParsedToolCall[],
   projectId: string,
   projectPath: string,
+  emit?: (event: Record<string, unknown>) => void,
 ): ToolResult[] {
   const results: ToolResult[] = []
 
   for (const tc of toolCalls) {
     console.log(`[tool_call] ${tc.name}(${JSON.stringify(tc.args)})`)
-    const result = executeTool(tc.name, tc.args, projectId, projectPath)
+    const result = executeTool(tc.name, tc.args, projectId, projectPath, emit)
     results.push({
       tool_call_id: tc.id,
       content: result.success ? result.content : result.error,

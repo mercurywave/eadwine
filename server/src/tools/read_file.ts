@@ -7,6 +7,7 @@ export function readFileHandler(
   args: Record<string, unknown>,
   _projectId: string,
   projectPath: string,
+  _emit?: (event: Record<string, unknown>) => void,
 ): { success: true; content: string } | { success: false; error: string } {
   const filename = args.filename
   if (typeof filename !== 'string' || !filename.trim()) {

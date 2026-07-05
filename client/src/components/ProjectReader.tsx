@@ -28,6 +28,7 @@ export const ProjectReader = forwardRef<{ refreshFiles: () => void }, ProjectRea
 
   useImperativeHandle(ref, () => ({
     refreshFiles,
+    refreshFileContent,
   }), [])
 
   const loadProject = useCallback(async () => {
@@ -45,6 +46,15 @@ export const ProjectReader = forwardRef<{ refreshFiles: () => void }, ProjectRea
   const [confirmDeleteFile, setConfirmDeleteFile] = useState<string | null>(null)
   const [renameFileFrom, setRenameFileFrom] = useState<string | null>(null)
   const [renameTo, setRenameTo] = useState('')
+
+  const refreshFileContent = useCallback(async (filename: string) => {
+    try {
+      const content = await fetchFileContent(projectId, filename)
+      setFileContents(prev => ({ ...prev, [filename]: content }))
+    } catch {
+      // Non-blocking
+    }
+  }, [projectId])
 
   const refreshFiles = useCallback(async () => {
     try {

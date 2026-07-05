@@ -1,5 +1,5 @@
 import type { Response as ExpressResponse } from 'express'
-import { getToolDefinitions, executeTool } from '../tools/registry.js'
+import { getToolDefinitions } from '../tools/registry.js'
 import { parseToolCallDelta, executeToolCalls } from '../tools/executor.js'
 import { persistSession, persistPartialSession, persistToolCalls, persistToolResult } from './chat.js'
 
@@ -192,7 +192,10 @@ export async function runToolCallLoop(options: ToolCallLoopOptions): Promise<voi
                 )
               }
 
-              const results = executeToolCalls(entries, projectId, projectPath)
+              // Execute tools — they emit their own events (e.g., file_changed) via the emit callback
+              const results = executeToolCalls(entries, projectId, projectPath, (event) => {
+                expressRes.write(`data: ${JSON.stringify(event)}\n`)
+              })
 
               // Persist tool results and append to messages
               for (const result of results) {
@@ -317,7 +320,10 @@ export async function runToolCallLoop(options: ToolCallLoopOptions): Promise<voi
         )
       }
 
-      const results = executeToolCalls(entries, projectId, projectPath)
+      // Execute tools — they emit their own events (e.g., file_changed) via the emit callback
+      const results = executeToolCalls(entries, projectId, projectPath, (event) => {
+        expressRes.write(`data: ${JSON.stringify(event)}\n`)
+      })
 
       // Persist tool results and append to messages
       for (const result of results) {

@@ -1,4 +1,4 @@
-import { Project, FileItem, Settings, ChatSession, ChatSessionSummary, ToolCallInfo, ChatMessage } from './types'
+import { Project, FileItem, Settings, ChatSession, ChatSessionSummary, ToolCallInfo, ChatMessage, FileChange, FileChangeEvent } from './types'
 
 const BASE_URL = '/api'
 
@@ -163,6 +163,7 @@ export type StreamEvent =
   | { type: 'error'; message: string }
   | { type: 'session_id'; sessionId: string }
   | { type: 'done'; fullContent: string }
+  | FileChangeEvent
 
 /**
  * Sends a message to the chat and streams the response in a single request.
@@ -233,6 +234,12 @@ export async function* streamChatMessage(
               yield { type: 'error', message: parsed.error || 'Unknown error' }
             } else if (parsed.type === 'session_id') {
               yield { type: 'session_id', sessionId: parsed.sessionId }
+            } else if (parsed.type === 'file_changed') {
+              const files: FileChange[] = (parsed.files || []).map((f: any) => ({
+                filename: f.filename || '',
+                operation: f.operation || 'edited',
+              }))
+              yield { type: 'file_changed', files }
             }
             continue
           }

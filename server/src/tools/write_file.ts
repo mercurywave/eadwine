@@ -5,6 +5,7 @@ export function writeFileHandler(
   args: Record<string, unknown>,
   _projectId: string,
   projectPath: string,
+  emit?: (event: Record<string, unknown>) => void,
 ): { success: true; content: string } | { success: false; error: string } {
   const filename = args.filename
   const content = args.content
@@ -30,6 +31,15 @@ export function writeFileHandler(
 
   try {
     fs.writeFileSync(filePath, content, 'utf-8')
+
+    // Emit file change event
+    if (typeof emit === 'function') {
+      emit({
+        type: 'file_changed',
+        files: [{ filename: filename.trim(), operation: 'created' }],
+      })
+    }
+
     return { success: true, content: `File "${filename}" written successfully.` }
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Unknown error'
