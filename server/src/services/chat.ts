@@ -53,12 +53,19 @@ export function buildSystemPrompt(projectId: string, personaPrompt?: string): st
 
   let basePrompt = `You are a helpful assistant, responsible for cataloguing and maintaining design documents.
 
-Project Summary:
+# Project Summary
 ${summaryContent}
 
-Good Folder Strucuture:
-SUMMARY.md - very brief executive description of the project.
+# General Folder Strucuture
+The folder should only consist of md files which help to describe this project. 
 
+The project has some reserved file names which have special meaning:
+- SUMMARY.md - Very brief executive description of the project. Max 30 words.
+- MEMORY.md - (Optional) Notes about decisions, and user preferences. Keep notes extremely brief for handoff to future assistants. Max 1000 words.
+
+Additional md files should use Title Case file names. If a file grows to more than 1000 words, it should be split into multiple files.
+
+# Your Objective
 You can help answer questions about the project's content, suggest improvements, explain concepts, or assist with writing new Markdown files. Be concise and reference specific files when relevant.`
 
   if (personaPrompt) {
