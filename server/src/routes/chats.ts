@@ -8,7 +8,7 @@ import { readChatSession, readChatMessages, buildSystemPrompt, persistSession, p
 import { proxyStream } from '../services/llm.js'
 import { runToolCallLoop } from '../services/agent.js'
 import { readSettings } from './settings.js'
-import { ChatMessageEntry, ToolCallEntry } from '../types.js'
+import { ChatMessageEntry, ToolCallEntry, PersonaData } from '../types.js'
 
 const router = Router()
 
@@ -92,7 +92,7 @@ router.get('/:id/chats/:sessionId', (req: Request, res: Response) => {
 router.post('/:id/chats', (req: Request, res: Response) => {
   try {
     const id = param(req, 'id')
-    const { title } = req.body
+    const { title, personaId } = req.body
     const sessionId = uuidv4()
     const now = new Date().toISOString()
 
@@ -108,6 +108,7 @@ router.post('/:id/chats', (req: Request, res: Response) => {
       title: title || 'Untitled Chat',
       createdAt: now,
       updatedAt: now,
+      personaId,
     }
 
     fs.writeFileSync(path.join(chatsDir, `${sessionId}.json`), JSON.stringify(session, null, 2), 'utf-8')
@@ -148,7 +149,7 @@ router.delete('/:id/chats/:sessionId', (req: Request, res: Response) => {
 router.post('/:id/chats/stream', (req: Request, res: Response) => {
   try {
     const id = param(req, 'id')
-    const { message, sessionId: clientSessionId, endpoint: clientEndpoint, selectedModel: clientSelectedModel } = req.body
+    const { message, sessionId: clientSessionId, endpoint: clientEndpoint, selectedModel: clientSelectedModel, personaId } = req.body
 
     if (!message || typeof message !== 'string') {
       return res.status(400).json({ error: 'Message is required' })
@@ -182,6 +183,7 @@ router.post('/:id/chats/stream', (req: Request, res: Response) => {
         title: 'Untitled Chat',
         createdAt: now,
         updatedAt: now,
+        personaId,
       }
 
       fs.writeFileSync(path.join(chatsDir, `${sessionId}.json`), JSON.stringify(newSession, null, 2), 'utf-8')
@@ -197,6 +199,17 @@ router.post('/:id/chats/stream', (req: Request, res: Response) => {
     const messages = readChatMessages(id, sessionId)
     const projectTitle = session.title
 
+    // Resolve persona system prompt if personaId is provided
+    let personaSystemPrompt = ''
+    if (personaId) {
+      const settings = readSettings()
+      const personas = settings.personas || []
+      const persona = personas.find((p: PersonaData) => p.id === personaId)
+      if (persona) {
+        personaSystemPrompt = persona.systemPrompt
+      }
+    }
+
     res.setHeader('Content-Type', 'text/event-stream')
     res.setHeader('Cache-Control', 'no-cache')
     res.setHeader('Connection', 'keep-alive')
@@ -208,12 +221,13 @@ router.post('/:id/chats/stream', (req: Request, res: Response) => {
       projectId: id,
       projectPath: resolveProjectPath(id),
       projectTitle,
-      systemPrompt: buildSystemPrompt(projectTitle, id),
+      systemPrompt: buildSystemPrompt(projectTitle, id, personaSystemPrompt),
       conversationHistory: messages,
       userMessage: message,
       expressRes: res,
       maxIterations: 50,
       selectedModel: clientSelectedModel,
+      personaId,
     }).catch((err: unknown) => {
       console.error('Agent stream error:', err)
       if (!res.headersSent) {

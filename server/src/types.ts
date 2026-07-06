@@ -22,10 +22,21 @@ export interface ChatSessionData {
   title: string
   createdAt: string
   updatedAt: string
+  personaId?: string
+}
+
+export interface PersonaData {
+  id: string
+  name: string
+  description: string
+  systemPrompt: string
+  isDefault?: boolean
 }
 
 export interface SettingsData {
   openAiEndpoint?: string
   selectedModel?: string
   defaultModel?: string
+  personas?: PersonaData[]
+  defaultPersonaId?: string
 }

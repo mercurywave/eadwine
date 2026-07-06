@@ -109,6 +109,11 @@
   border-color: #646cff;
 }
 
+.setting-field .persona-textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
 .field-hint {
   display: block;
   color: #777;
@@ -141,6 +146,199 @@
   height: 1rem;
 }
 
+/* ── Buttons ─────────────────────────────────────────────────────── */
+
+.btn-primary,
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.btn-primary {
+  background: #646cff;
+  color: white;
+  border: none;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: #535bf2;
+}
+
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-secondary {
+  background: transparent;
+  color: rgba(255, 255, 255, 0.8);
+  border: 1px solid #555;
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: #777;
+}
+
+.btn-secondary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-icon {
+  width: 1rem;
+  height: 1rem;
+}
+
+.btn-icon-small {
+  width: 0.85rem;
+  height: 0.85rem;
+}
+
+/* ── Personas Section ────────────────────────────────────────────── */
+
+.personas-header {
+  margin-bottom: 1.5rem;
+}
+
+.persona-form {
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 10px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.persona-form h3 {
+  margin: 0 0 1rem 0;
+  font-size: 1.1rem;
+  color: #f8fafc;
+}
+
+.persona-form-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.persona-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.persona-empty {
+  color: #64748b;
+  font-style: italic;
+  padding: 2rem 0;
+  text-align: center;
+}
+
+.persona-item {
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 10px;
+  padding: 1rem 1.25rem;
+  transition: border-color 0.2s;
+}
+
+.persona-item-default {
+  border-color: #10b981;
+  background: rgba(16, 185, 129, 0.05);
+}
+
+.persona-item-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.persona-item-header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  flex: 1;
+}
+
+.persona-item-name {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #f8fafc;
+}
+
+.persona-item-desc {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #94a3b8;
+}
+
+.persona-item-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.persona-badge-default {
+  font-size: 0.7rem;
+  background: #10b981;
+  color: white;
+  padding: 0.15rem 0.5rem;
+  border-radius: 9999px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.btn-icon-btn {
+  background: transparent;
+  border: 1px solid #475569;
+  color: #94a3b8;
+  padding: 0.4rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-icon-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: #64748b;
+  color: #f8fafc;
+}
+
+.btn-icon-btn.btn-danger:hover {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: #ef4444;
+  color: #ef4444;
+}
+
+.btn-icon-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.persona-edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.persona-edit-form .persona-form-actions {
+  margin-top: 0.5rem;
+}
+
 /* ── Light theme overrides ───────────────────────────────────────── */
 
 @media (prefers-color-scheme: light) {
@@ -164,6 +362,47 @@
 
   .section-description {
     color: #666;
+  }
+
+  .btn-secondary {
+    color: #213547;
+    border-color: #ccc;
+  }
+
+  .btn-secondary:hover:not(:disabled) {
+    background: rgba(0, 0, 0, 0.04);
+  }
+
+  .persona-form {
+    background: #f8f9fa;
+    border-color: #ddd;
+  }
+
+  .persona-item {
+    background: #f8f9fa;
+    border-color: #ddd;
+  }
+
+  .persona-item-default {
+    border-color: #10b981;
+    background: rgba(16, 185, 129, 0.05);
+  }
+
+  .persona-item-name {
+    color: #213547;
+  }
+
+  .persona-item-desc {
+    color: #666;
+  }
+
+  .btn-icon-btn {
+    color: #666;
+    border-color: #ccc;
+  }
+
+  .btn-icon-btn:hover:not(:disabled) {
+    background: rgba(0, 0, 0, 0.04);
   }
 }
 
@@ -189,5 +428,13 @@
 
   .setting-field .modal-input {
     max-width: 100%;
+  }
+
+  .persona-item-content {
+    flex-direction: column;
+  }
+
+  .persona-item-actions {
+    align-self: flex-end;
   }
 }

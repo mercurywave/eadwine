@@ -25,6 +25,7 @@ export interface ToolCallLoopOptions {
   expressRes: ExpressResponse
   maxIterations?: number
   selectedModel?: string
+  personaId?: string
 }
 
 const DEFAULT_MAX_ITERATIONS = 50
@@ -41,6 +42,7 @@ export async function runToolCallLoop(options: ToolCallLoopOptions): Promise<voi
     expressRes,
     maxIterations = DEFAULT_MAX_ITERATIONS,
     selectedModel,
+    personaId,
   } = options
 
   const toolDefinitions = getToolDefinitions()
@@ -81,7 +83,7 @@ export async function runToolCallLoop(options: ToolCallLoopOptions): Promise<voi
       accumulatedToolCalls, accumulatedToolResults
     )
     // Emit session ID event for client to track the session
-    expressRes.write(`data: ${JSON.stringify({ type: 'session_id', sessionId })}\n`)
+    expressRes.write(`data: ${JSON.stringify({ type: 'session_id', sessionId, personaId })}\n`)
     expressRes.write('data: [DONE]\n')
     expressRes.end()
   }

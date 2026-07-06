@@ -1,4 +1,4 @@
-import { Project, FileItem, Settings, ChatSession, ChatSessionSummary, ToolCallInfo, ChatMessage, FileChange, FileChangeEvent } from './types'
+import { Project, FileItem, Settings, Persona, ChatSession, ChatSessionSummary, ToolCallInfo, ChatMessage, FileChange, FileChangeEvent } from './types'
 
 const BASE_URL = '/api'
 
@@ -95,6 +95,44 @@ export async function fetchModels(): Promise<string[]> {
   return request<string[]>('/models')
 }
 
+// ── Personas ─────────────────────────────────────────────────────────
+
+export async function fetchPersonas(): Promise<Persona[]> {
+  return request<Persona[]>('/settings/personas')
+}
+
+export async function createPersona(persona: Omit<Persona, 'id'>): Promise<Persona> {
+  return request<Persona>('/settings/personas', {
+    method: 'POST',
+    body: JSON.stringify(persona),
+  })
+}
+
+export async function updatePersona(id: string, persona: Partial<Omit<Persona, 'id'>>): Promise<Persona> {
+  return request<Persona>(`/settings/personas/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(persona),
+  })
+}
+
+export async function deletePersona(id: string): Promise<void> {
+  return request<void>(`/settings/personas/${id}`, {
+    method: 'DELETE',
+  })
+}
+
+export async function setDefaultPersona(id: string): Promise<void> {
+  await request<void>(`/settings/personas/${id}/set-default`, {
+    method: 'POST',
+  })
+}
+
+export async function resetDefaultPersona(id: string): Promise<void> {
+  await request<void>(`/settings/personas/${id}/reset-default`, {
+    method: 'DELETE',
+  })
+}
+
 // ── Chat ─────────────────────────────────────────────────────────────
 
 interface RawToolCallEntry {
@@ -161,7 +199,7 @@ export type StreamEvent =
   | { type: 'content'; content: string }
   | { type: 'tool_call'; toolCalls: ToolCallInfo[] }
   | { type: 'error'; message: string }
-  | { type: 'session_id'; sessionId: string }
+  | { type: 'session_id'; sessionId: string; personaId?: string }
   | { type: 'done'; fullContent: string }
   | FileChangeEvent
 
@@ -176,12 +214,13 @@ export async function* streamChatMessage(
   userMessage: string,
   endpoint: string,
   selectedModel: string,
+  personaId?: string,
   signal?: AbortSignal,
 ): AsyncGenerator<StreamEvent, string, unknown> {
   const res = await fetch(`${BASE_URL}/projects/${projectId}/chats/stream`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ message: userMessage, sessionId, endpoint, selectedModel }),
+    body: JSON.stringify({ message: userMessage, sessionId, endpoint, selectedModel, personaId }),
     signal,
   })
 

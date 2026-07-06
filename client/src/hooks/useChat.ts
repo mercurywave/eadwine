@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from 'react'
-import { ChatMessage, ChatSession, ChatSessionSummary, FileChange } from '../types'
+import { ChatMessage, ChatSession, ChatSessionSummary, Persona, FileChange } from '../types'
 import {
   fetchChatSessions,
   fetchChatSession,
@@ -19,12 +19,14 @@ interface ChatState {
   isLoading: boolean
   isLoadingSessions: boolean
   error: string | null
+  selectedPersona: Persona | null
 
   loadSessions: () => Promise<void>
   selectSession: (sessionId: string) => Promise<void>
-  sendMessage: (message: string, endpoint: string, selectedModel: string) => Promise<void>
+  sendMessage: (message: string, endpoint: string, selectedModel: string, personaId?: string) => Promise<void>
   stopStreaming: () => void
   newChat: () => void
+  setSelectedPersona: (persona: Persona | null) => void
 }
 
 export function useChat(projectId: string, options?: UseChatOptions): ChatState {
@@ -35,6 +37,7 @@ export function useChat(projectId: string, options?: UseChatOptions): ChatState 
   const [isLoading, setIsLoading] = useState(false)
   const [isLoadingSessions, setIsLoadingSessions] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [selectedPersona, setSelectedPersona] = useState<Persona | null>(null)
   const { addToast } = useToasts()
 
   const abortControllerRef = useRef<AbortController | null>(null)
@@ -86,7 +89,7 @@ export function useChat(projectId: string, options?: UseChatOptions): ChatState 
   )
 
   const sendMessage = useCallback(
-    async (message: string, endpoint: string, selectedModel: string) => {
+    async (message: string, endpoint: string, selectedModel: string, personaId?: string) => {
       setIsStreaming(true)
       setError(null)
 
@@ -120,7 +123,7 @@ export function useChat(projectId: string, options?: UseChatOptions): ChatState 
         const controller = new AbortController()
         abortControllerRef.current = controller
 
-        const generator = streamChatMessage(projectId, sessionId!, message, endpoint, selectedModel, controller.signal)
+        const generator = streamChatMessage(projectId, sessionId!, message, endpoint, selectedModel, personaId, controller.signal)
 
         let fullContent = ''
         let hasError = false
@@ -172,6 +175,10 @@ export function useChat(projectId: string, options?: UseChatOptions): ChatState 
           } else if (event.type === 'session_id') {
             // Server created a new session — update our tracking
             sessionIdRef.current = event.sessionId
+            // If personaId is returned, lock it in
+            if (event.personaId) {
+              setSelectedPersona(null) // Clear selection after first message
+            }
           } else if (event.type === 'file_changed') {
             if (options?.onFilesChanged) {
               options.onFilesChanged(event.files)
@@ -242,6 +249,7 @@ export function useChat(projectId: string, options?: UseChatOptions): ChatState 
     setCurrentSession(null)
     setMessages([])
     sessionIdRef.current = null
+    setSelectedPersona(null)
   }, [])
 
   return {
@@ -252,10 +260,12 @@ export function useChat(projectId: string, options?: UseChatOptions): ChatState 
     isLoading,
     isLoadingSessions,
     error,
+    selectedPersona,
     loadSessions,
     selectSession,
     sendMessage,
     stopStreaming,
     newChat,
+    setSelectedPersona,
   }
 }

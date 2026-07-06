@@ -40,7 +40,7 @@ export function readChatMessages(projectId: string, sessionId: string): ChatMess
   return messages
 }
 
-export function buildSystemPrompt(projectTitle: string, projectId: string): string {
+export function buildSystemPrompt(projectTitle: string, projectId: string, personaPrompt?: string): string {
   const projectPath = resolveProjectPath(projectId)
   const summaryPath = path.join(projectPath, 'SUMMARY.md')
   let summaryContent = ''
@@ -63,7 +63,7 @@ export function buildSystemPrompt(projectTitle: string, projectId: string): stri
     // No files
   }
 
-  return `You are a helpful assistant for the "${projectTitle}" project.
+  let basePrompt = `You are a helpful assistant for the "${projectTitle}" project.
 
 Project Summary:
 ${summaryContent}
@@ -72,6 +72,12 @@ Project Files:
 ${fileList}
 
 You can help answer questions about the project's content, suggest improvements, explain concepts, or assist with writing new Markdown files. Be concise and reference specific files when relevant.`
+
+  if (personaPrompt) {
+    basePrompt = `${personaPrompt}\n\n${basePrompt}`
+  }
+
+  return basePrompt
 }
 
 export function persistUserMessage(projectId: string, sessionId: string, userMessage: string): void {

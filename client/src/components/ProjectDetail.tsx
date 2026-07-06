@@ -1,12 +1,12 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { MessageSquare } from 'lucide-react'
-import { fetchSettings } from '../api'
+import { fetchSettings, fetchPersonas } from '../api'
 import { ProjectReader } from './ProjectReader'
 import { ProjectEditor } from './ProjectEditor'
 import { ChatPanel } from './ChatPanel'
 import { Splitter } from './Splitter'
-import { FileChange } from '../types'
+import { FileChange, Persona } from '../types'
 import './ProjectDetail.css'
 
 interface ProjectDetailProps {
@@ -20,6 +20,8 @@ export function ProjectDetail({ projectId, filename }: ProjectDetailProps) {
   const [chatOpen, setChatOpen] = useState(true)
   const [endpoint, setEndpoint] = useState<string | undefined>(undefined)
   const [selectedModel, setSelectedModel] = useState<string | undefined>(undefined)
+  const [personas, setPersonas] = useState<Persona[]>([])
+  const [defaultPersonaId, setDefaultPersonaId] = useState<string | undefined>(undefined)
   const projectReaderRef = useRef<{ refreshFiles: () => void; refreshFileContent: (filename: string) => void } | null>(null)
 
   // Split position state with localStorage persistence
@@ -33,15 +35,27 @@ export function ProjectDetail({ projectId, filename }: ProjectDetailProps) {
       const settings = await fetchSettings()
       setEndpoint(settings.openAiEndpoint || undefined)
       setSelectedModel(settings.selectedModel || undefined)
+      setDefaultPersonaId(settings.defaultPersonaId)
     } catch {
       setEndpoint(undefined)
       setSelectedModel(undefined)
+      setDefaultPersonaId(undefined)
+    }
+  }, [])
+
+  const loadPersonas = useCallback(async () => {
+    try {
+      const data = await fetchPersonas()
+      setPersonas(data)
+    } catch {
+      setPersonas([])
     }
   }, [])
 
   useEffect(() => {
     loadSettings()
-  }, [loadSettings])
+    loadPersonas()
+  }, [loadSettings, loadPersonas])
 
   // Persist split position
   useEffect(() => {
@@ -87,6 +101,8 @@ export function ProjectDetail({ projectId, filename }: ProjectDetailProps) {
               onClose={() => setChatOpen(false)}
               endpoint={endpoint}
               selectedModel={selectedModel}
+              personas={personas}
+              defaultPersonaId={defaultPersonaId}
               width={splitPosition}
               onFilesChanged={handleFilesChanged}
               onAgentFileChanges={handleAgentFileChanges}
@@ -122,6 +138,8 @@ export function ProjectDetail({ projectId, filename }: ProjectDetailProps) {
             onClose={() => setChatOpen(false)}
             endpoint={endpoint}
             selectedModel={selectedModel}
+            personas={personas}
+            defaultPersonaId={defaultPersonaId}
             width={splitPosition}
             onFilesChanged={handleFilesChanged}
             onAgentFileChanges={handleAgentFileChanges}

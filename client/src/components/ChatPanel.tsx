@@ -5,7 +5,8 @@ import { ChatBubble } from './ChatBubble'
 import { ChatInput } from './ChatInput'
 import { ChatHistoryList } from './ChatHistoryList'
 import { ConfirmDialog } from './ConfirmDialog'
-import { FileChange } from '../types'
+import { PersonaSelector } from './PersonaSelector'
+import { FileChange, Persona } from '../types'
 import './ChatPanel.css'
 
 interface ChatPanelProps {
@@ -14,12 +15,14 @@ interface ChatPanelProps {
   onClose: () => void
   endpoint: string | undefined
   selectedModel: string | undefined
+  personas: Persona[]
+  defaultPersonaId: string | undefined
   width?: number
   onFilesChanged?: () => void
   onAgentFileChanges?: (files: FileChange[]) => void
 }
 
-export function ChatPanel({ projectId, isOpen, onClose, endpoint, selectedModel, width, onAgentFileChanges }: ChatPanelProps) {
+export function ChatPanel({ projectId, isOpen, onClose, endpoint, selectedModel, personas, defaultPersonaId, width, onAgentFileChanges }: ChatPanelProps) {
   const {
     sessions,
     currentSession,
@@ -32,6 +35,8 @@ export function ChatPanel({ projectId, isOpen, onClose, endpoint, selectedModel,
     sendMessage,
     stopStreaming,
     newChat,
+    selectedPersona,
+    setSelectedPersona,
   } = useChat(projectId, { onFilesChanged: onAgentFileChanges })
 
   const [showSettingsConfirm, setShowSettingsConfirm] = useState<'endpoint' | 'model' | false>(false)
@@ -57,6 +62,10 @@ export function ChatPanel({ projectId, isOpen, onClose, endpoint, selectedModel,
     newChat()
   }
 
+  const handlePersonaSelect = (persona: Persona) => {
+    setSelectedPersona(persona)
+  }
+
   const handleSend = (userMessage: string) => {
     if (!endpoint) {
       setShowSettingsConfirm('endpoint')
@@ -66,7 +75,7 @@ export function ChatPanel({ projectId, isOpen, onClose, endpoint, selectedModel,
       setShowSettingsConfirm('model')
       return
     }
-    sendMessage(userMessage, endpoint, selectedModel)
+    sendMessage(userMessage, endpoint, selectedModel, selectedPersona?.id)
   }
 
   const handleStop = () => {
@@ -78,6 +87,8 @@ export function ChatPanel({ projectId, isOpen, onClose, endpoint, selectedModel,
   }
 
   const isDisabled = !endpoint || !selectedModel
+  const hasMessages = messages.length > 0
+  const hasSession = !!currentSession
 
   return (
     <div className="chat-panel" style={{ width: width ? `${width}px` : undefined }} onClick={e => e.stopPropagation()}>
@@ -134,12 +145,7 @@ export function ChatPanel({ projectId, isOpen, onClose, endpoint, selectedModel,
               )}
             </div>
           </div>
-        ) : messages.length === 0 && !currentSession ? (
-          <div className="chat-empty-state">
-            <p>No chat sessions yet</p>
-            <p>Start a conversation with the AI agent to explore your project.</p>
-          </div>
-        ) : (
+        ) : hasMessages || hasSession ? (
           <>
             {messages.map((msg, idx) => (
               <ChatBubble
@@ -152,6 +158,17 @@ export function ChatPanel({ projectId, isOpen, onClose, endpoint, selectedModel,
             ))}
             <div ref={messagesEndRef} />
           </>
+        ) : personas.length > 0 ? (
+          <PersonaSelector
+            personas={personas}
+            defaultPersonaId={defaultPersonaId}
+            onSelect={handlePersonaSelect}
+          />
+        ) : (
+          <div className="chat-empty-state">
+            <p>No chat sessions yet</p>
+            <p>Start a conversation with the AI agent to explore your project.</p>
+          </div>
         )}
       </div>
 

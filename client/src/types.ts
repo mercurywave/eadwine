@@ -16,10 +16,20 @@ export interface ApiResponse<T> {
   error?: string
 }
 
+export interface Persona {
+  id: string
+  name: string
+  description: string
+  systemPrompt: string
+  isDefault?: boolean
+}
+
 export interface Settings {
   openAiEndpoint: string
   selectedModel: string
   defaultModel: string
+  personas?: Persona[]
+  defaultPersonaId?: string
 }
 
 export interface ToolCallInfo {
@@ -44,6 +54,7 @@ export interface ChatSession {
   createdAt: string
   updatedAt: string
   messages: ChatMessage[]
+  personaId?: string
 }
 
 export interface ChatSessionSummary {
