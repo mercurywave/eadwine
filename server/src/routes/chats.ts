@@ -221,7 +221,7 @@ router.post('/:id/chats/stream', (req: Request, res: Response) => {
       projectId: id,
       projectPath: resolveProjectPath(id),
       projectTitle,
-      systemPrompt: buildSystemPrompt(projectTitle, id, personaSystemPrompt),
+      systemPrompt: buildSystemPrompt(id, personaSystemPrompt),
       conversationHistory: messages,
       userMessage: message,
       expressRes: res,

@@ -40,7 +40,7 @@ export function readChatMessages(projectId: string, sessionId: string): ChatMess
   return messages
 }
 
-export function buildSystemPrompt(projectTitle: string, projectId: string, personaPrompt?: string): string {
+export function buildSystemPrompt(projectId: string, personaPrompt?: string): string {
   const projectPath = resolveProjectPath(projectId)
   const summaryPath = path.join(projectPath, 'SUMMARY.md')
   let summaryContent = ''
@@ -51,10 +51,13 @@ export function buildSystemPrompt(projectTitle: string, projectId: string, perso
     // No summary file
   }
 
-  let basePrompt = `You are a helpful assistant for the "${projectTitle}" project.
+  let basePrompt = `You are a helpful assistant, responsible for cataloguing and maintaining design documents.
 
 Project Summary:
 ${summaryContent}
+
+Good Folder Strucuture:
+SUMMARY.md - very brief executive description of the project.
 
 You can help answer questions about the project's content, suggest improvements, explain concepts, or assist with writing new Markdown files. Be concise and reference specific files when relevant.`
 
