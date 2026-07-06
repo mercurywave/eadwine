@@ -1,6 +1,7 @@
 import { readFileHandler, readFileDefinition } from './read_file.js'
 import { writeFileHandler, writeFileDefinition } from './write_file.js'
 import { editFileHandler, editFileDefinition } from './edit_file.js'
+import { listFilesHandler, listFilesDefinition } from './list_files.js'
 
 // ── Tool Definition ──────────────────────────────────────────────────
 
@@ -33,6 +34,7 @@ function init(): void {
   tools.set(readFileDefinition.function.name, { definition: readFileDefinition as ToolDefinition, handler: readFileHandler })
   tools.set(writeFileDefinition.function.name, { definition: writeFileDefinition as ToolDefinition, handler: writeFileHandler })
   tools.set(editFileDefinition.function.name, { definition: editFileDefinition as ToolDefinition, handler: editFileHandler })
+  tools.set(listFilesDefinition.function.name, { definition: listFilesDefinition as ToolDefinition, handler: listFilesHandler })
 }
 
 init()
