@@ -19,6 +19,25 @@
   flex-wrap: wrap;
 }
 
+.file-section-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  padding: 0;
+  background: transparent;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  flex-shrink: 0;
+  border-radius: 4px;
+}
+
+.file-section-toggle:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
 .file-section-title {
   font-size: 1.1rem;
   font-weight: 600;
@@ -51,6 +70,11 @@
 
 .file-section-body {
   padding: 1.25rem;
+}
+
+/* Collapsed state */
+.file-section.collapsed .file-section-body {
+  display: none;
 }
 
 /* ── Light theme ──────────────────────────────────────────────────── */

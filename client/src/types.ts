@@ -9,6 +9,7 @@ export interface FileItem {
   name: string
   path: string
   isSummary?: boolean
+  isMemory?: boolean
 }
 
 export interface ApiResponse<T> {

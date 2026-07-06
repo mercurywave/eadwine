@@ -193,7 +193,7 @@ export const ProjectReader = forwardRef<{ refreshFiles: () => void }, ProjectRea
         </div>
       ) : (
         <div className="reader-content">
-          {files.map(file => (
+          {files.filter(f => !f.isMemory).map(file => (
             <FileSection
               key={file.name}
               file={file}
@@ -202,6 +202,18 @@ export const ProjectReader = forwardRef<{ refreshFiles: () => void }, ProjectRea
               onEdit={handleEdit}
               onDelete={handleDelete}
               onRename={handleRenameClick}
+            />
+          ))}
+          {files.filter(f => f.isMemory).map(file => (
+            <FileSection
+              key={file.name}
+              file={file}
+              content={fileContents[file.name] || null}
+              loading={loadingAll && !fileContents[file.name]}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+              onRename={handleRenameClick}
+              collapsed
             />
           ))}
         </div>

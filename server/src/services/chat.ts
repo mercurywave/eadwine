@@ -51,6 +51,14 @@ export function buildSystemPrompt(projectId: string, personaPrompt?: string): st
     // No summary file
   }
 
+  const memoryPath = path.join(projectPath, 'MEMORY.md')
+  let memoryContent = ''
+  try {
+    memoryContent = fs.readFileSync(memoryPath, 'utf-8')
+  } catch {
+    // No memory file
+  }
+
   let basePrompt = `You are a helpful assistant, responsible for cataloguing and maintaining design documents.
 
 # Project Summary
@@ -61,9 +69,10 @@ The folder should only consist of md files which help to describe this project.
 
 The project has some reserved file names which have special meaning:
 - SUMMARY.md - Very brief executive description of the project. Max 30 words.
-- MEMORY.md - (Optional) Notes about decisions, and user preferences. Keep notes extremely brief for handoff to future assistants. Max 1000 words.
+- MEMORY.md - (Optional) Notes about decisions, and user preferences to always keep in mind. Keep notes extremely brief for handoff to future assistants. Max 1000 words.
 
 Additional md files should use Title Case file names. If a file grows to more than 1000 words, it should be split into multiple files.
+${memoryContent ? `# Long-term Memory\n${memoryContent}\n` : ''}
 
 # Your Objective
 You can help answer questions about the project's content, suggest improvements, explain concepts, or assist with writing new Markdown files. Be concise and reference specific files when relevant.`

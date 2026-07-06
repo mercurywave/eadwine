@@ -23,10 +23,13 @@ router.get('/:id/files', (req: Request, res: Response) => {
         name: e.name,
         path: e.name,
         isSummary: e.name.toLowerCase() === 'summary.md',
+        isMemory: e.name.toLowerCase() === 'memory.md',
       }))
       .sort((a, b) => {
         if (a.isSummary) return -1
         if (b.isSummary) return 1
+        if (a.isMemory) return 1
+        if (b.isMemory) return -1
         return a.name.localeCompare(b.name, undefined, { sensitivity: 'base' })
       })
 
@@ -148,6 +151,10 @@ router.delete('/:id/files/:filename', (req: Request, res: Response) => {
       return res.status(403).json({ error: 'Summary file cannot be deleted' })
     }
 
+    if (filename.toLowerCase() === 'memory.md') {
+      return res.status(403).json({ error: 'Memory file cannot be deleted' })
+    }
+
     if (!fs.existsSync(projectPath)) {
       return res.status(404).json({ error: 'Project not found' })
     }
@@ -177,6 +184,10 @@ router.put('/:id/files/rename', (req: Request, res: Response) => {
 
     if (from.toLowerCase() === 'summary.md') {
       return res.status(403).json({ error: 'Summary file cannot be renamed' })
+    }
+
+    if (from.toLowerCase() === 'memory.md') {
+      return res.status(403).json({ error: 'Memory file cannot be renamed' })
     }
 
     const validationError = validateFilename(to)
