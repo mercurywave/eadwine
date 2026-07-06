@@ -51,25 +51,10 @@ export function buildSystemPrompt(projectTitle: string, projectId: string, perso
     // No summary file
   }
 
-  let fileList = ''
-  try {
-    const entries = fs.readdirSync(projectPath, { withFileTypes: true })
-    const mdFiles = entries
-      .filter(e => e.isFile() && e.name.endsWith('.md'))
-      .map(e => e.name)
-      .sort()
-    fileList = mdFiles.join(', ')
-  } catch {
-    // No files
-  }
-
   let basePrompt = `You are a helpful assistant for the "${projectTitle}" project.
 
 Project Summary:
 ${summaryContent}
-
-Project Files:
-${fileList}
 
 You can help answer questions about the project's content, suggest improvements, explain concepts, or assist with writing new Markdown files. Be concise and reference specific files when relevant.`
 
