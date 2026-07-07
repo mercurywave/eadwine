@@ -39,4 +39,5 @@ export interface SettingsData {
   defaultModel?: string
   personas?: PersonaData[]
   defaultPersonaId?: string
+  structureGuidelines?: string
 }

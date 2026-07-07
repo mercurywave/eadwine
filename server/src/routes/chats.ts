@@ -199,16 +199,17 @@ router.post('/:id/chats/stream', (req: Request, res: Response) => {
     const messages = readChatMessages(id, sessionId)
     const projectTitle = session.title
 
-    // Resolve persona system prompt if personaId is provided
+    // Resolve persona system prompt and structure guidelines
+    const settings = readSettings()
     let personaSystemPrompt = ''
     if (personaId) {
-      const settings = readSettings()
       const personas = settings.personas || []
       const persona = personas.find((p: PersonaData) => p.id === personaId)
       if (persona) {
         personaSystemPrompt = persona.systemPrompt
       }
     }
+    const structureGuidelines = settings.structureGuidelines || ''
 
     res.setHeader('Content-Type', 'text/event-stream')
     res.setHeader('Cache-Control', 'no-cache')
@@ -221,7 +222,7 @@ router.post('/:id/chats/stream', (req: Request, res: Response) => {
       projectId: id,
       projectPath: resolveProjectPath(id),
       projectTitle,
-      systemPrompt: buildSystemPrompt(id, personaSystemPrompt),
+      systemPrompt: buildSystemPrompt(id, personaSystemPrompt, structureGuidelines),
       conversationHistory: messages,
       userMessage: message,
       expressRes: res,

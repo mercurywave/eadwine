@@ -31,6 +31,7 @@ export interface Settings {
   defaultModel: string
   personas?: Persona[]
   defaultPersonaId?: string
+  structureGuidelines?: string
 }
 
 export interface ToolCallInfo {

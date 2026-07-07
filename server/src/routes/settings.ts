@@ -37,7 +37,7 @@ router.get('/', (_req: Request, res: Response) => {
 // PUT /api/settings
 router.put('/', (req: Request, res: Response) => {
   try {
-    const { openAiEndpoint, selectedModel, defaultModel, personas, defaultPersonaId } = req.body
+    const { openAiEndpoint, selectedModel, defaultModel, personas, defaultPersonaId, structureGuidelines } = req.body
     const settings: SettingsData = {}
     if (typeof openAiEndpoint === 'string') {
       settings.openAiEndpoint = openAiEndpoint
@@ -53,6 +53,9 @@ router.put('/', (req: Request, res: Response) => {
     }
     if (typeof defaultPersonaId === 'string') {
       settings.defaultPersonaId = defaultPersonaId
+    }
+    if (typeof structureGuidelines === 'string') {
+      settings.structureGuidelines = structureGuidelines
     }
     writeSettings(settings)
     res.json(settings)

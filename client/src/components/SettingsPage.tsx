@@ -19,6 +19,11 @@ const sections = [
     description: 'Configure third-party AI provider endpoints',
   },
   {
+    id: 'structure',
+    label: 'Project Structure',
+    description: 'Define guidelines for good folder/file/project structure',
+  },
+  {
     id: 'personas',
     label: 'Personas',
     description: 'Define chat assistant personas and their behavior',
@@ -65,6 +70,7 @@ export function SettingsPage() {
         defaultModel: data.defaultModel ?? '',
         personas: data.personas ?? [],
         defaultPersonaId: data.defaultPersonaId,
+        structureGuidelines: data.structureGuidelines ?? '',
       })
       setPersonas(data.personas || [])
     } catch {
@@ -109,6 +115,7 @@ export function SettingsPage() {
         defaultModel: settings.defaultModel,
         personas: personas,
         defaultPersonaId: settings.defaultPersonaId,
+        structureGuidelines: settings.structureGuidelines,
       })
       addToast('Settings saved', 'success')
     } catch (err) {
@@ -125,6 +132,10 @@ export function SettingsPage() {
 
   const handleSelectedModelChange = (value: string) => {
     setSettings(prev => ({ ...prev, selectedModel: value }))
+  }
+
+  const handleStructureGuidelinesChange = (value: string) => {
+    setSettings(prev => ({ ...prev, structureGuidelines: value }))
   }
 
   // Persona handlers
@@ -312,6 +323,25 @@ export function SettingsPage() {
                     )}
                     <span className="field-hint">
                       Select the AI model to use for chat. This is required to use the chat feature.
+                    </span>
+                  </div>
+                </>
+              )}
+
+              {section.id === 'structure' && (
+                <>
+                  <div className="setting-field">
+                    <label htmlFor="structureGuidelines">Structure Guidelines</label>
+                    <textarea
+                      id="structureGuidelines"
+                      className="modal-input persona-textarea"
+                      placeholder="Describe your preferred folder/file/project structure. For example: 'Use kebab-case for folder names. Keep files under 500 words.'"
+                      value={settings.structureGuidelines || ''}
+                      onChange={e => handleStructureGuidelinesChange(e.target.value)}
+                      rows={8}
+                    />
+                    <span className="field-hint">
+                      This text will be added to the system prompt to guide the AI in maintaining your preferred project structure. Leave blank to use the default guidelines.
                     </span>
                   </div>
                 </>
