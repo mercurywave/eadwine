@@ -6,7 +6,7 @@ import { ChatInput } from './ChatInput'
 import { ChatHistoryList } from './ChatHistoryList'
 import { ConfirmDialog } from './ConfirmDialog'
 import { PersonaSelector } from './PersonaSelector'
-import { FileChange, Persona } from '../types'
+import { FileChange, Persona, Macro } from '../types'
 import './ChatPanel.css'
 
 interface ChatPanelProps {
@@ -17,12 +17,13 @@ interface ChatPanelProps {
   selectedModel: string | undefined
   personas: Persona[]
   defaultPersonaId: string | undefined
+  macros: Macro[]
   width?: number
   onFilesChanged?: () => void
   onAgentFileChanges?: (files: FileChange[]) => void
 }
 
-export function ChatPanel({ projectId, isOpen, onClose, endpoint, selectedModel, personas, defaultPersonaId, width, onAgentFileChanges }: ChatPanelProps) {
+export function ChatPanel({ projectId, isOpen, onClose, endpoint, selectedModel, personas, defaultPersonaId, macros, width, onAgentFileChanges }: ChatPanelProps) {
   const {
     sessions,
     currentSession,
@@ -76,6 +77,10 @@ export function ChatPanel({ projectId, isOpen, onClose, endpoint, selectedModel,
       return
     }
     sendMessage(userMessage, endpoint, selectedModel, selectedPersona?.id)
+  }
+
+  const handleMacroSelect = (prompt: string) => {
+    handleSend(prompt)
   }
 
   const handleStop = () => {
@@ -175,9 +180,11 @@ export function ChatPanel({ projectId, isOpen, onClose, endpoint, selectedModel,
       {/* Input */}
       <ChatInput
         onSend={handleSend}
+        onMacroSelect={handleMacroSelect}
         onStop={handleStop}
         isStreaming={isStreaming}
         disabled={isDisabled}
+        macros={macros}
       />
 
       {/* Settings confirmation */}

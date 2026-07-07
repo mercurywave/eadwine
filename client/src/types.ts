@@ -25,6 +25,12 @@ export interface Persona {
   isDefault?: boolean
 }
 
+export interface Macro {
+  id: string
+  name: string
+  prompt: string
+}
+
 export interface Settings {
   openAiEndpoint: string
   selectedModel: string
@@ -32,6 +38,7 @@ export interface Settings {
   personas?: Persona[]
   defaultPersonaId?: string
   structureGuidelines?: string
+  macros?: Macro[]
 }
 
 export interface ToolCallInfo {

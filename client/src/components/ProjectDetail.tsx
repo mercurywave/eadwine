@@ -1,12 +1,12 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { MessageSquare } from 'lucide-react'
-import { fetchSettings, fetchPersonas } from '../api'
+import { fetchSettings, fetchPersonas, fetchMacros } from '../api'
 import { ProjectReader } from './ProjectReader'
 import { ProjectEditor } from './ProjectEditor'
 import { ChatPanel } from './ChatPanel'
 import { Splitter } from './Splitter'
-import { FileChange, Persona } from '../types'
+import { FileChange, Persona, Macro } from '../types'
 import './ProjectDetail.css'
 
 interface ProjectDetailProps {
@@ -22,6 +22,7 @@ export function ProjectDetail({ projectId, filename }: ProjectDetailProps) {
   const [selectedModel, setSelectedModel] = useState<string | undefined>(undefined)
   const [personas, setPersonas] = useState<Persona[]>([])
   const [defaultPersonaId, setDefaultPersonaId] = useState<string | undefined>(undefined)
+  const [macros, setMacros] = useState<Macro[]>([])
   const projectReaderRef = useRef<{ refreshFiles: () => void; refreshFileContent: (filename: string) => void } | null>(null)
 
   // Split position state with localStorage persistence
@@ -52,10 +53,20 @@ export function ProjectDetail({ projectId, filename }: ProjectDetailProps) {
     }
   }, [])
 
+  const loadMacros = useCallback(async () => {
+    try {
+      const data = await fetchMacros()
+      setMacros(data)
+    } catch {
+      setMacros([])
+    }
+  }, [])
+
   useEffect(() => {
     loadSettings()
     loadPersonas()
-  }, [loadSettings, loadPersonas])
+    loadMacros()
+  }, [loadSettings, loadPersonas, loadMacros])
 
   // Persist split position
   useEffect(() => {
@@ -103,6 +114,7 @@ export function ProjectDetail({ projectId, filename }: ProjectDetailProps) {
               selectedModel={selectedModel}
               personas={personas}
               defaultPersonaId={defaultPersonaId}
+              macros={macros}
               width={splitPosition}
               onFilesChanged={handleFilesChanged}
               onAgentFileChanges={handleAgentFileChanges}
@@ -140,6 +152,7 @@ export function ProjectDetail({ projectId, filename }: ProjectDetailProps) {
             selectedModel={selectedModel}
             personas={personas}
             defaultPersonaId={defaultPersonaId}
+            macros={macros}
             width={splitPosition}
             onFilesChanged={handleFilesChanged}
             onAgentFileChanges={handleAgentFileChanges}

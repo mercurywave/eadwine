@@ -33,6 +33,12 @@ export interface PersonaData {
   isDefault?: boolean
 }
 
+export interface MacroData {
+  id: string
+  name: string
+  prompt: string
+}
+
 export interface SettingsData {
   openAiEndpoint?: string
   selectedModel?: string
@@ -40,4 +46,5 @@ export interface SettingsData {
   personas?: PersonaData[]
   defaultPersonaId?: string
   structureGuidelines?: string
+  macros?: MacroData[]
 }

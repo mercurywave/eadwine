@@ -1,15 +1,19 @@
 import { useState, useRef, useEffect, KeyboardEvent } from 'react'
 import { Send, Square } from 'lucide-react'
+import { Macro } from '../types'
+import { MacroPicker } from './MacroPicker'
 import './ChatInput.css'
 
 interface ChatInputProps {
   onSend: (message: string) => void
+  onMacroSelect: (prompt: string) => void
   onStop: () => void
   isStreaming: boolean
   disabled?: boolean
+  macros?: Macro[]
 }
 
-export function ChatInput({ onSend, onStop, isStreaming, disabled = false }: ChatInputProps) {
+export function ChatInput({ onSend, onMacroSelect, onStop, isStreaming, disabled = false, macros = [] }: ChatInputProps) {
   const [text, setText] = useState('')
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
@@ -44,6 +48,7 @@ export function ChatInput({ onSend, onStop, isStreaming, disabled = false }: Cha
   return (
     <div className="chat-input-area">
       <div className="chat-input-wrapper">
+        <MacroPicker macros={macros} onSelect={onMacroSelect} />
         <textarea
           ref={textareaRef}
           className="chat-textarea"

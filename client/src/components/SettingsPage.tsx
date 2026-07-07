@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ArrowLeft, Plus, Trash2, Edit2, Check, X } from 'lucide-react'
-import { fetchSettings, saveSettings, fetchModels, createPersona, updatePersona, deletePersona, setDefaultPersona, resetDefaultPersona } from '../api'
-import { Settings, Persona } from '../types'
+import { fetchSettings, saveSettings, fetchModels, createPersona, updatePersona, deletePersona, setDefaultPersona, resetDefaultPersona, createMacro, updateMacro, deleteMacro } from '../api'
+import { Settings, Persona, Macro } from '../types'
 import { useToasts } from './Toast'
 import './SettingsPage.css'
 
@@ -28,12 +28,22 @@ const sections = [
     label: 'Personas',
     description: 'Define chat assistant personas and their behavior',
   },
+  {
+    id: 'macros',
+    label: 'Macros',
+    description: 'Create prompt shortcuts you can use in chat',
+  },
 ]
 
 interface PersonaForm {
   name: string
   description: string
   systemPrompt: string
+}
+
+interface MacroForm {
+  name: string
+  prompt: string
 }
 
 export function SettingsPage() {
@@ -57,6 +67,16 @@ export function SettingsPage() {
   const [showAddForm, setShowAddForm] = useState(false)
   const [loadingPersonas, setLoadingPersonas] = useState(false)
 
+  // Macro state
+  const [macros, setMacros] = useState<Macro[]>([])
+  const [editingMacro, setEditingMacro] = useState<string | null>(null)
+  const [macroForm, setMacroForm] = useState<MacroForm>({
+    name: '',
+    prompt: '',
+  })
+  const [showAddMacroForm, setShowAddMacroForm] = useState(false)
+  const [loadingMacros, setLoadingMacros] = useState(false)
+
   useEffect(() => {
     loadSettings()
   }, [])
@@ -73,6 +93,7 @@ export function SettingsPage() {
         structureGuidelines: data.structureGuidelines ?? '',
       })
       setPersonas(data.personas || [])
+      setMacros(data.macros || [])
     } catch {
       // Silently use defaults — settings file may not exist yet
     } finally {
@@ -231,6 +252,79 @@ export function SettingsPage() {
   const handleCancelAdd = () => {
     setShowAddForm(false)
     setPersonaForm({ name: '', description: '', systemPrompt: '' })
+  }
+
+  // Macro handlers
+  const handleAddMacro = async () => {
+    if (!macroForm.name || !macroForm.prompt) {
+      addToast('Name and prompt are required', 'error')
+      return
+    }
+    try {
+      setLoadingMacros(true)
+      const newMacro = await createMacro(macroForm)
+      setMacros(prev => [...prev, newMacro])
+      setMacroForm({ name: '', prompt: '' })
+      setShowAddMacroForm(false)
+      addToast('Macro created', 'success')
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to create macro'
+      addToast(message, 'error')
+    } finally {
+      setLoadingMacros(false)
+    }
+  }
+
+  const handleEditMacro = (macro: Macro) => {
+    setEditingMacro(macro.id)
+    setMacroForm({
+      name: macro.name,
+      prompt: macro.prompt,
+    })
+  }
+
+  const handleUpdateMacro = async () => {
+    if (!editingMacro || !macroForm.name || !macroForm.prompt) {
+      addToast('Name and prompt are required', 'error')
+      return
+    }
+    try {
+      setLoadingMacros(true)
+      const updated = await updateMacro(editingMacro, macroForm)
+      setMacros(prev => prev.map(m => m.id === editingMacro ? updated : m))
+      setEditingMacro(null)
+      addToast('Macro updated', 'success')
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to update macro'
+      addToast(message, 'error')
+    } finally {
+      setLoadingMacros(false)
+    }
+  }
+
+  const handleCancelEditMacro = () => {
+    setEditingMacro(null)
+    setMacroForm({ name: '', prompt: '' })
+  }
+
+  const handleDeleteMacro = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this macro?')) return
+    try {
+      setLoadingMacros(true)
+      await deleteMacro(id)
+      setMacros(prev => prev.filter(m => m.id !== id))
+      addToast('Macro deleted', 'success')
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to delete macro'
+      addToast(message, 'error')
+    } finally {
+      setLoadingMacros(false)
+    }
+  }
+
+  const handleCancelAddMacro = () => {
+    setShowAddMacroForm(false)
+    setMacroForm({ name: '', prompt: '' })
   }
 
   if (loading) {
@@ -527,6 +621,152 @@ export function SettingsPage() {
                                 onClick={() => handleDeletePersona(persona.id)}
                                 title="Delete"
                                 disabled={loadingPersonas}
+                              >
+                                <Trash2 className="btn-icon-small" />
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
+
+              {section.id === 'macros' && (
+                <>
+                  <div className="macros-header">
+                    <button
+                      className="btn-secondary"
+                      onClick={() => setShowAddMacroForm(true)}
+                      disabled={loadingMacros}
+                    >
+                      <Plus className="btn-icon" />
+                      Add Macro
+                    </button>
+                  </div>
+
+                  {/* Add Macro Form */}
+                  {showAddMacroForm && (
+                    <div className="macro-form">
+                      <h3>New Macro</h3>
+                      <div className="setting-field">
+                        <label htmlFor="macro-name">Name</label>
+                        <input
+                          id="macro-name"
+                          type="text"
+                          className="modal-input"
+                          placeholder="e.g., Summarize"
+                          value={macroForm.name}
+                          onChange={e => setMacroForm(prev => ({ ...prev, name: e.target.value }))}
+                        />
+                      </div>
+                      <div className="setting-field">
+                        <label htmlFor="macro-prompt">Prompt</label>
+                        <textarea
+                          id="macro-prompt"
+                          className="modal-input macro-textarea"
+                          placeholder="Enter the prompt that will be sent to the agent..."
+                          value={macroForm.prompt}
+                          onChange={e => setMacroForm(prev => ({ ...prev, prompt: e.target.value }))}
+                          rows={4}
+                        />
+                        <span className="field-hint">
+                          This prompt will be submitted to the agent when you select this macro in chat.
+                        </span>
+                      </div>
+                      <div className="persona-form-actions">
+                        <button
+                          className="btn-primary"
+                          onClick={handleAddMacro}
+                          disabled={loadingMacros || !macroForm.name || !macroForm.prompt}
+                        >
+                          <Check className="btn-icon" />
+                          Create
+                        </button>
+                        <button
+                          className="btn-secondary"
+                          onClick={handleCancelAddMacro}
+                        >
+                          <X className="btn-icon" />
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Macro List */}
+                  <div className="macro-list">
+                    {macros.length === 0 && !showAddMacroForm && (
+                      <p className="macro-empty">No macros defined yet. Click "Add Macro" to create one.</p>
+                    )}
+                    {macros.map(macro => (
+                      <div
+                        key={macro.id}
+                        className="macro-item"
+                      >
+                        {editingMacro === macro.id ? (
+                          // Edit mode
+                          <div className="macro-edit-form">
+                            <div className="setting-field">
+                              <label htmlFor={`edit-macro-name-${macro.id}`}>Name</label>
+                              <input
+                                id={`edit-macro-name-${macro.id}`}
+                                type="text"
+                                className="modal-input"
+                                value={macroForm.name}
+                                onChange={e => setMacroForm(prev => ({ ...prev, name: e.target.value }))}
+                              />
+                            </div>
+                            <div className="setting-field">
+                              <label htmlFor={`edit-macro-prompt-${macro.id}`}>Prompt</label>
+                              <textarea
+                                id={`edit-macro-prompt-${macro.id}`}
+                                className="modal-input macro-textarea"
+                                value={macroForm.prompt}
+                                onChange={e => setMacroForm(prev => ({ ...prev, prompt: e.target.value }))}
+                                rows={3}
+                              />
+                            </div>
+                            <div className="persona-form-actions">
+                              <button
+                                className="btn-primary"
+                                onClick={handleUpdateMacro}
+                                disabled={loadingMacros || !macroForm.name || !macroForm.prompt}
+                              >
+                                <Check className="btn-icon" />
+                                Save
+                              </button>
+                              <button
+                                className="btn-secondary"
+                                onClick={handleCancelEditMacro}
+                              >
+                                <X className="btn-icon" />
+                                Cancel
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          // View mode
+                          <div className="macro-item-content">
+                            <div className="macro-item-header">
+                              <h4 className="macro-item-name">{macro.name}</h4>
+                              <p className="macro-item-prompt">{macro.prompt}</p>
+                            </div>
+                            <div className="macro-item-actions">
+                              <button
+                                className="btn-icon-btn"
+                                onClick={() => handleEditMacro(macro)}
+                                title="Edit"
+                                disabled={loadingMacros}
+                              >
+                                <Edit2 className="btn-icon-small" />
+                              </button>
+                              <button
+                                className="btn-icon-btn btn-danger"
+                                onClick={() => handleDeleteMacro(macro.id)}
+                                title="Delete"
+                                disabled={loadingMacros}
                               >
                                 <Trash2 className="btn-icon-small" />
                               </button>

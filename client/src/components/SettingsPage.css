@@ -339,6 +339,99 @@
   margin-top: 0.5rem;
 }
 
+/* ── Macros Section ──────────────────────────────────────────────── */
+
+.macros-header {
+  margin-bottom: 1.5rem;
+}
+
+.macro-form {
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 10px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.macro-form h3 {
+  margin: 0 0 1rem 0;
+  font-size: 1.1rem;
+  color: #f8fafc;
+}
+
+.macro-textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.macro-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.macro-empty {
+  color: #64748b;
+  font-style: italic;
+  padding: 2rem 0;
+  text-align: center;
+}
+
+.macro-item {
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 10px;
+  padding: 1rem 1.25rem;
+  transition: border-color 0.2s;
+}
+
+.macro-item-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.macro-item-header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.macro-item-name {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #f8fafc;
+}
+
+.macro-item-prompt {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #94a3b8;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.macro-item-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.macro-edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.macro-edit-form .persona-form-actions {
+  margin-top: 0.5rem;
+}
+
 /* ── Light theme overrides ───────────────────────────────────────── */
 
 @media (prefers-color-scheme: light) {
@@ -436,5 +529,23 @@
 
   .persona-item-actions {
     align-self: flex-end;
+  }
+
+  .macro-form {
+    background: #f8f9fa;
+    border-color: #ddd;
+  }
+
+  .macro-item {
+    background: #f8f9fa;
+    border-color: #ddd;
+  }
+
+  .macro-item-name {
+    color: #213547;
+  }
+
+  .macro-item-prompt {
+    color: #666;
   }
 }

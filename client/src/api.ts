@@ -1,4 +1,4 @@
-import { Project, FileItem, Settings, Persona, ChatSession, ChatSessionSummary, ToolCallInfo, ChatMessage, FileChange, FileChangeEvent } from './types'
+import { Project, FileItem, Settings, Persona, Macro, ChatSession, ChatSessionSummary, ToolCallInfo, ChatMessage, FileChange, FileChangeEvent } from './types'
 
 const BASE_URL = '/api'
 
@@ -129,6 +129,32 @@ export async function setDefaultPersona(id: string): Promise<void> {
 
 export async function resetDefaultPersona(id: string): Promise<void> {
   await request<void>(`/settings/personas/${id}/reset-default`, {
+    method: 'DELETE',
+  })
+}
+
+// ── Macros ────────────────────────────────────────────────────────────
+
+export async function fetchMacros(): Promise<Macro[]> {
+  return request<Macro[]>('/settings/macros')
+}
+
+export async function createMacro(macro: Omit<Macro, 'id'>): Promise<Macro> {
+  return request<Macro>('/settings/macros', {
+    method: 'POST',
+    body: JSON.stringify(macro),
+  })
+}
+
+export async function updateMacro(id: string, macro: Partial<Omit<Macro, 'id'>>): Promise<Macro> {
+  return request<Macro>(`/settings/macros/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(macro),
+  })
+}
+
+export async function deleteMacro(id: string): Promise<void> {
+  return request<void>(`/settings/macros/${id}`, {
     method: 'DELETE',
   })
 }
