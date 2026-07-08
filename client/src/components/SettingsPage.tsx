@@ -497,7 +497,7 @@ export function SettingsPage() {
                       type="number"
                       className="modal-input"
                       min="1"
-                      placeholder="300"
+                      placeholder="500"
                       value={settings.summaryMaxLength ?? ''}
                       onChange={e => handleSummaryMaxLengthChange(e.target.value)}
                     />
@@ -513,7 +513,7 @@ export function SettingsPage() {
                       type="number"
                       className="modal-input"
                       min="1"
-                      placeholder="5000"
+                      placeholder="3000"
                       value={settings.memoryMaxLength ?? ''}
                       onChange={e => handleMemoryMaxLengthChange(e.target.value)}
                     />
