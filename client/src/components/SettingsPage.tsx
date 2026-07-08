@@ -91,6 +91,9 @@ export function SettingsPage() {
         personas: data.personas ?? [],
         defaultPersonaId: data.defaultPersonaId,
         structureGuidelines: data.structureGuidelines ?? '',
+        summaryMaxLength: data.summaryMaxLength,
+        memoryMaxLength: data.memoryMaxLength,
+        otherMaxLength: data.otherMaxLength,
       })
       setPersonas(data.personas || [])
       setMacros(data.macros || [])
@@ -128,6 +131,15 @@ export function SettingsPage() {
       addToast('Please select a model before saving', 'error')
       return
     }
+    // Validate required file size limits
+    if (!settings.summaryMaxLength || settings.summaryMaxLength <= 0) {
+      addToast('Summary file length limit is required and must be a positive number', 'error')
+      return
+    }
+    if (!settings.memoryMaxLength || settings.memoryMaxLength <= 0) {
+      addToast('Memory file length limit is required and must be a positive number', 'error')
+      return
+    }
     try {
       setSaving(true)
       await saveSettings({
@@ -137,6 +149,9 @@ export function SettingsPage() {
         personas: personas,
         defaultPersonaId: settings.defaultPersonaId,
         structureGuidelines: settings.structureGuidelines,
+        summaryMaxLength: settings.summaryMaxLength,
+        memoryMaxLength: settings.memoryMaxLength,
+        otherMaxLength: settings.otherMaxLength,
       })
       addToast('Settings saved', 'success')
     } catch (err) {
@@ -157,6 +172,42 @@ export function SettingsPage() {
 
   const handleStructureGuidelinesChange = (value: string) => {
     setSettings(prev => ({ ...prev, structureGuidelines: value }))
+  }
+
+  const handleSummaryMaxLengthChange = (value: string) => {
+    const trimmed = value.trim()
+    if (trimmed === '') {
+      setSettings(prev => ({ ...prev, summaryMaxLength: undefined }))
+    } else {
+      const num = Number(value)
+      if (!isNaN(num) && isFinite(num)) {
+        setSettings(prev => ({ ...prev, summaryMaxLength: num }))
+      }
+    }
+  }
+
+  const handleMemoryMaxLengthChange = (value: string) => {
+    const trimmed = value.trim()
+    if (trimmed === '') {
+      setSettings(prev => ({ ...prev, memoryMaxLength: undefined }))
+    } else {
+      const num = Number(value)
+      if (!isNaN(num) && isFinite(num)) {
+        setSettings(prev => ({ ...prev, memoryMaxLength: num }))
+      }
+    }
+  }
+
+  const handleOtherMaxLengthChange = (value: string) => {
+    const trimmed = value.trim()
+    if (trimmed === '') {
+      setSettings(prev => ({ ...prev, otherMaxLength: undefined }))
+    } else {
+      const num = Number(value)
+      if (!isNaN(num) && isFinite(num)) {
+        setSettings(prev => ({ ...prev, otherMaxLength: num }))
+      }
+    }
   }
 
   // Persona handlers
@@ -436,6 +487,54 @@ export function SettingsPage() {
                     />
                     <span className="field-hint">
                       This text will be added to the system prompt to guide the AI in maintaining your preferred project structure. Leave blank to use the default guidelines.
+                    </span>
+                  </div>
+
+                  <div className="setting-field">
+                    <label htmlFor="summaryMaxLength">SUMMARY.md Limit (characters)</label>
+                    <input
+                      id="summaryMaxLength"
+                      type="number"
+                      className="modal-input"
+                      min="1"
+                      placeholder="300"
+                      value={settings.summaryMaxLength ?? ''}
+                      onChange={e => handleSummaryMaxLengthChange(e.target.value)}
+                    />
+                    <span className="field-hint">
+                      Maximum string length for SUMMARY.md. The agent will reject writes that exceed this limit. Required.
+                    </span>
+                  </div>
+
+                  <div className="setting-field">
+                    <label htmlFor="memoryMaxLength">MEMORY.md Limit (characters)</label>
+                    <input
+                      id="memoryMaxLength"
+                      type="number"
+                      className="modal-input"
+                      min="1"
+                      placeholder="5000"
+                      value={settings.memoryMaxLength ?? ''}
+                      onChange={e => handleMemoryMaxLengthChange(e.target.value)}
+                    />
+                    <span className="field-hint">
+                      Maximum string length for MEMORY.md. The agent will reject writes that exceed this limit. Required.
+                    </span>
+                  </div>
+
+                  <div className="setting-field">
+                    <label htmlFor="otherMaxLength">Other .md Files Limit (characters)</label>
+                    <input
+                      id="otherMaxLength"
+                      type="number"
+                      className="modal-input"
+                      min="0"
+                      placeholder="Leave blank for no limit"
+                      value={settings.otherMaxLength ?? ''}
+                      onChange={e => handleOtherMaxLengthChange(e.target.value)}
+                    />
+                    <span className="field-hint">
+                      Maximum string length for all other .md files. Leave blank or set to 0 for no limit.
                     </span>
                   </div>
                 </>

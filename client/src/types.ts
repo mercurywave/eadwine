@@ -39,6 +39,9 @@ export interface Settings {
   defaultPersonaId?: string
   structureGuidelines?: string
   macros?: Macro[]
+  summaryMaxLength?: number
+  memoryMaxLength?: number
+  otherMaxLength?: number
 }
 
 export interface ToolCallInfo {

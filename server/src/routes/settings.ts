@@ -37,7 +37,7 @@ router.get('/', (_req: Request, res: Response) => {
 // PUT /api/settings
 router.put('/', (req: Request, res: Response) => {
   try {
-    const { openAiEndpoint, selectedModel, defaultModel, personas, defaultPersonaId, structureGuidelines, macros } = req.body
+    const { openAiEndpoint, selectedModel, defaultModel, personas, defaultPersonaId, structureGuidelines, macros, summaryMaxLength, memoryMaxLength, otherMaxLength } = req.body
     const settings: SettingsData = {}
     if (typeof openAiEndpoint === 'string') {
       settings.openAiEndpoint = openAiEndpoint
@@ -59,6 +59,19 @@ router.put('/', (req: Request, res: Response) => {
     }
     if (Array.isArray(macros)) {
       settings.macros = macros
+    }
+    // File size limits - summaryMaxLength and memoryMaxLength are required
+    if (typeof summaryMaxLength === 'number' && summaryMaxLength > 0) {
+      settings.summaryMaxLength = summaryMaxLength
+    }
+    if (typeof memoryMaxLength === 'number' && memoryMaxLength > 0) {
+      settings.memoryMaxLength = memoryMaxLength
+    }
+    // otherMaxLength is optional - can be blank/unlimited
+    if (typeof otherMaxLength === 'number' && otherMaxLength >= 0) {
+      settings.otherMaxLength = otherMaxLength
+    } else if (otherMaxLength === '' || otherMaxLength === null || otherMaxLength === undefined) {
+      settings.otherMaxLength = undefined
     }
     writeSettings(settings)
     res.json(settings)

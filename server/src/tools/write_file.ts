@@ -1,5 +1,6 @@
 import fs from 'fs'
 import { resolveFilePath } from '../helpers.js'
+import { readSettings } from '../routes/settings.js'
 
 export function writeFileHandler(
   args: Record<string, unknown>,
@@ -20,6 +21,26 @@ export function writeFileHandler(
   // Only allow .md files
   if (!filename.toLowerCase().endsWith('.md')) {
     return { success: false, error: `The file "${filename}" is not a .md file. The write_file tool only supports Markdown files.` }
+  }
+
+  // File size limits
+  const settings = readSettings()
+  const filenameUpper = filename.toUpperCase()
+  let maxLength: number | undefined
+
+  if (filenameUpper === 'SUMMARY.MD') {
+    maxLength = settings.summaryMaxLength
+  } else if (filenameUpper === 'MEMORY.MD') {
+    maxLength = settings.memoryMaxLength
+  } else {
+    maxLength = settings.otherMaxLength
+  }
+
+  if (maxLength !== undefined && maxLength > 0 && content.length > maxLength) {
+    return {
+      success: false,
+      error: `The file "${filename}" content exceeds the limit of ${maxLength} characters. Please write a shorter file.`,
+    }
   }
 
   const filePath = resolveFilePath(projectPath, filename)

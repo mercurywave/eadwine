@@ -47,4 +47,7 @@ export interface SettingsData {
   defaultPersonaId?: string
   structureGuidelines?: string
   macros?: MacroData[]
+  summaryMaxLength?: number
+  memoryMaxLength?: number
+  otherMaxLength?: number
 }
