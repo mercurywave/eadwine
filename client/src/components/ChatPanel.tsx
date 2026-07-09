@@ -99,10 +99,15 @@ export function ChatPanel({ projectId, isOpen, onClose, endpoint, selectedModel,
     <div className="chat-panel" style={{ width: width ? `${width}px` : undefined }} onClick={e => e.stopPropagation()}>
       {/* Header */}
       <div className="chat-panel-header">
-        <h2 className="chat-panel-title">
-          <MessageSquare className="chat-panel-title-icon" />
-          Chat
-        </h2>
+        <div className="chat-panel-header-left">
+          <h2 className="chat-panel-title">
+            <MessageSquare className="chat-panel-title-icon" />
+            Chat
+          </h2>
+          {hasSession && (
+            <span className="chat-panel-subtitle">{"— " + currentSession.title}</span>
+          )}
+        </div>
         <button
           className="chat-panel-close"
           onClick={onClose}

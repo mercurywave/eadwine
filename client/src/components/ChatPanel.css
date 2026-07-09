@@ -21,6 +21,13 @@
   flex-shrink: 0;
 }
 
+.chat-panel-header-left {
+  display: flex;
+  align-items: last baseline;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
 .chat-panel-title {
   font-size: 1rem;
   font-weight: 600;
@@ -34,6 +41,16 @@
   width: 1.25rem;
   height: 1.25rem;
   color: #646cff;
+}
+
+.chat-panel-subtitle {
+  font-size: 0.85rem;
+  color: #aaa;
+  font-weight: 400;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
 }
 
 .chat-panel-close {
