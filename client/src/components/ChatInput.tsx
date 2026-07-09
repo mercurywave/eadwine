@@ -11,10 +11,13 @@ interface ChatInputProps {
   isStreaming: boolean
   disabled?: boolean
   macros?: Macro[]
+  draftText?: string
+  onDraftChange?: (text: string) => void
+  onDraftClear?: () => void
 }
 
-export function ChatInput({ onSend, onMacroSelect, onStop, isStreaming, disabled = false, macros = [] }: ChatInputProps) {
-  const [text, setText] = useState('')
+export function ChatInput({ onSend, onMacroSelect, onStop, isStreaming, disabled = false, macros = [], draftText = '', onDraftChange, onDraftClear }: ChatInputProps) {
+  const [text, setText] = useState(draftText)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   useEffect(() => {
@@ -28,6 +31,9 @@ export function ChatInput({ onSend, onMacroSelect, onStop, isStreaming, disabled
     if (!trimmed) return
     onSend(trimmed)
     setText('')
+    if (onDraftClear) {
+      onDraftClear()
+    }
   }
 
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
@@ -38,7 +44,11 @@ export function ChatInput({ onSend, onMacroSelect, onStop, isStreaming, disabled
   }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setText(e.target.value)
+    const value = e.target.value
+    setText(value)
+    if (onDraftChange) {
+      onDraftChange(value)
+    }
     // Auto-resize
     const el = e.target
     el.style.height = 'auto'

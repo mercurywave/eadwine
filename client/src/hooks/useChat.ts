@@ -21,6 +21,7 @@ interface ChatState {
   isLoadingSessions: boolean
   error: string | null
   selectedPersona: Persona | null
+  draftText: string
 
   loadSessions: () => Promise<void>
   selectSession: (sessionId: string) => Promise<void>
@@ -28,6 +29,8 @@ interface ChatState {
   stopStreaming: () => void
   newChat: () => void
   setSelectedPersona: (persona: Persona | null) => void
+  setDraftText: (text: string) => void
+  clearDraft: () => void
 }
 
 export function useChat(projectId: string, options?: UseChatOptions): ChatState {
@@ -39,6 +42,10 @@ export function useChat(projectId: string, options?: UseChatOptions): ChatState 
   const [isLoadingSessions, setIsLoadingSessions] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [selectedPersona, setSelectedPersona] = useState<Persona | null>(null)
+  const [draftText, setDraftTextState] = useState<string>(() => {
+    const saved = localStorage.getItem(`draft_prompt_${projectId}`)
+    return saved || ''
+  })
   const { addToast } = useToasts()
 
   const abortControllerRef = useRef<AbortController | null>(null)
@@ -257,6 +264,19 @@ export function useChat(projectId: string, options?: UseChatOptions): ChatState 
     [projectId, addToast],
   )
 
+  const setDraftText = useCallback(
+    (text: string) => {
+      setDraftTextState(text)
+      localStorage.setItem(`draft_prompt_${projectId}`, text)
+    },
+    [projectId],
+  )
+
+  const clearDraft = useCallback(() => {
+    setDraftTextState('')
+    localStorage.removeItem(`draft_prompt_${projectId}`)
+  }, [projectId])
+
   const stopStreaming = useCallback(() => {
     abortControllerRef.current?.abort()
     setIsStreaming(false)
@@ -280,11 +300,14 @@ export function useChat(projectId: string, options?: UseChatOptions): ChatState 
     isLoadingSessions,
     error,
     selectedPersona,
+    draftText,
     loadSessions,
     selectSession,
     sendMessage,
     stopStreaming,
     newChat,
     setSelectedPersona,
+    setDraftText,
+    clearDraft,
   }
 }

@@ -38,6 +38,9 @@ export function ChatPanel({ projectId, isOpen, onClose, endpoint, selectedModel,
     newChat,
     selectedPersona,
     setSelectedPersona,
+    draftText,
+    setDraftText,
+    clearDraft,
   } = useChat(projectId, { onFilesChanged: onAgentFileChanges })
 
   const [showSettingsConfirm, setShowSettingsConfirm] = useState<'endpoint' | 'model' | false>(false)
@@ -190,6 +193,9 @@ export function ChatPanel({ projectId, isOpen, onClose, endpoint, selectedModel,
         isStreaming={isStreaming}
         disabled={isDisabled}
         macros={macros}
+        draftText={draftText}
+        onDraftChange={setDraftText}
+        onDraftClear={clearDraft}
       />
 
       {/* Settings confirmation */}
