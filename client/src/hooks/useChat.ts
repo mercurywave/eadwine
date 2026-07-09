@@ -4,6 +4,7 @@ import {
   fetchChatSessions,
   fetchChatSession,
   streamChatMessage,
+  updateChatSessionTitle,
 } from '../api'
 import { useToasts } from '../components/Toast'
 
@@ -178,6 +179,24 @@ export function useChat(projectId: string, options?: UseChatOptions): ChatState 
             // If personaId is returned, lock it in
             if (event.personaId) {
               setSelectedPersona(null) // Clear selection after first message
+            }
+          } else if (event.type === 'title') {
+            // Server generated a title for the new session — update locally
+            if (currentSession) {
+              const updatedSession = { ...currentSession, title: event.title }
+              setCurrentSession(updatedSession)
+
+              // Update the session in the sessions list
+              setSessions((prev) =>
+                prev.map((s) => (s.id === currentSession.id ? { ...s, title: event.title } : s)),
+              )
+
+              // Also update on the server
+              try {
+                await updateChatSessionTitle(projectId, currentSession.id, event.title)
+              } catch {
+                // Non-fatal: title update failure
+              }
             }
           } else if (event.type === 'file_changed') {
             if (options?.onFilesChanged) {

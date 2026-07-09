@@ -219,6 +219,13 @@ export async function deleteChatSession(projectId: string, sessionId: string): P
   })
 }
 
+export async function updateChatSessionTitle(projectId: string, sessionId: string, title: string): Promise<ChatSession> {
+  return request<ChatSession>(`/projects/${projectId}/chats/${sessionId}/title`, {
+    method: 'PUT',
+    body: JSON.stringify({ title }),
+  })
+}
+
 // ── Stream Event Types ───────────────────────────────────────────────
 
 export type StreamEvent =
@@ -226,6 +233,7 @@ export type StreamEvent =
   | { type: 'tool_call'; toolCalls: ToolCallInfo[] }
   | { type: 'error'; message: string }
   | { type: 'session_id'; sessionId: string; personaId?: string }
+  | { type: 'title'; title: string }
   | { type: 'done'; fullContent: string }
   | FileChangeEvent
 

@@ -8,6 +8,7 @@ import { readChatSession, readChatMessages, buildSystemPrompt, persistSession, p
 import { runToolCallLoop } from '../services/agent.js'
 import { readSettings } from './settings.js'
 import { ChatMessageEntry, ToolCallEntry, PersonaData } from '../types.js'
+import { generateChatTitle } from '../services/title.js'
 
 const router = Router()
 
@@ -144,6 +145,36 @@ router.delete('/:id/chats/:sessionId', (req: Request, res: Response) => {
   }
 })
 
+// PUT /api/projects/:id/chats/:sessionId/title
+router.put('/:id/chats/:sessionId/title', (req: Request, res: Response) => {
+  try {
+    const id = param(req, 'id')
+    const sessionId = param(req, 'sessionId')
+    const { title } = req.body
+
+    if (!title || typeof title !== 'string') {
+      return res.status(400).json({ error: 'Title is required' })
+    }
+
+    const chatsDir = path.join(resolveProjectPath(id), 'chats')
+    const sessionFile = path.join(chatsDir, `${sessionId}.json`)
+
+    if (!fs.existsSync(sessionFile)) {
+      return res.status(404).json({ error: 'Chat session not found' })
+    }
+
+    const session = JSON.parse(fs.readFileSync(sessionFile, 'utf-8'))
+    session.title = title
+    session.updatedAt = new Date().toISOString()
+    fs.writeFileSync(sessionFile, JSON.stringify(session, null, 2), 'utf-8')
+
+    res.json(session)
+  } catch (err: any) {
+    console.error(err)
+    res.status(500).json({ error: 'Failed to update chat session title' })
+  }
+})
+
 // POST /api/projects/:id/chats/stream — Combined session creation + message submission
 router.post('/:id/chats/stream', (req: Request, res: Response) => {
   try {
@@ -166,6 +197,7 @@ router.post('/:id/chats/stream', (req: Request, res: Response) => {
     // Auto-create a session if none provided
     let sessionId: string
     let session = clientSessionId ? readChatSession(id, clientSessionId) : null
+    let isNewSession = false
 
     if (!session) {
       const now = new Date().toISOString()
@@ -188,6 +220,7 @@ router.post('/:id/chats/stream', (req: Request, res: Response) => {
       fs.writeFileSync(path.join(chatsDir, `${sessionId}.json`), JSON.stringify(newSession, null, 2), 'utf-8')
       fs.writeFileSync(path.join(logsDir, `${sessionId}.jsonl`), '', 'utf-8')
       session = newSession
+      isNewSession = true
     } else {
       sessionId = session.id
     }
@@ -214,6 +247,30 @@ router.post('/:id/chats/stream', (req: Request, res: Response) => {
     res.setHeader('Cache-Control', 'no-cache')
     res.setHeader('Connection', 'keep-alive')
     res.flushHeaders()
+
+    // Generate title for new sessions (first message only)
+    if (isNewSession) {
+      generateChatTitle(message, endpointToUse, clientSelectedModel)
+        .then((generatedTitle) => {
+          if (generatedTitle) {
+            try {
+              const chatsDir = path.join(resolveProjectPath(id), 'chats')
+              const sessionFile = path.join(chatsDir, `${sessionId}.json`)
+              const existingSession = JSON.parse(fs.readFileSync(sessionFile, 'utf-8'))
+              existingSession.title = generatedTitle
+              existingSession.updatedAt = new Date().toISOString()
+              fs.writeFileSync(sessionFile, JSON.stringify(existingSession, null, 2), 'utf-8')
+              // Emit title event to client
+              res.write(`data: ${JSON.stringify({ type: 'title', title: generatedTitle })}\n`)
+            } catch {
+              // Non-fatal: title update failure
+            }
+          }
+        })
+        .catch((err) => {
+          console.error('Title generation error:', err)
+        })
+    }
 
     runToolCallLoop({
       openAiEndpoint: endpointToUse,
