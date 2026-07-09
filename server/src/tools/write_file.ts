@@ -29,9 +29,9 @@ export function writeFileHandler(
   let maxLength: number | undefined
 
   if (filenameUpper === 'SUMMARY.MD') {
-    maxLength = settings.summaryMaxLength ?? 500
+    maxLength = settings.summaryMaxLength ?? 1000
   } else if (filenameUpper === 'MEMORY.MD') {
-    maxLength = settings.memoryMaxLength ?? 3000
+    maxLength = settings.memoryMaxLength ?? 5000
   } else {
     maxLength = settings.otherMaxLength
   }

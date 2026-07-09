@@ -63,7 +63,7 @@ export function buildSystemPrompt(projectId: string, personaPrompt?: string, str
 The folder should only consist of md files which help to describe this project. 
 
 The project has some reserved file names which have special meaning:
-- SUMMARY.md - Very brief executive description of the project. Max 30 words.
+- SUMMARY.md - Very brief executive description of the project. Max 30 words. Must use YAML frontmatter with \`title\` and \`summary\` fields, followed by the body text.
 - MEMORY.md - (Optional) Notes about decisions, and user preferences to always keep in mind. Keep notes extremely brief for handoff to future assistants. Max 1000 words.
 
 Additional md files should use Title Case file names. If a file grows to more than 1000 words, it should be split into multiple files.`
