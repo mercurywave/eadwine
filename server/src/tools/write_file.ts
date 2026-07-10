@@ -1,6 +1,7 @@
 import fs from 'fs'
 import { resolveFilePath } from '../helpers.js'
 import { readSettings } from '../routes/settings.js'
+import { validateSummaryMdContent } from '../summary.js'
 
 export function writeFileHandler(
   args: Record<string, unknown>,
@@ -40,6 +41,18 @@ export function writeFileHandler(
     return {
       success: false,
       error: `The file "${filename}" content exceeds the limit of ${maxLength} characters. Please write a shorter file.`,
+    }
+  }
+
+  // SUMMARY.md specific validation
+  if (filenameUpper === 'SUMMARY.MD') {
+    const validation = validateSummaryMdContent(content)
+    if (!validation.valid) {
+      const errorMessages = validation.errors.join('. ')
+      return {
+        success: false,
+        error: `The file "${filename}" has invalid content: ${errorMessages}.`,
+      }
     }
   }
 

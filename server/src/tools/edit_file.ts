@@ -1,6 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 import { resolveFilePath } from '../helpers.js'
+import { validateSummaryMdContent } from '../summary.js'
 
 export function editFileHandler(
   args: Record<string, unknown>,
@@ -28,6 +29,7 @@ export function editFileHandler(
   }
 
   const filePath = resolveFilePath(projectPath, filename)
+  const filenameUpper = filename.toUpperCase()
 
   // Path traversal protection
   if (!filePath.startsWith(projectPath)) {
@@ -46,6 +48,19 @@ export function editFileHandler(
     }
 
     const updatedContent = existingContent.replace(oldText, newText)
+
+    // SUMMARY.md specific validation after edit
+    if (filenameUpper === 'SUMMARY.MD') {
+      const validation = validateSummaryMdContent(updatedContent)
+      if (!validation.valid) {
+        const errorMessages = validation.errors.join('. ')
+        return {
+          success: false,
+          error: `The edit would result in invalid SUMMARY.md content: ${errorMessages}.`,
+        }
+      }
+    }
+
     fs.writeFileSync(filePath, updatedContent, 'utf-8')
 
     // Emit file change event
@@ -56,7 +71,7 @@ export function editFileHandler(
       })
     }
 
-    return { success: true, content: `File "${filename}" edited successfully. Replaced: "${oldText}" → "${newText}"` }
+    return { success: true, content: `File "${filename}" edited successfully.` }
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Unknown error'
     return { success: false, error: `Failed to edit file "${filename}": ${message}` }
