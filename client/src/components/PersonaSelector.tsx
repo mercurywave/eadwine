@@ -1,13 +1,15 @@
 import { Persona } from '../types'
+import { Check } from 'lucide-react'
 import './PersonaSelector.css'
 
 interface PersonaSelectorProps {
   personas: Persona[]
   defaultPersonaId?: string
+  selectedPersonaId?: string
   onSelect: (persona: Persona) => void
 }
 
-export function PersonaSelector({ personas, defaultPersonaId, onSelect }: PersonaSelectorProps) {
+export function PersonaSelector({ personas, defaultPersonaId, selectedPersonaId, onSelect }: PersonaSelectorProps) {
   if (personas.length === 0) {
     return null
   }
@@ -22,15 +24,23 @@ export function PersonaSelector({ personas, defaultPersonaId, onSelect }: Person
         {personas.map((persona) => (
           <div
             key={persona.id}
-            className={`persona-card ${persona.id === defaultPersonaId ? 'persona-card-default' : ''}`}
+            className={`persona-card ${
+              persona.id === defaultPersonaId ? 'persona-card-default' : ''
+            } ${
+              persona.id === selectedPersonaId ? 'persona-card-selected' : ''
+            }`}
             onClick={() => onSelect(persona)}
           >
             <div className="persona-card-header">
-              <h4 className="persona-card-name">{persona.name}</h4>
-              {persona.isDefault && <span className="persona-badge-default">Default</span>}
+              <div className="persona-card-header-left">
+                <h4 className="persona-card-name">{persona.name}</h4>
+                {persona.isDefault && <span className="persona-badge-default">Default</span>}
+              </div>
             </div>
             <p className="persona-card-description">{persona.description || 'No description'}</p>
-            <button className="persona-card-button">Select</button>
+            <div className="persona-card-check">
+              <Check className="check-icon" />
+            </div>
           </div>
         ))}
       </div>

@@ -33,9 +33,12 @@
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
+  position: relative;
+  opacity: 0.6;
 }
 
 .persona-card:hover {
+  opacity: 1;
   border-color: #3b82f6;
   background: #1e3a5f;
   transform: translateY(-2px);
@@ -43,17 +46,39 @@
 }
 
 .persona-card-default {
+  opacity: 0.75;
   border-color: #10b981;
 }
 
 .persona-card-default:hover {
+  opacity: 1;
   border-color: #34d399;
   box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+}
+
+.persona-card-selected {
+  opacity: 1;
+  border-color: #8b5cf6;
+  border-width: 3px;
+  background: #1a1535;
+  box-shadow: 0 0 20px rgba(139, 92, 246, 0.25);
+}
+
+.persona-card-selected:hover {
+  border-color: #a78bfa;
+  box-shadow: 0 0 25px rgba(139, 92, 246, 0.35);
+  transform: translateY(-2px);
 }
 
 .persona-card-header {
   display: flex;
   justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.persona-card-header-left {
+  display: flex;
   align-items: center;
   gap: 0.5rem;
 }
@@ -66,7 +91,7 @@
 }
 
 .persona-badge-default {
-  font-size: 0.7rem;
+  font-size: 0.65rem;
   background: #10b981;
   color: white;
   padding: 0.15rem 0.5rem;
@@ -76,6 +101,8 @@
   letter-spacing: 0.05em;
 }
 
+
+
 .persona-card-description {
   font-size: 0.85rem;
   color: #94a3b8;
@@ -84,19 +111,24 @@
   flex-grow: 1;
 }
 
-.persona-card-button {
-  background: #3b82f6;
-  color: white;
-  border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 8px;
-  font-size: 0.85rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background 0.2s ease;
-  align-self: flex-start;
+.persona-card-check {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  opacity: 0;
+  transition: opacity 0.2s ease;
 }
 
-.persona-card-button:hover {
-  background: #2563eb;
+.persona-card:hover .persona-card-check {
+  opacity: 0.4;
+}
+
+.persona-card-selected .persona-card-check {
+  opacity: 1;
+}
+
+.check-icon {
+  width: 1.25rem;
+  height: 1.25rem;
+  color: #8b5cf6;
 }

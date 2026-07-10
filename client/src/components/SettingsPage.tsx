@@ -250,6 +250,7 @@ export function SettingsPage() {
       const updated = await updatePersona(editingPersona, personaForm)
       setPersonas(prev => prev.map(p => p.id === editingPersona ? updated : p))
       setEditingPersona(null)
+      setPersonaForm({ name: '', description: '', systemPrompt: '' })
       addToast('Persona updated', 'success')
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to update persona'
@@ -285,13 +286,20 @@ export function SettingsPage() {
   const handleSetDefault = async (id: string) => {
     try {
       setLoadingPersonas(true)
-      // If there was a previous default, reset it
-      if (settings.defaultPersonaId && settings.defaultPersonaId !== id) {
-        await resetDefaultPersona(settings.defaultPersonaId)
+      // If clicking the already-default persona, reset it
+      if (settings.defaultPersonaId === id) {
+        await resetDefaultPersona(id)
+        setSettings(prev => ({ ...prev, defaultPersonaId: undefined }))
+        addToast('Default persona cleared', 'success')
+      } else {
+        // If there was a previous default, reset it
+        if (settings.defaultPersonaId) {
+          await resetDefaultPersona(settings.defaultPersonaId)
+        }
+        await setDefaultPersona(id)
+        setSettings(prev => ({ ...prev, defaultPersonaId: id }))
+        addToast('Default persona set', 'success')
       }
-      await setDefaultPersona(id)
-      setSettings(prev => ({ ...prev, defaultPersonaId: id }))
-      addToast('Default persona set', 'success')
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to set default persona'
       addToast(message, 'error')

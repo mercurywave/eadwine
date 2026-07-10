@@ -67,7 +67,12 @@ export function ChatPanel({ projectId, isOpen, onClose, endpoint, selectedModel,
   }
 
   const handlePersonaSelect = (persona: Persona) => {
-    setSelectedPersona(persona)
+    if (selectedPersona && selectedPersona.id === persona.id) {
+      // Clicking the already-selected persona unselects it
+      setSelectedPersona(null)
+    } else {
+      setSelectedPersona(persona)
+    }
   }
 
   const handleSend = (userMessage: string) => {
@@ -175,6 +180,7 @@ export function ChatPanel({ projectId, isOpen, onClose, endpoint, selectedModel,
           <PersonaSelector
             personas={personas}
             defaultPersonaId={defaultPersonaId}
+            selectedPersonaId={selectedPersona?.id}
             onSelect={handlePersonaSelect}
           />
         ) : (
