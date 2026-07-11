@@ -171,6 +171,7 @@ export const ProjectReader = forwardRef<{ refreshFiles: () => void }, ProjectRea
           <ArrowLeft className="btn-icon" />
           Projects
         </a>
+        <h1 className="page-title">{project?.title || 'Project'}</h1>
         <div className="page-header-actions">
           <div className="project-tags">
             {project?.tags.map(tag => (

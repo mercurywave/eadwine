@@ -24,6 +24,23 @@
   height: 1rem;
 }
 
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.page-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-color, #fff);
+  margin: 0;
+  text-align: center;
+  flex-shrink: 0;
+}
+
 .page-header-actions {
   display: flex;
   align-items: center;
