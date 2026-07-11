@@ -1,6 +1,6 @@
 import { Persona } from '../types'
 import { Check } from 'lucide-react'
-import './PersonaSelector.css'
+import styles from './PersonaSelector.module.css'
 
 interface PersonaSelectorProps {
   personas: Persona[]
@@ -15,31 +15,31 @@ export function PersonaSelector({ personas, defaultPersonaId, selectedPersonaId,
   }
 
   return (
-    <div className="persona-selector">
-      <h3 className="persona-selector-title">Choose a Persona</h3>
-      <p className="persona-selector-hint">
+    <div className={styles['persona-selector']}>
+      <h3 className={styles['persona-selector-title']}>Choose a Persona</h3>
+      <p className={styles['persona-selector-hint']}>
         Select how the AI assistant should respond. This can't be changed after your first message.
       </p>
-      <div className="persona-cards">
+      <div className={styles['persona-cards']}>
         {personas.map((persona) => (
           <div
             key={persona.id}
-            className={`persona-card ${
-              persona.id === defaultPersonaId ? 'persona-card-default' : ''
+            className={`${styles['persona-card']} ${
+              persona.id === defaultPersonaId ? styles['persona-card-default'] : ''
             } ${
-              persona.id === selectedPersonaId ? 'persona-card-selected' : ''
+              persona.id === selectedPersonaId ? styles['persona-card-selected'] : ''
             }`}
             onClick={() => onSelect(persona)}
           >
-            <div className="persona-card-header">
-              <div className="persona-card-header-left">
-                <h4 className="persona-card-name">{persona.name}</h4>
-                {persona.isDefault && <span className="persona-badge-default">Default</span>}
+            <div className={styles['persona-card-header']}>
+              <div className={styles['persona-card-header-left']}>
+                <h4 className={styles['persona-card-name']}>{persona.name}</h4>
+                {persona.isDefault && <span className={styles['persona-badge-default']}>Default</span>}
               </div>
             </div>
-            <p className="persona-card-description">{persona.description || 'No description'}</p>
-            <div className="persona-card-check">
-              <Check className="check-icon" />
+            <p className={styles['persona-card-description']}>{persona.description || 'No description'}</p>
+            <div className={styles['persona-card-check']}>
+              <Check className={styles['check-icon']} />
             </div>
           </div>
         ))}

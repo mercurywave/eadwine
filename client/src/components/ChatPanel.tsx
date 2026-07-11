@@ -7,7 +7,7 @@ import { ChatHistoryList } from './ChatHistoryList'
 import { ConfirmDialog } from './ConfirmDialog'
 import { PersonaSelector } from './PersonaSelector'
 import { FileChange, Persona, Macro } from '../types'
-import './ChatPanel.css'
+import styles from './ChatPanel.module.css'
 
 interface ChatPanelProps {
   projectId: string
@@ -104,20 +104,20 @@ export function ChatPanel({ projectId, isOpen, onClose, endpoint, selectedModel,
   const hasSession = !!currentSession
 
   return (
-    <div className="chat-panel" style={{ width: width ? `${width}px` : undefined }} onClick={e => e.stopPropagation()}>
+    <div className={styles['chat-panel']} style={{ width: width ? `${width}px` : undefined }} onClick={e => e.stopPropagation()}>
       {/* Header */}
-      <div className="chat-panel-header">
-        <div className="chat-panel-header-left">
-          <h2 className="chat-panel-title">
-            <MessageSquare className="chat-panel-title-icon" />
+      <div className={styles['chat-panel-header']}>
+        <div className={styles['chat-panel-header-left']}>
+          <h2 className={styles['chat-panel-title']}>
+            <MessageSquare className={styles['chat-panel-title-icon']} />
             Chat
           </h2>
           {hasSession && (
-            <span className="chat-panel-subtitle">{"— " + currentSession.title}</span>
+            <span className={styles['chat-panel-subtitle']}>{"— " + currentSession.title}</span>
           )}
         </div>
         <button
-          className="chat-panel-close"
+          className={styles['chat-panel-close']}
           onClick={onClose}
           aria-label="Close chat"
         >
@@ -135,15 +135,15 @@ export function ChatPanel({ projectId, isOpen, onClose, endpoint, selectedModel,
       />
 
       {/* Messages */}
-      <div className="chat-panel-messages" role="log" aria-label="Chat messages">
+      <div className={styles['chat-panel-messages']} role="log" aria-label="Chat messages">
         {isLoadingSessions || isLoading ? (
           <div className="loading">Loading chat...</div>
         ) : isDisabled ? (
-          <div className="chat-empty-state">
-            <div className="chat-config-warning">
+          <div className={styles['chat-empty-state']}>
+            <div className={styles['chat-config-warning']}>
               {!endpoint && (
                 <p>
-                  <AlertTriangle className="config-warning-icon" />
+                  <AlertTriangle className={styles['config-warning-icon']} />
                   Chat requires an{' '}
                   <a href="/settings" onClick={e => { e.preventDefault(); openSettings(); }}>
                     OpenAI endpoint
@@ -153,7 +153,7 @@ export function ChatPanel({ projectId, isOpen, onClose, endpoint, selectedModel,
               )}
               {!selectedModel && endpoint && (
                 <p>
-                  <AlertTriangle className="config-warning-icon" />
+                  <AlertTriangle className={styles['config-warning-icon']} />
                   Chat requires a{' '}
                   <a href="/settings" onClick={e => { e.preventDefault(); openSettings(); }}>
                     model
@@ -184,7 +184,7 @@ export function ChatPanel({ projectId, isOpen, onClose, endpoint, selectedModel,
             onSelect={handlePersonaSelect}
           />
         ) : (
-          <div className="chat-empty-state">
+          <div className={styles['chat-empty-state']}>
             <p>No chat sessions yet</p>
             <p>Start a conversation with the AI agent to explore your project.</p>
           </div>

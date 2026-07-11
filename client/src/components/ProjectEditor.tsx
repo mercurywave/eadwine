@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
 import { saveFileContent } from '../api'
-import './ProjectEditor.css'
+import styles from './ProjectEditor.module.css'
 
 interface ProjectEditorProps {
   projectId: string
@@ -56,9 +56,9 @@ export function ProjectEditor({ projectId }: ProjectEditorProps) {
   }
 
   return (
-    <div className="project-editor">
-      <header className="page-header">
-        <button className="back-link" onClick={handleBack} aria-label="Back to project">
+    <div className={styles['project-editor']}>
+      <header className={styles['page-header']}>
+        <button className={styles['back-link']} onClick={handleBack} aria-label="Back to project">
           <ArrowLeft className="btn-icon" />
           Back to project
         </button>
@@ -76,10 +76,10 @@ export function ProjectEditor({ projectId }: ProjectEditorProps) {
       {loading ? (
         <div className="loading">Loading editor...</div>
       ) : (
-        <div className="editor-layout">
-          <div className="editor-filename">{filename.replace(/\.md$/, '')}</div>
+        <div className={styles['editor-layout']}>
+          <div className={styles['editor-filename']}>{filename.replace(/\.md$/, '')}</div>
           <textarea
-            className="markdown-editor"
+            className={styles['markdown-editor']}
             value={content}
             onChange={e => setContent(e.target.value)}
             placeholder="Write your Markdown here..."

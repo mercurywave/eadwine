@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { Sparkles, X } from 'lucide-react'
 import { Macro } from '../types'
-import './MacroPicker.css'
+import styles from './MacroPicker.module.css'
 
 interface MacroPickerProps {
   macros: Macro[]
@@ -32,9 +32,9 @@ export function MacroPicker({ macros, onSelect }: MacroPickerProps) {
   }
 
   return (
-    <div className="macro-picker" ref={pickerRef}>
+    <div className={styles['macro-picker']} ref={pickerRef}>
       <button
-        className="macro-picker-btn"
+        className={styles['macro-picker-btn']}
         onClick={() => setIsOpen(!isOpen)}
         title="Select a macro"
         aria-label="Select a macro"
@@ -43,26 +43,26 @@ export function MacroPicker({ macros, onSelect }: MacroPickerProps) {
       </button>
 
       {isOpen && (
-        <div className="macro-picker-dropdown">
-          <div className="macro-picker-header">
+        <div className={styles['macro-picker-dropdown']}>
+          <div className={styles['macro-picker-header']}>
             <h3>Macros</h3>
             <button
-              className="macro-picker-close"
+              className={styles['macro-picker-close']}
               onClick={() => setIsOpen(false)}
               aria-label="Close macros"
             >
               <X className="btn-icon-small" />
             </button>
           </div>
-          <div className="macro-picker-list">
+          <div className={styles['macro-picker-list']}>
             {macros.map((macro) => (
               <button
                 key={macro.id}
-                className="macro-picker-item"
+                className={styles['macro-picker-item']}
                 onClick={() => handleSelect(macro.prompt)}
                 title={macro.prompt}
               >
-                <div className="macro-picker-item-name">{macro.name}</div>
+                <div className={styles['macro-picker-item-name']}>{macro.name}</div>
               </button>
             ))}
           </div>

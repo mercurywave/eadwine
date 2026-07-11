@@ -7,7 +7,7 @@ import { ProjectEditor } from './ProjectEditor'
 import { ChatPanel } from './ChatPanel'
 import { Splitter } from './Splitter'
 import { FileChange, Persona, Macro } from '../types'
-import './ProjectDetail.css'
+import styles from './ProjectDetail.module.css'
 
 interface ProjectDetailProps {
   projectId: string
@@ -93,8 +93,8 @@ export function ProjectDetail({ projectId, filename }: ProjectDetailProps) {
   // If we have an edit filename in the URL, render the editor
   if (editFilename) {
     return (
-      <div className="project-detail-layout">
-        <div className="project-detail-content">
+      <div className={styles['project-detail-layout']}>
+        <div className={styles['project-detail-content']}>
           <ProjectEditor projectId={projectId} />
         </div>
         {chatOpen && (
@@ -127,8 +127,8 @@ export function ProjectDetail({ projectId, filename }: ProjectDetailProps) {
 
   // Otherwise render the reader view
   return (
-    <div className="project-detail-layout">
-      <div className={`project-detail-content ${chatOpen ? '' : 'full-width'}`}>
+    <div className={styles['project-detail-layout']}>
+      <div className={`${styles['project-detail-content']} ${chatOpen ? '' : styles['full-width']}`}>
         <ProjectReader
           ref={projectReaderRef}
           projectId={projectId}
@@ -161,12 +161,12 @@ export function ProjectDetail({ projectId, filename }: ProjectDetailProps) {
       )}
       {!chatOpen && (
         <button
-          className="chat-fab"
+          className={styles['chat-fab']}
           onClick={() => setChatOpen(true)}
           aria-label="Open chat"
           title="Open chat"
         >
-          <MessageSquare className="chat-fab-icon" />
+          <MessageSquare className={styles['chat-fab-icon']} />
         </button>
       )}
     </div>

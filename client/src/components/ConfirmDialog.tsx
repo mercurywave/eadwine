@@ -1,4 +1,4 @@
-import './ConfirmDialog.css'
+import styles from './ConfirmDialog.module.css'
 
 interface ConfirmDialogProps {
   title: string
@@ -18,11 +18,11 @@ export function ConfirmDialog({
   danger = true,
 }: ConfirmDialogProps) {
   return (
-    <div className="modal-backdrop" onClick={onCancel} role="dialog" aria-modal="true" aria-labelledby="confirm-title">
-      <div className="modal" onClick={e => e.stopPropagation()}>
+    <div className={styles['modal-backdrop']} onClick={onCancel} role="dialog" aria-modal="true" aria-labelledby="confirm-title">
+      <div className={styles['modal']} onClick={e => e.stopPropagation()}>
         <h2 id="confirm-title">{title}</h2>
         <p>{message}</p>
-        <div className="modal-actions">
+        <div className={styles['modal-actions']}>
           <button onClick={onCancel} className="btn-secondary">Cancel</button>
           <button onClick={onConfirm} className={danger ? 'btn-danger' : ''}>{confirmLabel}</button>
         </div>

@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
-import './Splitter.css'
+import styles from './Splitter.module.css'
 
 interface SplitterProps {
   orientation: 'vertical'
@@ -105,7 +105,7 @@ export function Splitter({
   return (
     <div
       ref={containerRef}
-      className={`splitter splitter-${orientation} ${isDragging ? 'splitter-dragging' : ''}`}
+      className={`${styles['splitter']} ${styles[`splitter-${orientation}`]} ${isDragging ? styles['splitter-dragging'] : ''}`}
       onMouseDown={handleMouseDown}
       onTouchStart={handleTouchStart}
       role="separator"

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { Project } from '../types'
 import { ProjectCard } from './ProjectCard'
 import { ConfirmDialog } from './ConfirmDialog'
-import './ProjectSelector.css'
+import styles from './ProjectSelector.module.css'
 
 
 interface ProjectSelectorProps {
@@ -36,10 +36,10 @@ export function ProjectSelector({
   }
 
   return (
-    <div className="project-selector">
-      <header className="page-header">
+    <div className={styles['project-selector']}>
+      <header className={styles['page-header']}>
         <h1>Projects</h1>
-        <div className="page-header-actions">
+        <div className={styles['page-header-actions']}>
           <button className="btn-secondary" onClick={handleOpenSettings}>
             Settings
           </button>
@@ -54,11 +54,11 @@ export function ProjectSelector({
       {loading ? (
         <div className="loading">Loading projects...</div>
       ) : projects.length === 0 ? (
-        <div className="empty-state">
+        <div className={styles['empty-state']}>
           <p>No projects yet. Create your first project to get started.</p>
         </div>
       ) : (
-        <div className="project-grid">
+        <div className={styles['project-grid']}>
           {projects.map(project => (
             <ProjectCard
               key={project.id}

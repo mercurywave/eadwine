@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Wrench, ChevronDown, ChevronUp } from 'lucide-react'
-import './ToolCallBubble.css'
+import styles from './ToolCallBubble.module.css'
 
 interface ToolCallBubbleProps {
   toolCalls: Array<{
@@ -31,43 +31,43 @@ export function ToolCallBubble({ toolCalls, isStreaming = false }: ToolCallBubbl
   }
 
   return (
-    <div className={`tool-call-bubble ${isStreaming ? 'streaming' : ''}`} role="region" aria-label="Tool call">
+    <div className={`${styles['tool-call-bubble']} ${isStreaming ? styles['streaming'] : ''}`} role="region" aria-label="Tool call">
       <button
-        className="tool-call-header"
+        className={styles['tool-call-header']}
         onClick={() => setExpanded(!expanded)}
         aria-expanded={expanded}
         aria-label={`${toolCalls.length} tool call${toolCalls.length > 1 ? 's' : ''}`}
       >
-        <Wrench className="tool-call-icon" />
-        <span className="tool-call-summary">
+        <Wrench className={styles['tool-call-icon']} />
+        <span className={styles['tool-call-summary']}>
           {toolCalls.length === 1 ? (
             <>
-              <span className="tool-call-name">{toolCalls[0].name}</span>
-              <span className="tool-call-args">({formatArgSummary(toolCalls[0].arguments)})</span>
+              <span className={styles['tool-call-name']}>{toolCalls[0].name}</span>
+              <span className={styles['tool-call-args']}>({formatArgSummary(toolCalls[0].arguments)})</span>
             </>
           ) : (
             <>
-              <span className="tool-call-name">{toolCalls[0].name}</span>
-              <span className="tool-call-more">+{toolCalls.length - 1} more</span>
+              <span className={styles['tool-call-name']}>{toolCalls[0].name}</span>
+              <span className={styles['tool-call-more']}>+{toolCalls.length - 1} more</span>
             </>
           )}
         </span>
         {isStreaming ? (
-          <span className="tool-call-status">Running...</span>
+          <span className={styles['tool-call-status']}>Running...</span>
         ) : (
-          expanded ? <ChevronUp className="tool-call-chevron" /> : <ChevronDown className="tool-call-chevron" />
+          expanded ? <ChevronUp className={styles['tool-call-chevron']} /> : <ChevronDown className={styles['tool-call-chevron']} />
         )}
       </button>
 
       {expanded && (
-        <div className="tool-call-details">
+        <div className={styles['tool-call-details']}>
           {toolCalls.map(tc => (
-            <div key={tc.id} className="tool-call-detail-item">
-              <div className="tool-call-detail-header">
-                <Wrench className="tool-call-detail-icon" />
-                <span className="tool-call-detail-name">{tc.name}</span>
+            <div key={tc.id} className={styles['tool-call-detail-item']}>
+              <div className={styles['tool-call-detail-header']}>
+                <Wrench className={styles['tool-call-detail-icon']} />
+                <span className={styles['tool-call-detail-name']}>{tc.name}</span>
               </div>
-              <pre className="tool-call-detail-args">
+              <pre className={styles['tool-call-detail-args']}>
                 <code>{tc.arguments}</code>
               </pre>
             </div>

@@ -11,14 +11,14 @@ import {
 } from '../api'
 import { FileSection } from './FileSection'
 import { ConfirmDialog } from './ConfirmDialog'
-import './ProjectReader.css'
+import styles from './ProjectReader.module.css'
 
 interface ProjectReaderProps {
   projectId: string
   onEdit: (filename: string) => void
 }
 
-export const ProjectReader = forwardRef<{ refreshFiles: () => void }, ProjectReaderProps>(function ProjectReader({ projectId, onEdit }, ref) {
+export const ProjectReader = forwardRef<{ refreshFiles: () => void; refreshFileContent: (filename: string) => void }, ProjectReaderProps>(function ProjectReader({ projectId, onEdit }, ref) {
   const [project, setProject] = useState<Project | null>(null)
   const [files, setFiles] = useState<FileItem[]>([])
   const [fileContents, setFileContents] = useState<Record<string, string>>({})
@@ -165,17 +165,17 @@ export const ProjectReader = forwardRef<{ refreshFiles: () => void }, ProjectRea
   }
 
   return (
-    <div className="project-reader">
-      <header className="page-header">
-        <a href="/" className="back-link" aria-label="Back to projects">
+    <div className={styles['project-reader']}>
+      <header className={styles['page-header']}>
+        <a href="/" className={styles['back-link']} aria-label="Back to projects">
           <ArrowLeft className="btn-icon" />
           Projects
         </a>
-        <h1 className="page-title">{project?.title || 'Project'}</h1>
-        <div className="page-header-actions">
-          <div className="project-tags">
+        <h1 className={styles['page-title']}>{project?.title || 'Project'}</h1>
+        <div className={styles['page-header-actions']}>
+          <div className={styles['project-tags']}>
             {project?.tags.map(tag => (
-              <span key={tag} className="tag-pill">{tag}</span>
+              <span key={tag} className={styles['tag-pill']}>{tag}</span>
             ))}
           </div>
           <button className="btn-primary" onClick={() => setShowNewFile(true)}>

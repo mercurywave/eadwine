@@ -4,7 +4,7 @@ import { ArrowLeft, Plus, Trash2, Edit2, Check, X, HardDrive, AlertTriangle } fr
 import { fetchSettings, saveSettings, fetchModels, createPersona, updatePersona, deletePersona, setDefaultPersona, resetDefaultPersona, createMacro, updateMacro, deleteMacro, fetchBackupStatus, triggerBackup } from '../api'
 import { Settings, Persona, Macro } from '../types'
 import { useToasts } from './Toast'
-import './SettingsPage.css'
+import styles from './SettingsPage.module.css'
 
 const DEFAULT_SETTINGS: Settings = {
   openAiEndpoint: '',
@@ -437,16 +437,16 @@ export function SettingsPage() {
 
   if (loading) {
     return (
-      <div className="settings-page">
+      <div className={styles['settings-page']}>
         <div className="loading">Loading settings...</div>
       </div>
     )
   }
 
   return (
-    <div className="settings-page">
-      <header className="page-header">
-        <button className="btn-secondary back-btn" onClick={() => navigate('/')}>
+    <div className={styles['settings-page']}>
+      <header className={styles['page-header']}>
+        <button className={`${styles['back-btn']} btn-secondary`} onClick={() => navigate('/')}>
           <ArrowLeft className="btn-icon" />
           Back to Projects
         </button>
@@ -460,14 +460,14 @@ export function SettingsPage() {
         </button>
       </header>
 
-      <div className="settings-layout">
+      <div className={styles['settings-layout']}>
         {/* Sidebar */}
-        <nav className="settings-sidebar">
+        <nav className={styles['settings-sidebar']}>
           <ul>
             {sections.map(section => (
               <li key={section.id}>
                 <button
-                  className={`sidebar-link ${activeSection === section.id ? 'active' : ''}`}
+                  className={`${styles['sidebar-link']} ${activeSection === section.id ? styles['active'] : ''}`}
                   onClick={() => setActiveSection(section.id)}
                 >
                   {section.label}
@@ -478,18 +478,18 @@ export function SettingsPage() {
         </nav>
 
         {/* Main content */}
-        <main className="settings-content">
+        <main className={styles['settings-content']}>
           {sections.map(section => (
             <section
               key={section.id}
-              className={`settings-section ${activeSection === section.id ? 'visible' : 'hidden'}`}
+              className={`${styles['settings-section']} ${activeSection === section.id ? styles['visible'] : ''}`}
             >
               <h2>{section.label}</h2>
-              <p className="section-description">{section.description}</p>
+              <p className={styles['section-description']}>{section.description}</p>
 
               {section.id === 'ai' && (
                 <>
-                  <div className="setting-field">
+                  <div className={styles['setting-field']}>
                     <label htmlFor="openAiEndpoint">OpenAI API Endpoint</label>
                     <input
                       id="openAiEndpoint"
@@ -499,12 +499,12 @@ export function SettingsPage() {
                       value={settings.openAiEndpoint}
                       onChange={e => handleOpenAiEndpointChange(e.target.value)}
                     />
-                    <span className="field-hint">
+                    <span className={styles['field-hint']}>
                       Enter the base URL for your OpenAI-compatible API endpoint.
                     </span>
                   </div>
 
-                  <div className="setting-field">
+                  <div className={styles['setting-field']}>
                     <label htmlFor="selectedModel">Model</label>
                     {loadingModels ? (
                       <div className="loading">Loading models...</div>
@@ -523,7 +523,7 @@ export function SettingsPage() {
                         ))}
                       </select>
                     )}
-                    <span className="field-hint">
+                    <span className={styles['field-hint']}>
                       Select the AI model to use for chat. This is required to use the chat feature.
                     </span>
                   </div>
@@ -532,7 +532,7 @@ export function SettingsPage() {
 
               {section.id === 'structure' && (
                 <>
-                  <div className="setting-field">
+                  <div className={styles['setting-field']}>
                     <label htmlFor="structureGuidelines">Structure Guidelines</label>
                     <textarea
                       id="structureGuidelines"
@@ -542,12 +542,12 @@ export function SettingsPage() {
                       onChange={e => handleStructureGuidelinesChange(e.target.value)}
                       rows={8}
                     />
-                    <span className="field-hint">
+                    <span className={styles['field-hint']}>
                       This text will be added to the system prompt to guide the AI in maintaining your preferred project structure. Leave blank to use the default guidelines.
                     </span>
                   </div>
 
-                  <div className="setting-field">
+                  <div className={styles['setting-field']}>
                     <label htmlFor="summaryMaxLength">SUMMARY.md Limit (characters)</label>
                     <input
                       id="summaryMaxLength"
@@ -558,12 +558,12 @@ export function SettingsPage() {
                       value={settings.summaryMaxLength ?? ''}
                       onChange={e => handleSummaryMaxLengthChange(e.target.value)}
                     />
-                    <span className="field-hint">
+                    <span className={styles['field-hint']}>
                       Maximum string length for SUMMARY.md. The agent will reject writes that exceed this limit. Required.
                     </span>
                   </div>
 
-                  <div className="setting-field">
+                  <div className={styles['setting-field']}>
                     <label htmlFor="memoryMaxLength">MEMORY.md Limit (characters)</label>
                     <input
                       id="memoryMaxLength"
@@ -574,12 +574,12 @@ export function SettingsPage() {
                       value={settings.memoryMaxLength ?? ''}
                       onChange={e => handleMemoryMaxLengthChange(e.target.value)}
                     />
-                    <span className="field-hint">
+                    <span className={styles['field-hint']}>
                       Maximum string length for MEMORY.md. The agent will reject writes that exceed this limit. Required.
                     </span>
                   </div>
 
-                  <div className="setting-field">
+                  <div className={styles['setting-field']}>
                     <label htmlFor="otherMaxLength">Other .md Files Limit (characters)</label>
                     <input
                       id="otherMaxLength"
@@ -590,7 +590,7 @@ export function SettingsPage() {
                       value={settings.otherMaxLength ?? ''}
                       onChange={e => handleOtherMaxLengthChange(e.target.value)}
                     />
-                    <span className="field-hint">
+                    <span className={styles['field-hint']}>
                       Maximum string length for all other .md files. Leave blank or set to 0 for no limit.
                     </span>
                   </div>
@@ -599,7 +599,7 @@ export function SettingsPage() {
 
               {section.id === 'personas' && (
                 <>
-                  <div className="personas-header">
+                  <div className={styles['personas-header']}>
                     <button
                       className="btn-secondary"
                       onClick={() => setShowAddForm(true)}
@@ -612,9 +612,9 @@ export function SettingsPage() {
 
                   {/* Add Persona Form */}
                   {showAddForm && (
-                    <div className="persona-form">
+                    <div className={styles['persona-form']}>
                       <h3>New Persona</h3>
-                      <div className="setting-field">
+                      <div className={styles['setting-field']}>
                         <label htmlFor="persona-name">Name</label>
                         <input
                           id="persona-name"
@@ -625,7 +625,7 @@ export function SettingsPage() {
                           onChange={e => setPersonaForm(prev => ({ ...prev, name: e.target.value }))}
                         />
                       </div>
-                      <div className="setting-field">
+                      <div className={styles['setting-field']}>
                         <label htmlFor="persona-description">Description</label>
                         <input
                           id="persona-description"
@@ -636,7 +636,7 @@ export function SettingsPage() {
                           onChange={e => setPersonaForm(prev => ({ ...prev, description: e.target.value }))}
                         />
                       </div>
-                      <div className="setting-field">
+                      <div className={styles['setting-field']}>
                         <label htmlFor="persona-system-prompt">System Prompt</label>
                         <textarea
                           id="persona-system-prompt"
@@ -646,11 +646,11 @@ export function SettingsPage() {
                           onChange={e => setPersonaForm(prev => ({ ...prev, systemPrompt: e.target.value }))}
                           rows={6}
                         />
-                        <span className="field-hint">
+                        <span className={styles['field-hint']}>
                           This text will be inserted into the system prompt when this persona is selected.
                         </span>
                       </div>
-                      <div className="persona-form-actions">
+                      <div className={styles['persona-form-actions']}>
                         <button
                           className="btn-primary"
                           onClick={handleAddPersona}
@@ -671,19 +671,19 @@ export function SettingsPage() {
                   )}
 
                   {/* Persona List */}
-                  <div className="persona-list">
+                  <div className={styles['persona-list']}>
                     {personas.length === 0 && !showAddForm && (
-                      <p className="persona-empty">No personas defined yet. Click "Add Persona" to create one.</p>
+                      <p className={styles['persona-empty']}>No personas defined yet. Click "Add Persona" to create one.</p>
                     )}
                     {personas.map(persona => (
                       <div
                         key={persona.id}
-                        className={`persona-item ${persona.id === settings.defaultPersonaId ? 'persona-item-default' : ''}`}
+                        className={`${styles['persona-item']} ${persona.id === settings.defaultPersonaId ? styles['persona-item-default'] : ''}`}
                       >
                         {editingPersona === persona.id ? (
                           // Edit mode
-                          <div className="persona-edit-form">
-                            <div className="setting-field">
+                          <div className={styles['persona-edit-form']}>
+                            <div className={styles['setting-field']}>
                               <label htmlFor={`edit-persona-name-${persona.id}`}>Name</label>
                               <input
                                 id={`edit-persona-name-${persona.id}`}
@@ -693,7 +693,7 @@ export function SettingsPage() {
                                 onChange={e => setPersonaForm(prev => ({ ...prev, name: e.target.value }))}
                               />
                             </div>
-                            <div className="setting-field">
+                            <div className={styles['setting-field']}>
                               <label htmlFor={`edit-persona-description-${persona.id}`}>Description</label>
                               <input
                                 id={`edit-persona-description-${persona.id}`}
@@ -703,7 +703,7 @@ export function SettingsPage() {
                                 onChange={e => setPersonaForm(prev => ({ ...prev, description: e.target.value }))}
                               />
                             </div>
-                            <div className="setting-field">
+                            <div className={styles['setting-field']}>
                               <label htmlFor={`edit-persona-system-prompt-${persona.id}`}>System Prompt</label>
                               <textarea
                                 id={`edit-persona-system-prompt-${persona.id}`}
@@ -713,7 +713,7 @@ export function SettingsPage() {
                                 rows={4}
                               />
                             </div>
-                            <div className="persona-form-actions">
+                            <div className={styles['persona-form-actions']}>
                               <button
                                 className="btn-primary"
                                 onClick={handleUpdatePersona}
@@ -733,17 +733,17 @@ export function SettingsPage() {
                           </div>
                         ) : (
                           // View mode
-                          <div className="persona-item-content">
-                            <div className="persona-item-header">
+                          <div className={styles['persona-item-content']}>
+                            <div className={styles['persona-item-header']}>
                               <div>
-                                <h4 className="persona-item-name">{persona.name}</h4>
-                                {persona.description && <p className="persona-item-desc">{persona.description}</p>}
+                                <h4 className={styles['persona-item-name']}>{persona.name}</h4>
+                                {persona.description && <p className={styles['persona-item-desc']}>{persona.description}</p>}
                               </div>
                               {persona.id === settings.defaultPersonaId && (
-                                <span className="persona-badge-default">Default</span>
+                                <span className={styles['persona-badge-default']}>Default</span>
                               )}
                             </div>
-                            <div className="persona-item-actions">
+                            <div className={styles['persona-item-actions']}>
                               {persona.id !== settings.defaultPersonaId && (
                                 <button
                                   className="btn-icon-btn"
@@ -773,7 +773,7 @@ export function SettingsPage() {
                                 <Edit2 className="btn-icon-small" />
                               </button>
                               <button
-                                className="btn-icon-btn btn-danger"
+                                className={`${styles['btn-icon-btn']} ${styles['btn-danger']}`}
                                 onClick={() => handleDeletePersona(persona.id)}
                                 title="Delete"
                                 disabled={loadingPersonas}
@@ -791,7 +791,7 @@ export function SettingsPage() {
 
               {section.id === 'macros' && (
                 <>
-                  <div className="macros-header">
+                  <div className={styles['macros-header']}>
                     <button
                       className="btn-secondary"
                       onClick={() => setShowAddMacroForm(true)}
@@ -804,9 +804,9 @@ export function SettingsPage() {
 
                   {/* Add Macro Form */}
                   {showAddMacroForm && (
-                    <div className="macro-form">
+                    <div className={styles['macro-form']}>
                       <h3>New Macro</h3>
-                      <div className="setting-field">
+                      <div className={styles['setting-field']}>
                         <label htmlFor="macro-name">Name</label>
                         <input
                           id="macro-name"
@@ -817,7 +817,7 @@ export function SettingsPage() {
                           onChange={e => setMacroForm(prev => ({ ...prev, name: e.target.value }))}
                         />
                       </div>
-                      <div className="setting-field">
+                      <div className={styles['setting-field']}>
                         <label htmlFor="macro-prompt">Prompt</label>
                         <textarea
                           id="macro-prompt"
@@ -827,11 +827,11 @@ export function SettingsPage() {
                           onChange={e => setMacroForm(prev => ({ ...prev, prompt: e.target.value }))}
                           rows={4}
                         />
-                        <span className="field-hint">
+                        <span className={styles['field-hint']}>
                           This prompt will be submitted to the agent when you select this macro in chat.
                         </span>
                       </div>
-                      <div className="persona-form-actions">
+                      <div className={styles['persona-form-actions']}>
                         <button
                           className="btn-primary"
                           onClick={handleAddMacro}
@@ -852,19 +852,19 @@ export function SettingsPage() {
                   )}
 
                   {/* Macro List */}
-                  <div className="macro-list">
+                  <div className={styles['macro-list']}>
                     {macros.length === 0 && !showAddMacroForm && (
-                      <p className="macro-empty">No macros defined yet. Click "Add Macro" to create one.</p>
+                      <p className={styles['macro-empty']}>No macros defined yet. Click "Add Macro" to create one.</p>
                     )}
                     {macros.map(macro => (
                       <div
                         key={macro.id}
-                        className="macro-item"
+                        className={styles['macro-item']}
                       >
                         {editingMacro === macro.id ? (
                           // Edit mode
-                          <div className="macro-edit-form">
-                            <div className="setting-field">
+                          <div className={styles['macro-edit-form']}>
+                            <div className={styles['setting-field']}>
                               <label htmlFor={`edit-macro-name-${macro.id}`}>Name</label>
                               <input
                                 id={`edit-macro-name-${macro.id}`}
@@ -874,7 +874,7 @@ export function SettingsPage() {
                                 onChange={e => setMacroForm(prev => ({ ...prev, name: e.target.value }))}
                               />
                             </div>
-                            <div className="setting-field">
+                            <div className={styles['setting-field']}>
                               <label htmlFor={`edit-macro-prompt-${macro.id}`}>Prompt</label>
                               <textarea
                                 id={`edit-macro-prompt-${macro.id}`}
@@ -884,7 +884,7 @@ export function SettingsPage() {
                                 rows={3}
                               />
                             </div>
-                            <div className="persona-form-actions">
+                            <div className={styles['persona-form-actions']}>
                               <button
                                 className="btn-primary"
                                 onClick={handleUpdateMacro}
@@ -904,12 +904,12 @@ export function SettingsPage() {
                           </div>
                         ) : (
                           // View mode
-                          <div className="macro-item-content">
-                            <div className="macro-item-header">
-                              <h4 className="macro-item-name">{macro.name}</h4>
-                              <p className="macro-item-prompt">{macro.prompt}</p>
+                          <div className={styles['macro-item-content']}>
+                            <div className={styles['macro-item-header']}>
+                              <h4 className={styles['macro-item-name']}>{macro.name}</h4>
+                              <p className={styles['macro-item-prompt']}>{macro.prompt}</p>
                             </div>
-                            <div className="macro-item-actions">
+                            <div className={styles['macro-item-actions']}>
                               <button
                                 className="btn-icon-btn"
                                 onClick={() => handleEditMacro(macro)}
@@ -919,7 +919,7 @@ export function SettingsPage() {
                                 <Edit2 className="btn-icon-small" />
                               </button>
                               <button
-                                className="btn-icon-btn btn-danger"
+                                className={`${styles['btn-icon-btn']} ${styles['btn-danger']}`}
                                 onClick={() => handleDeleteMacro(macro.id)}
                                 title="Delete"
                                 disabled={loadingMacros}
@@ -942,8 +942,8 @@ export function SettingsPage() {
                   ) : (
                     <>
                       {!backupStatus?.gitAvailable ? (
-                        <div className="backup-error">
-                          <AlertTriangle className="backup-error-icon" />
+                        <div className={styles['backup-error']}>
+                          <AlertTriangle className={styles['backup-error-icon']} />
                           <div>
                             <h3>Git is not installed</h3>
                             <p>Server backups require Git to be installed on this system. Please install Git and restart the server to enable this feature.</p>
@@ -951,33 +951,33 @@ export function SettingsPage() {
                         </div>
                       ) : (
                         <>
-                          <div className="backup-status">
+                          <div className={styles['backup-status']}>
                             <h3>Backup Status</h3>
                             {backupStatus.initialized ? (
-                              <div className="backup-status-info">
+                              <div className={styles['backup-status-info']}>
                                 {backupStatus.lastCommitTimestamp ? (
-                                  <div className="backup-status-item">
-                                    <span className="backup-status-label">Last backup:</span>
-                                    <span className="backup-status-value">{new Date(backupStatus.lastCommitTimestamp).toLocaleString()}</span>
+                                  <div className={styles['backup-status-item']}>
+                                    <span className={styles['backup-status-label']}>Last backup:</span>
+                                    <span className={styles['backup-status-value']}>{new Date(backupStatus.lastCommitTimestamp).toLocaleString()}</span>
                                   </div>
                                 ) : (
-                                  <div className="backup-status-item">
-                                    <span className="backup-status-label">Repository initialized</span>
-                                    <span className="backup-status-value">No commits yet</span>
+                                  <div className={styles['backup-status-item']}>
+                                    <span className={styles['backup-status-label']}>Repository initialized</span>
+                                    <span className={styles['backup-status-value']}>No commits yet</span>
                                   </div>
                                 )}
                               </div>
                             ) : (
-                              <div className="backup-status-info">
-                                <div className="backup-status-item">
-                                  <span className="backup-status-label">Repository:</span>
-                                  <span className="backup-status-value">Not initialized</span>
+                              <div className={styles['backup-status-info']}>
+                                <div className={styles['backup-status-item']}>
+                                  <span className={styles['backup-status-label']}>Repository:</span>
+                                  <span className={styles['backup-status-value']}>Not initialized</span>
                                 </div>
                               </div>
                             )}
                           </div>
 
-                          <div className="backup-actions">
+                          <div className={styles['backup-actions']}>
                             <button
                               className="btn-primary"
                               onClick={handleTriggerBackup}
@@ -988,7 +988,7 @@ export function SettingsPage() {
                             </button>
                           </div>
 
-                          <div className="setting-field">
+                          <div className={styles['setting-field']}>
                             <label htmlFor="backupTime">Daily Backup Time</label>
                             <input
                               id="backupTime"
@@ -997,7 +997,7 @@ export function SettingsPage() {
                               value={settings.backupTime || ''}
                               onChange={e => handleBackupTimeChange(e.target.value)}
                             />
-                            <span className="field-hint">
+                            <span className={styles['field-hint']}>
                               Set the time of day for automatic daily backups. Leave blank to disable scheduled backups.
                             </span>
                           </div>

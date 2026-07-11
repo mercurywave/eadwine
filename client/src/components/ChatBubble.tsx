@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from 'react'
 import { marked } from 'marked'
 import DOMPurify from 'dompurify'
 import { ToolCallBubble } from './ToolCallBubble'
-import './ChatBubble.css'
+import styles from './ChatBubble.module.css'
 
 interface ChatBubbleProps {
   role: 'user' | 'assistant' | 'tool'
@@ -47,21 +47,21 @@ export function ChatBubble({ role, content, tool_calls, isStreaming = false }: C
   const hasContent = isUser || (content && content.trim().length > 0)
 
   return (
-    <div className={`chat-bubble chat-bubble-${isUser ? 'user' : 'assistant'}`} role="article">
+    <div className={`${styles['chat-bubble']} ${styles[`chat-bubble-${isUser ? 'user' : 'assistant'}`]}`} role="article">
       {hasToolCalls && (
         <ToolCallBubble toolCalls={tool_calls!} isStreaming={isStreaming && content === ''} />
       )}
       {hasContent && (
-        <div className={`chat-bubble-content ${isUser ? '' : 'markdown-body'}`} ref={containerRef}>
+        <div className={`${styles['chat-bubble-content']} ${isUser ? '' : styles['markdown-body']}`} ref={containerRef}>
           {isUser ? (
-            <p className="chat-bubble-text">{content}</p>
+            <p className={styles['chat-bubble-text']}>{content}</p>
           ) : (
             <>
               <div
-                className="chat-bubble-markdown"
+                className={styles['chat-bubble-markdown']}
                 dangerouslySetInnerHTML={{ __html: html }}
               />
-              {isStreaming && <span className="chat-cursor">▌</span>}
+              {isStreaming && <span className={styles['chat-cursor']}>▌</span>}
             </>
           )}
         </div>

@@ -3,7 +3,7 @@ import { List, ChevronDown, Trash2 } from 'lucide-react'
 import { ChatSessionSummary } from '../types'
 import { useToasts } from './Toast'
 import { deleteChatSession } from '../api'
-import './ChatHistoryList.css'
+import styles from './ChatHistoryList.module.css'
 
 interface ChatHistoryListProps {
   projectId: string
@@ -69,33 +69,33 @@ export function ChatHistoryList({
   }
 
   return (
-    <div className="chat-history-container" ref={dropdownRef}>
-      <div className="chat-history-header">
-        <div className="chat-history-toggle" onClick={() => setIsOpen(!isOpen)}>
-          <List className="chat-history-icon" />
-          <span className="chat-history-label">Chat History</span>
-          <ChevronDown className={`chat-history-chevron ${isOpen ? 'open' : ''}`} />
+    <div className={styles['chat-history-container']} ref={dropdownRef}>
+      <div className={styles['chat-history-header']}>
+        <div className={styles['chat-history-toggle']} onClick={() => setIsOpen(!isOpen)}>
+          <List className={styles['chat-history-icon']} />
+          <span className={styles['chat-history-label']}>Chat History</span>
+          <ChevronDown className={`${styles['chat-history-chevron']} ${isOpen ? styles['open'] : ''}`} />
         </div>
-        <button className="chat-new-chat-btn" onClick={onNewChat} aria-label="New chat">
+        <button className={styles['chat-new-chat-btn']} onClick={onNewChat} aria-label="New chat">
           + New Chat
         </button>
       </div>
 
       {isOpen && (
-        <div className="chat-history-dropdown">
+        <div className={styles['chat-history-dropdown']}>
           {sessions.length === 0 ? (
-            <div className="chat-history-empty">
+            <div className={styles['chat-history-empty']}>
               <p>No chat sessions yet</p>
               <button className="btn-secondary" onClick={() => { onNewChat(); setIsOpen(false); }}>
                 + Start New Chat
               </button>
             </div>
           ) : (
-            <ul className="chat-history-list">
+            <ul className={styles['chat-history-list']}>
               {sessions.map(session => (
                 <li
                   key={session.id}
-                  className={`chat-history-item ${session.id === currentSessionId ? 'active' : ''}`}
+                  className={`${styles['chat-history-item']} ${session.id === currentSessionId ? styles['active'] : ''}`}
                   onClick={() => { onSelect(session.id); setIsOpen(false); }}
                   role="button"
                   tabIndex={0}
@@ -107,20 +107,20 @@ export function ChatHistoryList({
                     }
                   }}
                 >
-                  <div className="chat-history-item-content">
-                    <span className="chat-history-item-title">{session.title.replace(/\.md$/, '')}</span>
-                    <span className="chat-history-item-preview">{session.preview.replace(/\.md$/, '')}</span>
-                    <span className="chat-history-item-time">{formatTime(session.updatedAt)}</span>
+                  <div className={styles['chat-history-item-content']}>
+                    <span className={styles['chat-history-item-title']}>{session.title.replace(/\.md$/, '')}</span>
+                    <span className={styles['chat-history-item-preview']}>{session.preview.replace(/\.md$/, '')}</span>
+                    <span className={styles['chat-history-item-time']}>{formatTime(session.updatedAt)}</span>
                   </div>
                   <button
-                    className="chat-history-delete"
+                    className={styles['chat-history-delete']}
                     onClick={e => {
                       e.stopPropagation()
                       setConfirmDeleteId(session.id)
                     }}
                     aria-label="Delete chat"
                   >
-                    <Trash2 className="chat-history-delete-icon" />
+                    <Trash2 className={styles['chat-history-delete-icon']} />
                   </button>
                 </li>
               ))}

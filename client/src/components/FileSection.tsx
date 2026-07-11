@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { FileItem } from '../types'
 import { MarkdownRenderer } from './MarkdownRenderer'
 import { Pencil, FilePenLine, Trash2, ChevronDown, ChevronRight } from 'lucide-react'
-import './FileSection.css'
+import styles from './FileSection.module.css'
 
 interface FileSectionProps {
   file: FileItem
@@ -29,11 +29,11 @@ export function FileSection({
   const isReserved = file.isSummary || file.isMemory
 
   return (
-    <section className={`file-section${collapsed ? ' collapsed' : ''}`} aria-label={`File: ${displayName}`}>
-      <div className="file-section-header">
+    <section className={`${styles['file-section']}${collapsed ? ` ${styles['collapsed']}` : ''}`} aria-label={`File: ${displayName}`}>
+      <div className={styles['file-section-header']}>
         {!isReserved && (
           <button
-            className="file-section-toggle"
+            className={styles['file-section-toggle']}
             onClick={() => setCollapsed(!collapsed)}
             aria-label={collapsed ? `Expand ${displayName}` : `Collapse ${displayName}`}
             title={collapsed ? 'Expand file' : 'Collapse file'}
@@ -41,8 +41,8 @@ export function FileSection({
             {collapsed ? <ChevronRight className="btn-icon" /> : <ChevronDown className="btn-icon" />}
           </button>
         )}
-        <h2 className="file-section-title">{displayName}</h2>
-        <div className="file-section-actions">
+        <h2 className={styles['file-section-title']}>{displayName}</h2>
+        <div className={styles['file-section-actions']}>
           <button
             className="btn-secondary"
             onClick={() => onEdit(file.name)}
@@ -76,7 +76,7 @@ export function FileSection({
         </div>
       </div>
 
-      <div className="file-section-body">
+      <div className={styles['file-section-body']}>
         {loading ? (
           <div className="loading">Loading content...</div>
         ) : content ? (

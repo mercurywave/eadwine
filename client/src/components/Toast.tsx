@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useCallback, ReactNode } from 'react'
-import './Toast.css'
+import styles from './Toast.module.css'
 
 
 interface Toast {
@@ -52,15 +52,15 @@ export function ToastContainer() {
   const { toasts, dismissToast } = useToasts()
 
   return (
-    <div className="toast-container" aria-live="polite">
+    <div className={styles['toast-container']} aria-live="polite">
       {toasts.map(toast => (
         <div
           key={toast.id}
-          className={`toast toast-${toast.type}`}
+          className={`${styles['toast']} ${styles[`toast-${toast.type}`]}`}
           role="alert"
         >
           <span>{toast.message}</span>
-          <button className="toast-dismiss" onClick={() => dismissToast(toast.id)} aria-label="Dismiss">×</button>
+          <button className={styles['toast-dismiss']} onClick={() => dismissToast(toast.id)} aria-label="Dismiss">×</button>
         </div>
       ))}
     </div>

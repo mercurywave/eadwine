@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, KeyboardEvent } from 'react'
 import { Send, Square } from 'lucide-react'
 import { Macro } from '../types'
 import { MacroPicker } from './MacroPicker'
-import './ChatInput.css'
+import styles from './ChatInput.module.css'
 
 interface ChatInputProps {
   onSend: (message: string) => void
@@ -56,12 +56,12 @@ export function ChatInput({ onSend, onMacroSelect, onStop, isStreaming, disabled
   }
 
   return (
-    <div className="chat-input-area">
-      <div className="chat-input-wrapper">
+    <div className={styles['chat-input-area']}>
+      <div className={styles['chat-input-wrapper']}>
         <MacroPicker macros={macros} onSelect={onMacroSelect} />
         <textarea
           ref={textareaRef}
-          className="chat-textarea"
+          className={styles['chat-textarea']}
           value={text}
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
@@ -72,7 +72,7 @@ export function ChatInput({ onSend, onMacroSelect, onStop, isStreaming, disabled
         />
         {isStreaming ? (
           <button
-            className="chat-send-btn btn-danger"
+            className={`${styles['chat-send-btn']} btn-danger`}
             onClick={onStop}
             aria-label="Stop streaming response"
           >
@@ -80,7 +80,7 @@ export function ChatInput({ onSend, onMacroSelect, onStop, isStreaming, disabled
           </button>
         ) : (
           <button
-            className="chat-send-btn btn-primary"
+            className={`${styles['chat-send-btn']} btn-primary`}
             onClick={handleSubmit}
             disabled={!text.trim() || disabled}
             aria-label="Send message"

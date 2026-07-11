@@ -1,6 +1,6 @@
 import { Project } from '../types'
 import { Trash2 } from 'lucide-react'
-import './ProjectCard.css'
+import styles from './ProjectCard.module.css'
 
 
 interface ProjectCardProps {
@@ -16,7 +16,7 @@ export function ProjectCard({ project, onDelete }: ProjectCardProps) {
 
   return (
     <div
-      className="project-card"
+      className={styles['project-card']}
       role="button"
       tabIndex={0}
       aria-label={`Open project ${project.title}`}
@@ -28,22 +28,22 @@ export function ProjectCard({ project, onDelete }: ProjectCardProps) {
         }
       }}
     >
-      <div className="project-card-content">
-        <div className="project-card-tags">
+      <div className={styles['project-card-content']}>
+        <div className={styles['project-card-tags']}>
           {project.tags.map(tag => (
-            <span key={tag} className="tag-pill">{tag}</span>
+            <span key={tag} className={styles['tag-pill']}>{tag}</span>
           ))}
         </div>
-        <h3 className="project-card-title">{project.title || 'Untitled Project'}</h3>
-        <p className="project-card-summary">{project.summary || 'No summary'}</p>
+        <h3 className={styles['project-card-title']}>{project.title || 'Untitled Project'}</h3>
+        <p className={styles['project-card-summary']}>{project.summary || 'No summary'}</p>
       </div>
       <button
-        className="project-card-delete"
+        className={styles['project-card-delete']}
         onClick={handleDelete}
         aria-label={`Delete project ${project.title}`}
         title="Delete project"
       >
-        <Trash2 className="project-card-delete-icon" />
+        <Trash2 className={styles['project-card-delete-icon']} />
       </button>
     </div>
   )

@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from 'react'
 import { AlertTriangle } from 'lucide-react'
 import { marked } from 'marked'
 import DOMPurify from 'dompurify'
-import './MarkdownRenderer.css'
+import styles from './MarkdownRenderer.module.css'
 
 interface MarkdownRendererProps {
   content: string
@@ -27,8 +27,8 @@ export function MarkdownRenderer({ content, filename }: MarkdownRendererProps) {
 
   if (error) {
     return (
-      <div className="md-error" role="alert">
-        <AlertTriangle className="md-error-icon" />
+      <div className={`${styles['md-error']}`} role="alert">
+        <AlertTriangle className={styles['md-error-icon']} />
         Failed to render {filename?.replace(/\.md$/, '') || 'file'}: {error}
       </div>
     )
@@ -37,7 +37,7 @@ export function MarkdownRenderer({ content, filename }: MarkdownRendererProps) {
   return (
     <div
       ref={containerRef}
-      className="markdown-body"
+      className={styles['markdown-body']}
       dangerouslySetInnerHTML={{ __html: html }}
     />
   )
