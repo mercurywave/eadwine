@@ -1,10 +1,7 @@
 import { makeBackup } from './backups.js'
 import { readSettings } from '../routes/settings.js'
 
-let scheduledBackupTime: string | null = null
-let lastCheckedAt: number = 0
-const CHECK_INTERVAL_MS = 3_600_000 // 1 hour
-const MAX_SKIP_MS = 28 * 60 * 60 * 1000 // 28 hours — if we haven't checked in this long, force a check
+let scheduledTimeout: ReturnType<typeof setTimeout> | null = null
 
 /**
  * Parse a "HH:MM" time string into hours and minutes.
@@ -19,70 +16,46 @@ function parseTime(time: string): { hour: number; minute: number } | null {
 }
 
 /**
- * Check if the scheduled backup time has passed today.
- * Returns true if the backup time for today has passed.
+ * Calculate the ms until the next occurrence of the given time today or tomorrow.
  */
-function hasBackupTimePassedToday(parsed: { hour: number; minute: number }): boolean {
+function msUntilTarget(parsed: { hour: number; minute: number }): number {
   const now = new Date()
-  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-  const backupTimeToday = new Date(
-    todayStart.getTime() + parsed.hour * 60 * 60 * 1000 + parsed.minute * 60 * 1000
-  )
-  return now >= backupTimeToday
+  const target = new Date(now)
+  target.setHours(parsed.hour, parsed.minute, 0, 0)
+
+  // If the target time today has already passed, schedule for tomorrow
+  if (now >= target) {
+    target.setDate(target.getDate() + 1)
+  }
+
+  return target.getTime() - now.getTime()
 }
 
 /**
- * Start the backup scheduler. This reads the backup time from settings
- * and sets up an hourly check.
+ * Check if today's backup was supposed to run but was missed (e.g. server was down).
+ * If so, run it once immediately.
  */
-export function startBackupScheduler(): void {
-  // Load the current backup time from settings
-  const settings = readSettings()
-  scheduledBackupTime = settings.backupTime || null
+function checkMissedBackup(parsed: { hour: number; minute: number }): void {
+  const now = new Date()
+  const target = new Date(now)
+  target.setHours(parsed.hour, parsed.minute, 0, 0)
 
-  // If no backup time is set, nothing to schedule
-  if (!scheduledBackupTime) return
+  // If target is today and hasn't passed yet, nothing to catch up on
+  if (now < target) return
 
-  const parsed = parseTime(scheduledBackupTime)
-  if (!parsed) return
+  // If target is in the future (already scheduled for tomorrow), nothing to catch up on
+  // (this shouldn't happen given the caller logic, but be safe)
+  if (target > now) return
 
-  // Check every hour
-  const interval = setInterval(() => {
-    const now = Date.now()
-
-    // If it's been too long since we last checked (e.g. server was down),
-    // always run to avoid skipping the backup entirely
-    if (now - lastCheckedAt > MAX_SKIP_MS) {
-      console.log(`[Backup Scheduler] Long gap since last check (${Math.round((now - lastCheckedAt) / 3600000)}h), running backup`)
-      runBackup(parsed)
-      lastCheckedAt = now
-      return
-    }
-
-    // If the backup time for today has already passed and we've already
-    // checked since then, skip — the backup already ran
-    if (hasBackupTimePassedToday(parsed) && now - lastCheckedAt > 60 * 60 * 1000) {
-      // More than an hour has passed since last check and backup time has
-      // passed — we've already run today, skip
-      return
-    }
-
-    // If the backup time has passed (within the last hour window), run it
-    if (hasBackupTimePassedToday(parsed)) {
-      runBackup(parsed)
-    }
-
-    lastCheckedAt = now
-  }, CHECK_INTERVAL_MS)
-
-  // Prevent the scheduler from keeping the process alive
-  if (unref) {
-    unref(interval)
-  }
+  console.log(`[Backup Scheduler] Missed backup for ${target.toLocaleString()}, running now`)
+  runBackup(parsed)
 }
 
+/**
+ * Run a backup and log the result.
+ */
 function runBackup(parsed: { hour: number; minute: number }): void {
-  console.log(`[Backup Scheduler] Running scheduled backup at ${scheduledBackupTime}`)
+  console.log(`[Backup Scheduler] Running scheduled backup at ${parsed.hour}:${String(parsed.minute).padStart(2, '0')}`)
   const result = makeBackup()
   if (result.success) {
     console.log(`[Backup Scheduler] Backup completed: ${result.message}`)
@@ -91,9 +64,60 @@ function runBackup(parsed: { hour: number; minute: number }): void {
   }
 }
 
-// Cross-platform unref for timers
-const unref = (timer: NodeJS.Timer) => {
-  if (typeof (timer as any).unref === 'function') {
-    ;(timer as any).unref()
+/**
+ * Schedule the next backup. This is the core loop:
+ * 1. Read settings for the backup time
+ * 2. Check for any missed backup (server was down)
+ * 3. Sleep until the next target time
+ * 4. Run the backup
+ * 5. Repeat
+ */
+export function scheduleNextBackup(): void {
+  const settings = readSettings()
+  const time = settings.backupTime
+
+  // If no backup time is set, do nothing
+  if (!time) return
+
+  const parsed = parseTime(time)
+  if (!parsed) return
+
+  // Check for a missed backup (e.g. server was down and missed today's time)
+  checkMissedBackup(parsed)
+
+  const delay = msUntilTarget(parsed)
+
+  console.log(`[Backup Scheduler] Next backup scheduled in ${Math.round(delay / 60000)} minutes`)
+
+  const timeout = setTimeout(() => {
+    runBackup(parsed)
+    scheduleNextBackup() // Reschedule for the next day
+  }, delay)
+
+  // Allow the process to exit without waiting for this timer
+  if (typeof (timeout as any).unref === 'function') {
+    (timeout as any).unref()
   }
+
+  scheduledTimeout = timeout
+}
+
+/**
+ * Stop any currently scheduled backup. Called when settings change
+ * or when the server is shutting down.
+ */
+export function stopBackupScheduler(): void {
+  if (scheduledTimeout) {
+    clearTimeout(scheduledTimeout)
+    scheduledTimeout = null
+  }
+}
+
+/**
+ * Start the backup scheduler. Reads the current backup time from settings
+ * and begins scheduling.
+ */
+export function startBackupScheduler(): void {
+  stopBackupScheduler() // Clean up any existing scheduler
+  scheduleNextBackup()
 }

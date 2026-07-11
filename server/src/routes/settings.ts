@@ -4,6 +4,7 @@ import { Router, Request, Response } from 'express'
 import { SETTINGS_FILE } from '../config.js'
 import { SettingsData, PersonaData, MacroData } from '../types.js'
 import { gitAvailable, makeBackup, getLastCommitInfo } from '../services/backups.js'
+import { startBackupScheduler } from '../services/scheduler.js'
 
 export function readSettings(): SettingsData {
   try {
@@ -77,6 +78,7 @@ router.put('/', (req: Request, res: Response) => {
       settings.otherMaxLength = undefined
     }
     // Backup time - optional, must be "HH:MM" format if provided
+    const oldBackupTime = settings.backupTime
     if (typeof backupTime === 'string') {
       const match = backupTime.match(/^([01]?\d|2[0-3]):([0-5]\d)$/)
       if (match) {
@@ -86,6 +88,12 @@ router.put('/', (req: Request, res: Response) => {
       }
     }
     writeSettings(settings)
+
+    // Restart the backup scheduler if backupTime changed
+    if (oldBackupTime !== settings.backupTime) {
+      startBackupScheduler()
+    }
+
     res.json(settings)
   } catch (err: any) {
     console.error(err)
