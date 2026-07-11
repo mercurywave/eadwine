@@ -244,7 +244,7 @@ router.get('/backups/status', (_req: Request, res: Response) => {
 // POST /api/settings/backups/trigger
 router.post('/backups/trigger', (_req: Request, res: Response) => {
   try {
-    const result = makeBackup()
+    const result = makeBackup({ force: true })
     if (result.success) {
       res.json({ success: true, message: result.message, timestamp: result.timestamp })
     } else {

@@ -41,7 +41,7 @@ export function initGitRepo(): boolean {
  * Perform a git commit of all changes in the server data directory.
  * Returns the result object.
  */
-export function makeBackup(): {
+export function makeBackup(options?: { force?: boolean }): {
   success: boolean
   timestamp?: string
   message: string
@@ -79,8 +79,12 @@ export function makeBackup(): {
     // Stage and commit
     execSync('git add .', { cwd: DATA_DIR, stdio: 'ignore' })
     const timestamp = new Date().toISOString()
+    const isManual = options?.force
+    const commitMessage = isManual
+      ? `Manual backup: ${timestamp}`
+      : `Auto-backup: ${timestamp}`
     execSync(
-      `git -c user.name='eadwine' -c user.email='eadwine@local' commit -m "Auto-backup: ${timestamp}"`,
+      `git -c user.name='eadwine' -c user.email='eadwine@local' commit -m "${commitMessage}"`,
       { cwd: DATA_DIR, stdio: 'ignore' }
     )
 
