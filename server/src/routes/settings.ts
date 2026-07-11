@@ -3,6 +3,7 @@ import path from 'path'
 import { Router, Request, Response } from 'express'
 import { SETTINGS_FILE } from '../config.js'
 import { SettingsData, PersonaData, MacroData } from '../types.js'
+import { gitAvailable, makeBackup, getLastCommitInfo } from '../services/backups.js'
 
 export function readSettings(): SettingsData {
   try {
@@ -37,8 +38,10 @@ router.get('/', (_req: Request, res: Response) => {
 // PUT /api/settings
 router.put('/', (req: Request, res: Response) => {
   try {
-    const { openAiEndpoint, selectedModel, defaultModel, personas, defaultPersonaId, structureGuidelines, macros, summaryMaxLength, memoryMaxLength, otherMaxLength } = req.body
-    const settings: SettingsData = {}
+    const { openAiEndpoint, selectedModel, defaultModel, personas, defaultPersonaId, structureGuidelines, macros, summaryMaxLength, memoryMaxLength, otherMaxLength, backupTime } = req.body
+    // Read existing settings to preserve fields not included in the request
+    const existing = readSettings()
+    const settings: SettingsData = { ...existing }
     if (typeof openAiEndpoint === 'string') {
       settings.openAiEndpoint = openAiEndpoint
     }
@@ -72,6 +75,15 @@ router.put('/', (req: Request, res: Response) => {
       settings.otherMaxLength = otherMaxLength
     } else if (otherMaxLength === '' || otherMaxLength === null || otherMaxLength === undefined) {
       settings.otherMaxLength = undefined
+    }
+    // Backup time - optional, must be "HH:MM" format if provided
+    if (typeof backupTime === 'string') {
+      const match = backupTime.match(/^([01]?\d|2[0-3]):([0-5]\d)$/)
+      if (match) {
+        settings.backupTime = backupTime
+      } else if (backupTime === '' || backupTime === null || backupTime === undefined) {
+        settings.backupTime = undefined
+      }
     }
     writeSettings(settings)
     res.json(settings)
@@ -196,6 +208,47 @@ router.delete('/personas/:id/reset-default', (req: Request, res: Response) => {
   } catch (err: any) {
     console.error(err)
     res.status(500).json({ error: 'Failed to reset default persona' })
+  }
+})
+
+// ── Backups ────────────────────────────────────────────────────────────
+
+// GET /api/settings/backups/status
+router.get('/backups/status', (_req: Request, res: Response) => {
+  try {
+    const gitAvail = gitAvailable()
+    const lastCommit = gitAvail ? getLastCommitInfo() : null
+    const gitDir = path.join(SETTINGS_FILE, '..', '.git')
+    const initialized = gitAvail && fs.existsSync(gitDir)
+
+    res.json({
+      gitAvailable: gitAvail,
+      initialized,
+      lastCommitTimestamp: lastCommit?.timestamp,
+      lastCommitMessage: lastCommit?.message,
+    })
+  } catch (err: any) {
+    console.error(err)
+    res.status(500).json({ error: 'Failed to read backup status' })
+  }
+})
+
+// POST /api/settings/backups/trigger
+router.post('/backups/trigger', (_req: Request, res: Response) => {
+  try {
+    const result = makeBackup()
+    if (result.success) {
+      res.json({ success: true, message: result.message, timestamp: result.timestamp })
+    } else {
+      res.status(result.error === 'git-not-found' ? 400 : 500).json({
+        success: false,
+        message: result.message,
+        error: result.error,
+      })
+    }
+  } catch (err: any) {
+    console.error(err)
+    res.status(500).json({ success: false, message: 'Backup failed', error: 'backup-failed' })
   }
 })
 

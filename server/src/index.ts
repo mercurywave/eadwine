@@ -2,6 +2,7 @@ import express, { Request, Response as ExpressResponse } from 'express'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import { mountRoutes, mountErrorHandler } from './routes/index.js'
+import { startBackupScheduler } from './services/scheduler.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -35,4 +36,6 @@ if (process.env.NODE_ENV === 'production') {
 
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`)
+  // Start the daily backup scheduler
+  startBackupScheduler()
 })

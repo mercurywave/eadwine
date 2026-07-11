@@ -42,6 +42,7 @@ export interface Settings {
   summaryMaxLength?: number
   memoryMaxLength?: number
   otherMaxLength?: number
+  backupTime?: string
 }
 
 export interface ToolCallInfo {

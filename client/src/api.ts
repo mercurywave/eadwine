@@ -89,6 +89,32 @@ export async function saveSettings(settings: Settings): Promise<void> {
   })
 }
 
+// ── Backups ──────────────────────────────────────────────────────────
+
+export interface BackupStatus {
+  gitAvailable: boolean
+  initialized: boolean
+  lastCommitTimestamp?: string
+  lastCommitMessage?: string
+}
+
+export interface BackupResult {
+  success: boolean
+  message: string
+  timestamp?: string
+  error?: string
+}
+
+export async function fetchBackupStatus(): Promise<BackupStatus> {
+  return request<BackupStatus>('/settings/backups/status')
+}
+
+export async function triggerBackup(): Promise<BackupResult> {
+  return request<BackupResult>('/settings/backups/trigger', {
+    method: 'POST',
+  })
+}
+
 // ── Models ───────────────────────────────────────────────────────────
 
 export async function fetchModels(): Promise<string[]> {
