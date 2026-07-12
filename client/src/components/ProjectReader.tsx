@@ -172,17 +172,17 @@ export const ProjectReader = forwardRef<{ refreshFiles: () => void; refreshFileC
           Projects
         </a>
         <h1 className={styles['page-title']}>{project?.title || 'Project'}</h1>
-        <div className={styles['page-header-actions']}>
-          <div className={styles['project-tags']}>
-            {project?.tags.map(tag => (
-              <span key={tag} className={styles['tag-pill']}>{tag}</span>
-            ))}
-          </div>
-          <button className="btn-primary" onClick={() => setShowNewFile(true)}>
-            + New File
-          </button>
-        </div>
+        <button className="btn-primary" onClick={() => setShowNewFile(true)}>
+          + New File
+        </button>
       </header>
+      {project?.tags.length ? (
+        <div className={styles['page-tags']}>
+          {project.tags.map(tag => (
+            <span key={tag} className={styles['tag-pill']}>{tag}</span>
+          ))}
+        </div>
+      ) : null}
 
       {error && <div className="error-banner">{error}</div>}
 
