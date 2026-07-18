@@ -38,6 +38,18 @@ export function writeFileHandler(
   }
 
   if (maxLength !== undefined && maxLength > 0 && content.length > maxLength) {
+    if (filenameUpper === 'SUMMARY.MD') {
+      return {
+        success: false,
+        error: `The SUMMARY.md content exceeds the limit of ${maxLength} characters (aim for ~30 words, roughly 150-200 characters). SUMMARY.md must be a very brief executive description of the project — include only the core idea, key technologies, and purpose. Do not include detailed explanations, implementation notes, or background context.`,
+      }
+    }
+    if (filenameUpper === 'MEMORY.MD') {
+      return {
+        success: false,
+        error: `The MEMORY.md content exceeds the limit of ${maxLength} characters. MEMORY.md should contain only the most critical decisions, preferences, and context needed for handoff to future assistants. Be extremely terse.`,
+      }
+    }
     return {
       success: false,
       error: `The file "${filename}" content exceeds the limit of ${maxLength} characters. Please write a shorter file.`,
