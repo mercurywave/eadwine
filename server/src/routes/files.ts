@@ -6,6 +6,91 @@ import { stripFrontmatter } from '../summary.js'
 
 const router = Router()
 
+const PROJECTS_ROOT = path.join(path.dirname(resolveProjectPath('')), '..')
+
+function getProjectJsonPath(projectPath: string): string {
+  return path.join(projectPath, 'project.json')
+}
+
+function readPins(projectPath: string): string[] {
+  const jsonPath = getProjectJsonPath(projectPath)
+  if (!fs.existsSync(jsonPath)) {
+    return []
+  }
+  try {
+    const data = JSON.parse(fs.readFileSync(jsonPath, 'utf-8'))
+    if (data && Array.isArray(data.pinnedFiles)) {
+      return data.pinnedFiles
+    }
+  } catch {
+    // Ignore parse errors
+  }
+  return []
+}
+
+function writePins(projectPath: string, pinnedFiles: string[]): void {
+  const jsonPath = getProjectJsonPath(projectPath)
+  let data: Record<string, unknown> = {}
+  if (fs.existsSync(jsonPath)) {
+    try {
+      data = JSON.parse(fs.readFileSync(jsonPath, 'utf-8'))
+    } catch {
+      // Ignore parse errors
+    }
+  }
+  data.pinnedFiles = pinnedFiles
+  fs.writeFileSync(jsonPath, JSON.stringify(data, null, 2), 'utf-8')
+}
+
+// GET /api/projects/:id/pins
+router.get('/:id/pins', (req: Request, res: Response) => {
+  try {
+    const id = param(req, 'id')
+    const projectPath = resolveProjectPath(id)
+
+    if (!fs.existsSync(projectPath)) {
+      return res.status(404).json({ error: 'Project not found' })
+    }
+
+    const pinnedFiles = readPins(projectPath)
+    res.json({ pinnedFiles })
+  } catch (err: any) {
+    console.error(err)
+    res.status(500).json({ error: 'Failed to read pins' })
+  }
+})
+
+// PUT /api/projects/:id/pins
+router.put('/:id/pins', (req: Request, res: Response) => {
+  try {
+    const id = param(req, 'id')
+    const projectPath = resolveProjectPath(id)
+
+    if (!fs.existsSync(projectPath)) {
+      return res.status(404).json({ error: 'Project not found' })
+    }
+
+    const { pinnedFiles } = req.body
+    if (!Array.isArray(pinnedFiles)) {
+      return res.status(400).json({ error: 'pinnedFiles must be an array' })
+    }
+
+    // Validate that all pinned files exist in the project
+    for (const filename of pinnedFiles) {
+      const filePath = resolveFilePath(projectPath, filename)
+      if (!filePath.startsWith(projectPath) || !fs.existsSync(filePath)) {
+        return res.status(400).json({ error: `File not found: ${filename}` })
+      }
+    }
+
+    writePins(projectPath, pinnedFiles)
+    res.json({ message: 'Pins updated' })
+  } catch (err: any) {
+    console.error(err)
+    res.status(500).json({ error: 'Failed to save pins' })
+  }
+})
+
 // GET /api/projects/:id/files
 router.get('/:id/files', (req: Request, res: Response) => {
   try {
@@ -16,8 +101,11 @@ router.get('/:id/files', (req: Request, res: Response) => {
       return res.status(404).json({ error: 'Project not found' })
     }
 
+    const pinnedFiles = readPins(projectPath)
+    const pinnedSet = new Set(pinnedFiles)
+
     const entries = fs.readdirSync(projectPath, { withFileTypes: true })
-    const files = entries
+    const allFiles = entries
       .filter(e => e.isFile() && e.name.endsWith('.md'))
       .map(e => ({
         name: e.name,
@@ -25,15 +113,26 @@ router.get('/:id/files', (req: Request, res: Response) => {
         isSummary: e.name.toLowerCase() === 'summary.md',
         isMemory: e.name.toLowerCase() === 'memory.md',
       }))
-      .sort((a, b) => {
-        if (a.isSummary) return -1
-        if (b.isSummary) return 1
-        if (a.isMemory) return 1
-        if (b.isMemory) return -1
-        return a.name.localeCompare(b.name, undefined, { sensitivity: 'base' })
-      })
 
-    res.json(files)
+    // Build pinned list in pinnedFiles array order (not directory order)
+    const pinned: typeof allFiles = []
+    for (const pinName of pinnedFiles) {
+      const match = allFiles.find(f => f.name === pinName)
+      if (match) {
+        pinned.push(match)
+      }
+    }
+
+    // Unpinned files: summary, memory, then others alphabetically
+    const summary = allFiles.find(f => f.isSummary)
+    const memory = allFiles.find(f => f.isMemory)
+    const unpinnedOther = allFiles.filter(f => !f.isSummary && !f.isMemory && !pinnedSet.has(f.name))
+    unpinnedOther.sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }))
+
+    // Final order: summary → pinned (in pinnedFiles order) → unpinned alphabetically → memory
+    const sorted = [summary, ...pinned, ...unpinnedOther, memory].filter(Boolean)
+
+    res.json(sorted)
   } catch (err: any) {
     console.error(err)
     res.status(500).json({ error: 'Failed to list files' })

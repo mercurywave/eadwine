@@ -8,6 +8,8 @@ import {
   createFile,
   deleteFile,
   renameFile,
+  fetchPins,
+  savePins,
 } from '../api'
 import { FileSection } from './FileSection'
 import { ConfirmDialog } from './ConfirmDialog'
@@ -25,6 +27,7 @@ export const ProjectReader = forwardRef<{ refreshFiles: () => void; refreshFileC
   const [loadingFiles, setLoadingFiles] = useState(true)
   const [loadingAll, setLoadingAll] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [pinnedFiles, setPinnedFiles] = useState<string[]>([])
 
   useImperativeHandle(ref, () => ({
     refreshFiles,
@@ -68,9 +71,42 @@ export const ProjectReader = forwardRef<{ refreshFiles: () => void; refreshFileC
     }
   }, [projectId])
 
+  const loadPins = useCallback(async () => {
+    try {
+      const data = await fetchPins(projectId)
+      setPinnedFiles(data.pinnedFiles)
+    } catch {
+      setPinnedFiles([])
+    }
+  }, [projectId])
+
+  const handlePin = useCallback(async (filename: string) => {
+    const currentPinned = [...pinnedFiles]
+    const index = currentPinned.indexOf(filename)
+    if (index === -1) {
+      // Pin the file: add to end of pinned list
+      currentPinned.push(filename)
+    } else {
+      // Unpin the file: remove from list
+      currentPinned.splice(index, 1)
+    }
+    setPinnedFiles(currentPinned)
+    try {
+      await savePins(projectId, currentPinned)
+    } catch {
+      // Non-blocking: restore on failure
+      setPinnedFiles([...files.map(f => f.name)].filter(n => currentPinned.includes(n)))
+    }
+    await refreshFiles()
+  }, [pinnedFiles, projectId, refreshFiles, files])
+
   useEffect(() => {
     loadProject()
   }, [loadProject])
+
+  useEffect(() => {
+    loadPins()
+  }, [loadPins])
 
   useEffect(() => {
     refreshFiles()
@@ -203,6 +239,8 @@ export const ProjectReader = forwardRef<{ refreshFiles: () => void; refreshFileC
               onEdit={handleEdit}
               onDelete={handleDelete}
               onRename={handleRenameClick}
+              isPinned={pinnedFiles.includes(file.name)}
+              onPin={handlePin}
             />
           ))}
           {files.filter(f => f.isMemory).map(file => (
@@ -214,6 +252,8 @@ export const ProjectReader = forwardRef<{ refreshFiles: () => void; refreshFileC
               onEdit={handleEdit}
               onDelete={handleDelete}
               onRename={handleRenameClick}
+              isPinned={pinnedFiles.includes(file.name)}
+              onPin={handlePin}
               collapsed
             />
           ))}

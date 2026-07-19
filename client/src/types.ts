@@ -87,3 +87,7 @@ export interface FileChangeEvent {
   type: 'file_changed'
   files: FileChange[]
 }
+
+export interface Pins {
+  pinnedFiles: string[]
+}

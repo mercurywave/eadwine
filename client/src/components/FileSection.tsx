@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { FileItem } from '../types'
 import { MarkdownRenderer } from './MarkdownRenderer'
-import { Pencil, FilePenLine, Trash2, ChevronDown, ChevronRight } from 'lucide-react'
+import { Pencil, FilePenLine, Trash2, ChevronDown, ChevronRight, Pin, PinOff } from 'lucide-react'
 import styles from './FileSection.module.css'
 
 interface FileSectionProps {
@@ -11,6 +11,8 @@ interface FileSectionProps {
   onEdit: (filename: string) => void
   onDelete: (filename: string) => void
   onRename: (filename: string) => void
+  isPinned?: boolean
+  onPin?: (filename: string) => void
   collapsed?: boolean
 }
 
@@ -21,6 +23,8 @@ export function FileSection({
   onEdit,
   onDelete,
   onRename,
+  isPinned = false,
+  onPin,
   collapsed: initiallyCollapsed = false,
 }: FileSectionProps) {
   const displayName = file.name.replace(/\.md$/, '')
@@ -52,6 +56,16 @@ export function FileSection({
             <Pencil className="btn-icon" />
             Edit
           </button>
+          {!isReserved && onPin && (
+            <button
+              className={`btn-secondary${isPinned ? ` ${styles['pinButton']} ${styles['pinned']}` : ''}`}
+              onClick={() => onPin(file.name)}
+              aria-label={isPinned ? `Unpin ${displayName}` : `Pin ${displayName}`}
+              title={isPinned ? 'Unpin file' : 'Pin file'}
+            >
+              {isPinned ? <Pin className="btn-icon" /> : <PinOff className="btn-icon" />}
+            </button>
+          )}
           {!isReserved && (
             <>
               <button

@@ -72,6 +72,20 @@
   display: none;
 }
 
+/* ── Pin button (pinned state) ─────────────────────────────────── */
+
+.pinButton.pinned {
+  color: #fdba74;
+  background-color: rgba(253, 186, 116, 0.1);
+  border-color: #fdba74;
+}
+
+.pinButton.pinned:hover {
+  color: #fdba74;
+  background-color: rgba(253, 186, 116, 0.18);
+  border-color: #fdba74;
+}
+
 /* ── Light theme ──────────────────────────────────────────────────── */
 
 @media (prefers-color-scheme: light) {

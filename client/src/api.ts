@@ -1,4 +1,4 @@
-import { Project, FileItem, Settings, Persona, Macro, ChatSession, ChatSessionSummary, ToolCallInfo, ChatMessage, FileChange, FileChangeEvent } from './types'
+import { Project, FileItem, Settings, Persona, Macro, ChatSession, ChatSessionSummary, ToolCallInfo, ChatMessage, FileChange, FileChangeEvent, Pins } from './types'
 
 const BASE_URL = '/api'
 
@@ -73,6 +73,19 @@ export async function renameFile(projectId: string, from: string, to: string): P
   return request<FileItem>(`/projects/${projectId}/files/rename`, {
     method: 'PUT',
     body: JSON.stringify({ from, to }),
+  })
+}
+
+// ── Pins ───────────────────────────────────────────────────────────
+
+export async function fetchPins(projectId: string): Promise<Pins> {
+  return request<Pins>(`/projects/${projectId}/pins`)
+}
+
+export async function savePins(projectId: string, pinnedFiles: string[]): Promise<void> {
+  await request<void>(`/projects/${projectId}/pins`, {
+    method: 'PUT',
+    body: JSON.stringify({ pinnedFiles }),
   })
 }
 
