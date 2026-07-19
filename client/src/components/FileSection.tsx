@@ -35,16 +35,14 @@ export function FileSection({
   return (
     <section className={`${styles['file-section']}${collapsed ? ` ${styles['collapsed']}` : ''}`} aria-label={`File: ${displayName}`}>
       <div className={styles['file-section-header']}>
-        {!isReserved && (
-          <button
-            className={styles['file-section-toggle']}
-            onClick={() => setCollapsed(!collapsed)}
-            aria-label={collapsed ? `Expand ${displayName}` : `Collapse ${displayName}`}
-            title={collapsed ? 'Expand file' : 'Collapse file'}
-          >
-            {collapsed ? <ChevronRight className="btn-icon" /> : <ChevronDown className="btn-icon" />}
-          </button>
-        )}
+        <button
+          className={styles['file-section-toggle']}
+          onClick={() => setCollapsed(!collapsed)}
+          aria-label={collapsed ? `Expand ${displayName}` : `Collapse ${displayName}`}
+          title={collapsed ? 'Expand file' : 'Collapse file'}
+        >
+          {collapsed ? <ChevronRight className="btn-icon" /> : <ChevronDown className="btn-icon" />}
+        </button>
         <h2 className={styles['file-section-title']}>{displayName}</h2>
         <div className={styles['file-section-actions']}>
           <button
