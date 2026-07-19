@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, KeyboardEvent } from 'react'
+import { useState, useRef, useEffect, KeyboardEvent, forwardRef } from 'react'
 import { Send, Square } from 'lucide-react'
 import { Macro } from '../types'
 import { MacroPicker } from './MacroPicker'
@@ -16,7 +16,7 @@ interface ChatInputProps {
   onDraftClear?: () => void
 }
 
-export function ChatInput({ onSend, onMacroSelect, onStop, isStreaming, disabled = false, macros = [], draftText = '', onDraftChange, onDraftClear }: ChatInputProps) {
+export const ChatInput = forwardRef<{ focus: () => void }, ChatInputProps>(function ChatInput({ onSend, onMacroSelect, onStop, isStreaming, disabled = false, macros = [], draftText = '', onDraftChange, onDraftClear }, ref) {
   const [text, setText] = useState(draftText)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
@@ -25,6 +25,18 @@ export function ChatInput({ onSend, onMacroSelect, onStop, isStreaming, disabled
       textareaRef.current.focus()
     }
   }, [disabled, isStreaming])
+
+  useEffect(() => {
+    if (ref) {
+      (ref as React.RefObject<{ focus: () => void } | null>).current = {
+        focus: () => {
+          if (textareaRef.current) {
+            textareaRef.current.focus()
+          }
+        },
+      }
+    }
+  }, [ref])
 
   const handleSubmit = () => {
     const trimmed = text.trim()
@@ -91,4 +103,4 @@ export function ChatInput({ onSend, onMacroSelect, onStop, isStreaming, disabled
       </div>
     </div>
   )
-}
+})

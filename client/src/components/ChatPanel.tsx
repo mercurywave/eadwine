@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { MessageSquare, AlertTriangle } from 'lucide-react'
 import { useChat } from '../hooks/useChat'
 import { ChatBubble } from './ChatBubble'
@@ -45,6 +45,7 @@ export function ChatPanel({ projectId, isOpen, onClose, endpoint, selectedModel,
 
   const [showSettingsConfirm, setShowSettingsConfirm] = useState<'endpoint' | 'model' | false>(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const inputRef = useRef<{ focus: () => void } | null>(null)
 
   // Load history when panel opens
   useEffect(() => {
@@ -66,14 +67,19 @@ export function ChatPanel({ projectId, isOpen, onClose, endpoint, selectedModel,
     newChat()
   }
 
-  const handlePersonaSelect = (persona: Persona) => {
-    if (selectedPersona && selectedPersona.id === persona.id) {
+  const handlePersonaSelect = useCallback((persona: Persona) => {
+    const wasSelected = selectedPersona && selectedPersona.id === persona.id
+    if (wasSelected) {
       // Clicking the already-selected persona unselects it
       setSelectedPersona(null)
     } else {
       setSelectedPersona(persona)
     }
-  }
+    // Focus the chat input after selecting or unselecting a persona
+    setTimeout(() => {
+      inputRef.current?.focus()
+    }, 0)
+  }, [selectedPersona, setSelectedPersona])
 
   const handleSend = (userMessage: string) => {
     if (!endpoint) {
@@ -191,8 +197,8 @@ export function ChatPanel({ projectId, isOpen, onClose, endpoint, selectedModel,
         )}
       </div>
 
-      {/* Input */}
       <ChatInput
+        ref={inputRef}
         onSend={handleSend}
         onMacroSelect={handleMacroSelect}
         onStop={handleStop}
