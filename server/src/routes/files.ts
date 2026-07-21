@@ -1,45 +1,20 @@
 import fs from 'fs'
-import path from 'path'
 import { Router, Request, Response } from 'express'
-import { param, resolveProjectPath, resolveFilePath, validateFilename } from '../helpers.js'
+import { param, resolveProjectPath, resolveFilePath, validateFilename, readProjectJson, writeProjectJson, touchProjectLastUpdated } from '../helpers.js'
 import { stripFrontmatter } from '../summary.js'
 
 const router = Router()
 
-const PROJECTS_ROOT = path.join(path.dirname(resolveProjectPath('')), '..')
-
-function getProjectJsonPath(projectPath: string): string {
-  return path.join(projectPath, 'project.json')
-}
-
 function readPins(projectPath: string): string[] {
-  const jsonPath = getProjectJsonPath(projectPath)
-  if (!fs.existsSync(jsonPath)) {
-    return []
-  }
-  try {
-    const data = JSON.parse(fs.readFileSync(jsonPath, 'utf-8'))
-    if (data && Array.isArray(data.pinnedFiles)) {
-      return data.pinnedFiles
-    }
-  } catch {
-    // Ignore parse errors
+  const data = readProjectJson(projectPath)
+  if (data && Array.isArray(data.pinnedFiles)) {
+    return data.pinnedFiles
   }
   return []
 }
 
 function writePins(projectPath: string, pinnedFiles: string[]): void {
-  const jsonPath = getProjectJsonPath(projectPath)
-  let data: Record<string, unknown> = {}
-  if (fs.existsSync(jsonPath)) {
-    try {
-      data = JSON.parse(fs.readFileSync(jsonPath, 'utf-8'))
-    } catch {
-      // Ignore parse errors
-    }
-  }
-  data.pinnedFiles = pinnedFiles
-  fs.writeFileSync(jsonPath, JSON.stringify(data, null, 2), 'utf-8')
+  writeProjectJson(projectPath, { pinnedFiles })
 }
 
 // GET /api/projects/:id/pins
@@ -84,6 +59,7 @@ router.put('/:id/pins', (req: Request, res: Response) => {
     }
 
     writePins(projectPath, pinnedFiles)
+    touchProjectLastUpdated(projectPath)
     res.json({ message: 'Pins updated' })
   } catch (err: any) {
     console.error(err)
@@ -211,6 +187,7 @@ router.put('/:id/files/rename', (req: Request, res: Response) => {
     }
 
     fs.renameSync(srcPath, destPath)
+    touchProjectLastUpdated(projectPath)
     res.json({ name: finalTo, path: finalTo })
   } catch (err: any) {
     console.error(err)
@@ -240,6 +217,7 @@ router.put('/:id/files/:filename', (req: Request, res: Response) => {
     }
 
     fs.writeFileSync(filePath, content, 'utf-8')
+    touchProjectLastUpdated(projectPath)
     res.json({ message: 'File saved' })
   } catch (err: any) {
     console.error(err)
@@ -279,6 +257,7 @@ router.post('/:id/files', (req: Request, res: Response) => {
     }
 
     fs.writeFileSync(filePath, '', 'utf-8')
+    touchProjectLastUpdated(projectPath)
     res.status(201).json({ name: finalName, path: finalName })
   } catch (err: any) {
     console.error(err)
@@ -315,6 +294,7 @@ router.delete('/:id/files/:filename', (req: Request, res: Response) => {
     }
 
     fs.unlinkSync(filePath)
+    touchProjectLastUpdated(projectPath)
     res.status(204).send()
   } catch (err: any) {
     console.error(err)

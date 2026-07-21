@@ -1,5 +1,5 @@
 import fs from 'fs'
-import { resolveFilePath } from '../helpers.js'
+import { resolveFilePath, touchProjectLastUpdated } from '../helpers.js'
 import { readSettings } from '../routes/settings.js'
 import { validateSummaryMdContent } from '../summary.js'
 
@@ -77,6 +77,7 @@ export function writeFileHandler(
 
   try {
     fs.writeFileSync(filePath, content, 'utf-8')
+    touchProjectLastUpdated(projectPath)
 
     // Emit file change event
     if (typeof emit === 'function') {

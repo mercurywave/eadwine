@@ -3,6 +3,7 @@ export interface Project {
   title: string
   summary: string
   tags: string[]
+  lastUpdated?: string
 }
 
 export interface FileItem {

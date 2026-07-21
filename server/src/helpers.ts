@@ -1,3 +1,4 @@
+import fs from 'fs'
 import path from 'path'
 import { Request } from 'express'
 import { PROJECTS_ROOT } from './config.js'
@@ -31,4 +32,32 @@ export function resolveProjectPath(id: string): string {
 
 export function resolveFilePath(projectPath: string, filename: string): string {
   return path.join(projectPath, filename)
+}
+
+export interface ProjectJsonData {
+  pinnedFiles?: string[]
+  lastUpdated?: string
+}
+
+export function readProjectJson(projectPath: string): ProjectJsonData {
+  const jsonPath = path.join(projectPath, 'project.json')
+  if (!fs.existsSync(jsonPath)) {
+    return {}
+  }
+  try {
+    const data = JSON.parse(fs.readFileSync(jsonPath, 'utf-8')) as ProjectJsonData
+    return data || {}
+  } catch {
+    return {}
+  }
+}
+
+export function writeProjectJson(projectPath: string, data: ProjectJsonData): void {
+  const jsonPath = path.join(projectPath, 'project.json')
+  const existing = readProjectJson(projectPath)
+  fs.writeFileSync(jsonPath, JSON.stringify({ ...existing, ...data }, null, 2), 'utf-8')
+}
+
+export function touchProjectLastUpdated(projectPath: string): void {
+  writeProjectJson(projectPath, { lastUpdated: new Date().toISOString() })
 }

@@ -3,7 +3,7 @@ import path from 'path'
 import { Router, Request, Response } from 'express'
 import { v4 as uuidv4 } from 'uuid'
 import { PROJECTS_ROOT } from '../config.js'
-import { param, resolveProjectPath } from '../helpers.js'
+import { param, resolveProjectPath, readProjectJson, writeProjectJson } from '../helpers.js'
 import { readSummaryMd, writeSummaryMd } from '../summary.js'
 
 const router = Router()
@@ -17,9 +17,14 @@ router.get('/', (_req: Request, res: Response) => {
       .map(dir => {
         const projectPath = path.join(PROJECTS_ROOT, dir.name)
         const { title, summary, tags } = readSummaryMd(projectPath)
-        return { id: dir.name, title, summary, tags }
+        const projectJson = readProjectJson(projectPath)
+        return { id: dir.name, title, summary, tags, lastUpdated: projectJson.lastUpdated }
       })
-      .sort((a, b) => a.title.localeCompare(b.title))
+      .sort((a, b) => {
+        const aTime = a.lastUpdated ? new Date(a.lastUpdated).getTime() : 0
+        const bTime = b.lastUpdated ? new Date(b.lastUpdated).getTime() : 0
+        return bTime - aTime
+      })
     res.json(projects)
   } catch (err: any) {
     console.error(err)
@@ -38,7 +43,8 @@ router.get('/:id', (req: Request, res: Response) => {
     }
 
     const { title, summary, tags } = readSummaryMd(projectPath)
-    res.json({ id, title, summary, tags })
+    const projectJson = readProjectJson(projectPath)
+    res.json({ id, title, summary, tags, lastUpdated: projectJson.lastUpdated })
   } catch (err: any) {
     console.error(err)
     res.status(500).json({ error: 'Failed to read project' })
@@ -57,8 +63,10 @@ router.post('/', (_req: Request, res: Response) => {
 
     fs.mkdirSync(projectPath, { recursive: true })
     writeSummaryMd(projectPath, '', '', [])
+    const now = new Date().toISOString()
+    writeProjectJson(projectPath, { pinnedFiles: [], lastUpdated: now })
 
-    res.status(201).json({ id, title: 'Untitled Project', summary: '', tags: [] })
+    res.status(201).json({ id, title: 'Untitled Project', summary: '', tags: [], lastUpdated: now })
   } catch (err: any) {
     console.error(err)
     if (err.code === 'EEXIST') {
