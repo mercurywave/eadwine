@@ -41,6 +41,11 @@
   flex-shrink: 0;
 }
 
+.title-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
 .page-tags {
   display: flex;
   flex-wrap: wrap;

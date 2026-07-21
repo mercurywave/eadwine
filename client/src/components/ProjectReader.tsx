@@ -1,6 +1,7 @@
 import { forwardRef, useState, useEffect, useCallback, useImperativeHandle } from 'react'
 import { Project, FileItem } from '../types'
 import { ArrowLeft } from 'lucide-react'
+import { RecentProjectsDropdown } from './RecentProjectsDropdown'
 import {
   fetchFiles,
   fetchFileContent,
@@ -207,7 +208,12 @@ export const ProjectReader = forwardRef<{ refreshFiles: () => void; refreshFileC
           <ArrowLeft className="btn-icon" />
           Projects
         </a>
-        <h1 className={styles['page-title']}>{project?.title || 'Project'}</h1>
+        <div className={styles['title-wrapper']}>
+          <RecentProjectsDropdown
+            projectId={projectId}
+            currentTitle={project?.title || 'Project'}
+          />
+        </div>
         <button className="btn-primary" onClick={() => setShowNewFile(true)}>
           + New File
         </button>
