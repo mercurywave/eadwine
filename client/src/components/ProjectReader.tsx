@@ -206,7 +206,6 @@ export const ProjectReader = forwardRef<{ refreshFiles: () => void; refreshFileC
       <header className={styles['page-header']}>
         <a href="/" className={styles['back-link']} aria-label="Back to projects">
           <ArrowLeft className="btn-icon" />
-          Projects
         </a>
         <div className={styles['title-wrapper']}>
           <RecentProjectsDropdown
@@ -214,17 +213,14 @@ export const ProjectReader = forwardRef<{ refreshFiles: () => void; refreshFileC
             currentTitle={project?.title || 'Project'}
           />
         </div>
-        <button className="btn-primary" onClick={() => setShowNewFile(true)}>
-          + New File
-        </button>
+        {project?.tags.length ? (
+          <div className={styles['page-tags']}>
+            {project.tags.map(tag => (
+              <span key={tag} className={styles['tag-pill']}>{tag}</span>
+            ))}
+          </div>
+        ) : null}
       </header>
-      {project?.tags.length ? (
-        <div className={styles['page-tags']}>
-          {project.tags.map(tag => (
-            <span key={tag} className={styles['tag-pill']}>{tag}</span>
-          ))}
-        </div>
-      ) : null}
 
       {error && <div className="error-banner">{error}</div>}
 
@@ -265,6 +261,13 @@ export const ProjectReader = forwardRef<{ refreshFiles: () => void; refreshFileC
           ))}
         </div>
       )}
+
+      {/* Footer */}
+      <footer className={styles['page-footer']}>
+        <button className="btn-secondary" onClick={() => setShowNewFile(true)}>
+          + New File
+        </button>
+      </footer>
 
       {/* New File Modal */}
       {showNewFile && (
