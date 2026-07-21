@@ -1,15 +1,12 @@
-import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Project } from '../types'
 import { ProjectCard } from './ProjectCard'
-import { ConfirmDialog } from './ConfirmDialog'
 import styles from './ProjectSelector.module.css'
 
 
 interface ProjectSelectorProps {
   projects: Project[]
   onCreateProject: () => void
-  onDeleteProject: (id: string) => void
   loading: boolean
   error: string | null
 }
@@ -17,22 +14,13 @@ interface ProjectSelectorProps {
 export function ProjectSelector({
   projects,
   onCreateProject,
-  onDeleteProject,
   loading,
   error,
 }: ProjectSelectorProps) {
   const navigate = useNavigate()
-  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
 
   const handleOpenSettings = () => {
     navigate('/settings')
-  }
-
-  const handleConfirmDelete = () => {
-    if (confirmDeleteId) {
-      onDeleteProject(confirmDeleteId)
-      setConfirmDeleteId(null)
-    }
   }
 
   return (
@@ -63,20 +51,11 @@ export function ProjectSelector({
             <ProjectCard
               key={project.id}
               project={project}
-              onDelete={(id) => setConfirmDeleteId(id)}
             />
           ))}
         </div>
       )}
 
-      {confirmDeleteId && (
-        <ConfirmDialog
-          title="Delete Project"
-          message="Are you sure you want to delete this project? This action cannot be undone."
-          onConfirm={handleConfirmDelete}
-          onCancel={() => setConfirmDeleteId(null)}
-        />
-      )}
     </div>
   )
 }

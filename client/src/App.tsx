@@ -5,7 +5,7 @@ import { ProjectDetail } from './components/ProjectDetail'
 import { SettingsPage } from './components/SettingsPage'
 import { ToastProvider, ToastContainer, useToasts } from './components/Toast'
 import { Project } from './types'
-import { fetchProjects, createProject, deleteProject } from './api'
+import { fetchProjects, createProject } from './api'
 
 function ProjectSelectorPage() {
   const [projects, setProjects] = useState<Project[]>([])
@@ -43,24 +43,10 @@ function ProjectSelectorPage() {
     }
   }
 
-  const handleDeleteProject = async (id: string) => {
-    try {
-      setError(null)
-      await deleteProject(id)
-      setProjects(prev => prev.filter(p => p.id !== id))
-      addToast('Project deleted', 'success')
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to delete project'
-      setError(message)
-      addToast(message, 'error')
-    }
-  }
-
   return (
     <ProjectSelector
       projects={projects}
       onCreateProject={handleCreateProject}
-      onDeleteProject={handleDeleteProject}
       loading={loading}
       error={error}
     />

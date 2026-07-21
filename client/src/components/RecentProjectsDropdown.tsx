@@ -116,7 +116,6 @@ export function RecentProjectsDropdown({ projectId, currentTitle }: RecentProjec
                 <ProjectCard
                   key={project.id}
                   project={project}
-                  onDelete={() => {}}
                 />
               ))}
             </div>

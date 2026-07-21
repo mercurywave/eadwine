@@ -1,18 +1,12 @@
 import { Project } from '../types'
-import { Trash2 } from 'lucide-react'
 import styles from './ProjectCard.module.css'
 
 
 interface ProjectCardProps {
   project: Project
-  onDelete: (id: string) => void
 }
 
-export function ProjectCard({ project, onDelete }: ProjectCardProps) {
-  const handleDelete = (e: React.MouseEvent) => {
-    e.stopPropagation()
-    onDelete(project.id)
-  }
+export function ProjectCard({ project }: ProjectCardProps) {
 
   return (
     <div
@@ -37,14 +31,6 @@ export function ProjectCard({ project, onDelete }: ProjectCardProps) {
         <h3 className={styles['project-card-title']}>{project.title || 'Untitled Project'}</h3>
         <p className={styles['project-card-summary']}>{project.summary || 'No summary'}</p>
       </div>
-      <button
-        className={styles['project-card-delete']}
-        onClick={handleDelete}
-        aria-label={`Delete project ${project.title}`}
-        title="Delete project"
-      >
-        <Trash2 className={styles['project-card-delete-icon']} />
-      </button>
     </div>
   )
 }
