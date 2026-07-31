@@ -4,6 +4,14 @@ import { MarkdownRenderer } from './MarkdownRenderer'
 import { Pencil, FilePenLine, Trash2, ChevronDown, ChevronRight, Pin, PinOff } from 'lucide-react'
 import styles from './FileSection.module.css'
 
+function stripSummaryFrontmatter(content: string): string {
+  const trimmed = content.trim()
+  if (!trimmed.startsWith('---')) return content
+  const endIdx = trimmed.indexOf('---', 3)
+  if (endIdx === -1) return content
+  return trimmed.slice(endIdx + 3).trim()
+}
+
 interface FileSectionProps {
   file: FileItem
   content: string | null
@@ -92,7 +100,10 @@ export function FileSection({
         {loading ? (
           <div className="loading">Loading content...</div>
         ) : content ? (
-          <MarkdownRenderer content={content} filename={displayName} />
+          <MarkdownRenderer
+            content={isReserved ? stripSummaryFrontmatter(content) : content}
+            filename={displayName}
+          />
         ) : (
           <div className="empty-state">No content to display.</div>
         )}

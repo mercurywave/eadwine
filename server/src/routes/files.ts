@@ -1,8 +1,6 @@
 import fs from 'fs'
 import { Router, Request, Response } from 'express'
 import { param, resolveProjectPath, resolveFilePath, validateFilename, readProjectJson, writeProjectJson, touchProjectLastUpdated } from '../helpers.js'
-import { stripFrontmatter } from '../summary.js'
-
 const router = Router()
 
 function readPins(projectPath: string): string[] {
@@ -132,10 +130,7 @@ router.get('/:id/files/:filename', (req: Request, res: Response) => {
     }
 
     const rawContent = fs.readFileSync(filePath, 'utf-8')
-    const content = filePath.toLowerCase().endsWith('summary.md')
-      ? stripFrontmatter(rawContent)
-      : rawContent
-    res.json({ content })
+    res.json({ content: rawContent })
   } catch (err: any) {
     console.error(err)
     res.status(500).json({ error: 'Failed to read file' })
