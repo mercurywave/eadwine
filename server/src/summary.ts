@@ -17,8 +17,13 @@ export function parseSummaryMd(content: string): { title: string; summary: strin
   if (data.summary) {
     summary = data.summary
   } else {
-    const lines = result.content.split('\n').filter(l => l.trim())
-    summary = lines.length > 1 ? lines[1].trim() : ''
+    // Strip the leading title line (e.g., "# Title") from the body
+    let body = result.content.trim()
+    const titleLineMatch = body.match(/^#\s+.+\n?/)
+    if (titleLineMatch) {
+      body = body.slice(titleLineMatch[0].length).trim()
+    }
+    summary = body
   }
 
   const tags = Array.isArray(data?.tags) ? data.tags : []
