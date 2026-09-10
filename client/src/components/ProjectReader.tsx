@@ -25,7 +25,7 @@ export const ProjectReader = forwardRef<{ refreshFiles: () => void; refreshFileC
   const [project, setProject] = useState<Project | null>(null)
   const [files, setFiles] = useState<FileItem[]>([])
   const [fileContents, setFileContents] = useState<Record<string, string>>({})
-  const [loadingFiles, setLoadingFiles] = useState(true)
+  const [hasLoadedFiles, setHasLoadedFiles] = useState(false)
   const [loadingAll, setLoadingAll] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [pinnedFiles, setPinnedFiles] = useState<string[]>([])
@@ -62,13 +62,11 @@ export const ProjectReader = forwardRef<{ refreshFiles: () => void; refreshFileC
 
   const refreshFiles = useCallback(async () => {
     try {
-      setLoadingFiles(true)
       const data = await fetchFiles(projectId)
       setFiles(data)
+      setHasLoadedFiles(true)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load files')
-    } finally {
-      setLoadingFiles(false)
     }
   }, [projectId])
 
@@ -224,7 +222,7 @@ export const ProjectReader = forwardRef<{ refreshFiles: () => void; refreshFileC
 
       {error && <div className="error-banner">{error}</div>}
 
-      {loadingFiles ? (
+      {!hasLoadedFiles ? (
         <div className="loading">Loading files...</div>
       ) : files.length === 0 ? (
         <div className="empty-state">
