@@ -49,7 +49,7 @@ export const ChatInput = forwardRef<{ focus: () => void }, ChatInputProps>(funct
   }
 
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
       e.preventDefault()
       handleSubmit()
     }
@@ -96,6 +96,7 @@ export const ChatInput = forwardRef<{ focus: () => void }, ChatInputProps>(funct
             onClick={handleSubmit}
             disabled={!text.trim() || disabled}
             aria-label="Send message"
+            title="Ctrl/⌘ + Enter to send"
           >
             <Send className="btn-icon" />
           </button>
