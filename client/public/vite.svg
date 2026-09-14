@@ -1,1 +1,100 @@
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" class="iconify iconify--logos" width="31.88" height="32" preserveAspectRatio="xMidYMid meet" viewBox="0 0 256 257"><defs><linearGradient id="IconifyId1813084fe35e5d1111e70" x1="-.828" x2=".478" y1=".786" y2="1.786"><stop offset="0" stop-color="#41D1FF"/><stop offset="1" stop-color="#BD34FE"/></linearGradient></defs><path fill="url(#IconifyId1813084fe35e5d1111e70)" d="M239.188 32.273c-9.095-12.592-24.435-19.079-39.262-16.561L34.79 23.778c-11.093 1.847-19.71 9.511-22.652 19.563L-.204 219.79c-3.125 11.354 1.072 23.608 10.855 31.262l.001.002c9.782 7.654 22.864 8.348 33.355 1.79l15.49-10.351c8.66-5.784 19.962-5.931 28.776-.405l32.983 21.708c10.23 6.734 23.49 6.734 33.72 0l32.983-21.708c8.814-5.526 20.116-5.379 28.776.405l15.49 10.351c10.491 6.55 23.573 5.856 33.355-1.79l.001-.002c9.783-7.654 13.98-19.908 10.855-31.262l12.245-176.448c2.942-10.052-5.678-17.716-16.771-19.563Z"/><path fill="#FFF" d="M127.993 151.385a23.433 23.433 0 0 1-11.717-3.183l-71.496-40.54c-5.843-3.322-5.843-10.065 0-13.388l71.496-40.538c5.767-3.276 12.973-3.276 18.74 0l71.497 40.538c5.842 3.323 5.842 10.066 0 13.388l-71.497 40.54c-2.907 1.65-6.145 2.484-9.379 2.484c-3.235 0-6.472-.833-9.379-2.483Z"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 120" width="100" height="120">
+  <defs>
+    <!-- Gold gradient for embossed effect -->
+    <linearGradient id="goldTop" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F5D76E"/>
+      <stop offset="30%" stop-color="#FFD700"/>
+      <stop offset="50%" stop-color="#DAA520"/>
+      <stop offset="70%" stop-color="#FFD700"/>
+      <stop offset="100%" stop-color="#B8860B"/>
+    </linearGradient>
+    <!-- Shadow for emboss depth -->
+    <linearGradient id="goldShadow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#8B6914"/>
+      <stop offset="100%" stop-color="#5C4A0A"/>
+    </linearGradient>
+    <!-- Highlight gradient -->
+    <linearGradient id="goldHighlight" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFF8DC"/>
+      <stop offset="50%" stop-color="#FFD700"/>
+      <stop offset="100%" stop-color="#DAA520"/>
+    </linearGradient>
+    <!-- Drop shadow filter -->
+    <filter id="emboss">
+      <feDropShadow dx="2" dy="2" stdDeviation="1" flood-color="#5C4A0A" flood-opacity="0.6"/>
+      <feDropShadow dx="-1" dy="-1" stdDeviation="0.5" flood-color="#FFF8DC" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+  
+  <!-- Medieval calligraphic letter E -->
+  <path d="M 20 15 
+           L 85 15 
+           C 90 15, 92 18, 92 22 
+           C 92 26, 90 28, 85 28 
+           L 45 28 
+           L 45 55 
+           L 82 55 
+           C 88 55, 90 58, 90 63 
+           C 90 68, 88 71, 82 71 
+           L 45 71 
+           L 45 95 
+           L 80 95 
+           C 86 95, 88 98, 88 103 
+           C 88 108, 86 110, 80 110 
+           L 20 110 
+           C 14 110, 12 107, 12 103 
+           L 12 22 
+           C 12 18, 14 15, 20 15 Z" 
+        fill="url(#goldTop)" 
+        stroke="#8B6914" 
+        stroke-width="1.5"
+        filter="url(#emboss)"/>
+  
+  <!-- Inner highlight for emboss effect -->
+  <path d="M 22 17 
+           L 83 17 
+           C 87 17, 89 19, 89 22 
+           C 89 25, 87 26, 83 26 
+           L 43 26 
+           L 43 53 
+           L 80 53 
+           C 85 53, 87 56, 87 61 
+           C 87 66, 85 69, 80 69 
+           L 43 69 
+           L 43 93 
+           L 78 93 
+           C 83 93, 85 96, 85 101 
+           C 85 106, 83 108, 78 108 
+           L 22 108 
+           C 16 108, 14 106, 14 101 
+           L 14 22 
+           C 14 18, 16 17, 22 17 Z" 
+        fill="none" 
+        stroke="url(#goldHighlight)" 
+        stroke-width="0.5"
+        opacity="0.7"/>
+  
+  <!-- Decorative flourishes - top bar serif -->
+  <path d="M 20 15 C 18 10, 22 8, 25 12" 
+        fill="none" 
+        stroke="url(#goldTop)" 
+        stroke-width="2" 
+        stroke-linecap="round"/>
+  <path d="M 85 15 C 88 10, 84 8, 82 12" 
+        fill="none" 
+        stroke="url(#goldTop)" 
+        stroke-width="2" 
+        stroke-linecap="round"/>
+  
+  <!-- Bottom bar serif -->
+  <path d="M 20 110 C 18 115, 22 117, 25 113" 
+        fill="none" 
+        stroke="url(#goldTop)" 
+        stroke-width="2" 
+        stroke-linecap="round"/>
+  <path d="M 80 110 C 83 115, 79 117, 77 113" 
+        fill="none" 
+        stroke="url(#goldTop)" 
+        stroke-width="2" 
+        stroke-linecap="round"/>
+</svg>
