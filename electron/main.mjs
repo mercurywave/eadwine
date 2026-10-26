@@ -4,6 +4,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const appRoot = path.resolve(__dirname, '..')
+const iconPath = path.join(appRoot, 'client', 'public', 'eadwine.svg')
 const isDevelopment = process.env.EADWINE_ELECTRON_DEV === '1'
 const developmentServerUrl = process.env.EADWINE_DEV_SERVER_URL
 
@@ -48,6 +49,7 @@ async function createWindow() {
     height: 900,
     minWidth: 960,
     minHeight: 640,
+    icon: iconPath,
     webPreferences: {
       contextIsolation: true,
       sandbox: true,

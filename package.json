@@ -10,10 +10,11 @@
     "dev:electron": "npm run build:server && node scripts/dev.mjs --electron",
     "electron:dev": "cross-env EADWINE_ELECTRON_DEV=1 electron .",
     "build": "npm run build --workspace=client && npm run build --workspace=server",
+    "build:icon": "electron scripts/generate-icon.mjs",
     "build:server": "npm run build --workspace=server",
     "start": "node server/dist/index.js",
     "start:electron": "npm run build && electron .",
-    "package:win": "npm run build && electron-builder --win",
+    "package:win": "npm run build && npm run build:icon && electron-builder --win",
     "clean": "npm-run-all --parallel clean:client clean:server"
   },
   "workspaces": [
@@ -38,12 +39,14 @@
     "asar": true,
     "files": [
       "electron/**/*",
+      "client/public/eadwine.svg",
       "client/dist/**/*",
       "server/dist/**/*",
       "package.json"
     ],
     "win": {
-      "target": "nsis"
+      "target": "nsis",
+      "icon": "build/eadwine.ico"
     }
   }
 }
