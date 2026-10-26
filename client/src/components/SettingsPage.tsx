@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ArrowLeft, Plus, Trash2, Edit2, Check, X, HardDrive, AlertTriangle } from 'lucide-react'
-import { fetchSettings, saveSettings, fetchModels, createPersona, updatePersona, deletePersona, setDefaultPersona, resetDefaultPersona, createMacro, updateMacro, deleteMacro, fetchBackupStatus, triggerBackup } from '../api'
+import { ArrowLeft, Plus, Trash2, Edit2, Check, X } from 'lucide-react'
+import { fetchSettings, saveSettings, fetchModels, createPersona, updatePersona, deletePersona, setDefaultPersona, resetDefaultPersona, createMacro, updateMacro, deleteMacro } from '../api'
 import { Settings, Persona, Macro } from '../types'
 import { useToasts } from './Toast'
 import styles from './SettingsPage.module.css'
@@ -32,11 +32,6 @@ const sections = [
     id: 'macros',
     label: 'Macros',
     description: 'Create prompt shortcuts you can use in chat',
-  },
-  {
-    id: 'backups',
-    label: 'Backups',
-    description: 'Automatically back up server data using Git',
   },
 ]
 
@@ -82,14 +77,8 @@ export function SettingsPage() {
   const [showAddMacroForm, setShowAddMacroForm] = useState(false)
   const [loadingMacros, setLoadingMacros] = useState(false)
 
-  // Backup state
-  const [backupStatus, setBackupStatus] = useState<{ gitAvailable: boolean; initialized: boolean; lastCommitTimestamp?: string; lastCommitMessage?: string } | null>(null)
-  const [backuping, setBackuping] = useState(false)
-  const [loadingBackup, setLoadingBackup] = useState(false)
-
   useEffect(() => {
     loadSettings()
-    loadBackupStatus()
   }, [])
 
   const loadSettings = async () => {
@@ -105,7 +94,6 @@ export function SettingsPage() {
         summaryMaxLength: data.summaryMaxLength,
         memoryMaxLength: data.memoryMaxLength,
         otherMaxLength: data.otherMaxLength,
-        backupTime: data.backupTime,
       })
       setPersonas(data.personas || [])
       setMacros(data.macros || [])
@@ -123,7 +111,7 @@ export function SettingsPage() {
     }
     try {
       setLoadingModels(true)
-      const modelList = await fetchModels()
+      const modelList = await fetchModels(settings.openAiEndpoint)
       setModels(modelList)
     } catch {
       // Silently handle — model list may not be available
@@ -137,19 +125,6 @@ export function SettingsPage() {
   useEffect(() => {
     loadModels()
   }, [settings.openAiEndpoint])
-
-  const loadBackupStatus = async () => {
-    try {
-      setLoadingBackup(true)
-      const status = await fetchBackupStatus()
-      setBackupStatus(status)
-    } catch {
-      // Silently handle — backup status may not be available
-      setBackupStatus({ gitAvailable: false, initialized: false })
-    } finally {
-      setLoadingBackup(false)
-    }
-  }
 
   const handleSave = async () => {
     if (!settings.selectedModel) {
@@ -177,7 +152,6 @@ export function SettingsPage() {
         summaryMaxLength: settings.summaryMaxLength,
         memoryMaxLength: settings.memoryMaxLength,
         otherMaxLength: settings.otherMaxLength,
-        backupTime: settings.backupTime,
       })
       addToast('Settings saved', 'success')
     } catch (err) {
@@ -233,29 +207,6 @@ export function SettingsPage() {
       if (!isNaN(num) && isFinite(num)) {
         setSettings(prev => ({ ...prev, otherMaxLength: num }))
       }
-    }
-  }
-
-  const handleBackupTimeChange = (value: string) => {
-    setSettings(prev => ({ ...prev, backupTime: value || undefined }))
-  }
-
-  const handleTriggerBackup = async () => {
-    try {
-      setBackuping(true)
-      const result = await triggerBackup()
-      if (result.success) {
-        addToast(result.message || 'Backup created', 'success')
-      } else {
-        addToast(result.message || 'Backup failed', 'error')
-      }
-      // Refresh backup status
-      await loadBackupStatus()
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to trigger backup'
-      addToast(message, 'error')
-    } finally {
-      setBackuping(false)
     }
   }
 
@@ -935,78 +886,6 @@ export function SettingsPage() {
                 </>
               )}
 
-              {section.id === 'backups' && (
-                <>
-                  {loadingBackup ? (
-                    <div className="loading">Loading backup status...</div>
-                  ) : (
-                    <>
-                      {!backupStatus?.gitAvailable ? (
-                        <div className={styles['backup-error']}>
-                          <AlertTriangle className={styles['backup-error-icon']} />
-                          <div>
-                            <h3>Git is not installed</h3>
-                            <p>Server backups require Git to be installed on this system. Please install Git and restart the server to enable this feature.</p>
-                          </div>
-                        </div>
-                      ) : (
-                        <>
-                          <div className={styles['backup-status']}>
-                            <h3>Backup Status</h3>
-                            {backupStatus.initialized ? (
-                              <div className={styles['backup-status-info']}>
-                                {backupStatus.lastCommitTimestamp ? (
-                                  <div className={styles['backup-status-item']}>
-                                    <span className={styles['backup-status-label']}>Last backup:</span>
-                                    <span className={styles['backup-status-value']}>{new Date(backupStatus.lastCommitTimestamp).toLocaleString()}</span>
-                                  </div>
-                                ) : (
-                                  <div className={styles['backup-status-item']}>
-                                    <span className={styles['backup-status-label']}>Repository initialized</span>
-                                    <span className={styles['backup-status-value']}>No commits yet</span>
-                                  </div>
-                                )}
-                              </div>
-                            ) : (
-                              <div className={styles['backup-status-info']}>
-                                <div className={styles['backup-status-item']}>
-                                  <span className={styles['backup-status-label']}>Repository:</span>
-                                  <span className={styles['backup-status-value']}>Not initialized</span>
-                                </div>
-                              </div>
-                            )}
-                          </div>
-
-                          <div className={styles['backup-actions']}>
-                            <button
-                              className="btn-primary"
-                              onClick={handleTriggerBackup}
-                              disabled={backuping}
-                            >
-                              <HardDrive className="btn-icon" />
-                              {backuping ? 'Backing up...' : 'Backup Now'}
-                            </button>
-                          </div>
-
-                          <div className={styles['setting-field']}>
-                            <label htmlFor="backupTime">Daily Backup Time</label>
-                            <input
-                              id="backupTime"
-                              type="time"
-                              className="modal-input"
-                              value={settings.backupTime || ''}
-                              onChange={e => handleBackupTimeChange(e.target.value)}
-                            />
-                            <span className={styles['field-hint']}>
-                              Set the time of day for automatic daily backups. Leave blank to disable scheduled backups.
-                            </span>
-                          </div>
-                        </>
-                      )}
-                    </>
-                  )}
-                </>
-              )}
             </section>
           ))}
         </main>

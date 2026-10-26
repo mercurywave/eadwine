@@ -1,14 +1,14 @@
 import express, { Request, Response as ExpressResponse } from 'express'
+import type { Server } from 'http'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import { mountRoutes, mountErrorHandler } from './routes/index.js'
-import { startBackupScheduler } from './services/scheduler.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
 const app = express()
-const PORT = process.env.PORT || 3003
+const PORT = Number(process.env.PORT ?? 0)
 
 app.use(express.json())
 
@@ -25,7 +25,7 @@ mountErrorHandler(app)
 
 // Serve static files in production
 if (process.env.NODE_ENV === 'production') {
-  const clientDist = path.join(__dirname, '..', 'client', 'dist')
+  const clientDist = process.env.CLIENT_DIST_DIR || path.resolve(__dirname, '../../client/dist')
   app.use(express.static(clientDist))
 
   // Catch-all: serve index.html for SPA routing
@@ -34,8 +34,17 @@ if (process.env.NODE_ENV === 'production') {
   })
 }
 
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`)
-  // Start the daily backup scheduler
-  startBackupScheduler()
-})
+export function startServer(port = Number(PORT)): Server {
+  const server = app.listen(port, '127.0.0.1', () => {
+    const address = server.address()
+    if (address && typeof address !== 'string') {
+      console.log(`Server running on http://127.0.0.1:${address.port}`)
+    }
+  })
+
+  return server
+}
+
+if (process.argv[1] && path.resolve(process.argv[1]) === __filename) {
+  startServer()
+}

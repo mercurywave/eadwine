@@ -1,7 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 import { Request } from 'express'
-import { PROJECTS_ROOT } from './config.js'
+import { PROJECTS_ROOT, PROJECT_METADATA_ROOT } from './config.js'
 
 // Express 5 type guard for req.params values
 export function param(req: Request, key: string): string {
@@ -30,6 +30,18 @@ export function resolveProjectPath(id: string): string {
   return path.join(PROJECTS_ROOT, id)
 }
 
+export function resolveProjectMetadataPath(id: string): string {
+  return path.join(PROJECT_METADATA_ROOT, id)
+}
+
+export function resolveChatProjectPath(id: string): string {
+  return resolveProjectMetadataPath(id)
+}
+
+export function resolveChatsDir(id: string): string {
+  return path.join(resolveChatProjectPath(id), 'chats')
+}
+
 export function resolveFilePath(projectPath: string, filename: string): string {
   return path.join(projectPath, filename)
 }
@@ -40,7 +52,8 @@ export interface ProjectJsonData {
 }
 
 export function readProjectJson(projectPath: string): ProjectJsonData {
-  const jsonPath = path.join(projectPath, 'project.json')
+  const projectId = path.basename(projectPath)
+  const jsonPath = path.join(resolveProjectMetadataPath(projectId), 'project.json')
   if (!fs.existsSync(jsonPath)) {
     return {}
   }
@@ -53,7 +66,12 @@ export function readProjectJson(projectPath: string): ProjectJsonData {
 }
 
 export function writeProjectJson(projectPath: string, data: ProjectJsonData): void {
-  const jsonPath = path.join(projectPath, 'project.json')
+  const projectId = path.basename(projectPath)
+  const metadataPath = resolveProjectMetadataPath(projectId)
+  if (!fs.existsSync(metadataPath)) {
+    fs.mkdirSync(metadataPath, { recursive: true })
+  }
+  const jsonPath = path.join(metadataPath, 'project.json')
   const existing = readProjectJson(projectPath)
   fs.writeFileSync(jsonPath, JSON.stringify({ ...existing, ...data }, null, 2), 'utf-8')
 }

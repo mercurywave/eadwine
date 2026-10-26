@@ -19,7 +19,8 @@ interface OpenAiModelsResponse {
 router.get('/models', async (req: Request, res: Response) => {
   try {
     const settings = readSettings()
-    const endpoint = settings.openAiEndpoint
+    // Allow client to pass endpoint directly (for cases where settings haven't been saved yet)
+    const endpoint = req.query.endpoint as string || settings.openAiEndpoint
 
     if (!endpoint) {
       return res.status(400).json({ error: 'OpenAI endpoint not configured' })

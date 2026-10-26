@@ -50,5 +50,4 @@ export interface SettingsData {
   summaryMaxLength?: number
   memoryMaxLength?: number
   otherMaxLength?: number
-  backupTime?: string
 }

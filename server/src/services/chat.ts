@@ -1,6 +1,6 @@
 import fs from 'fs'
 import path from 'path'
-import { resolveProjectPath } from '../helpers.js'
+import { resolveChatsDir, resolveProjectPath } from '../helpers.js'
 import { ChatMessageEntry, ChatSessionData } from '../types.js'
 import { stripFrontmatter } from '../summary.js'
 
@@ -18,14 +18,14 @@ export interface ToolResultPersist {
 }
 
 export function readChatSession(projectId: string, sessionId: string): ChatSessionData | null {
-  const chatsDir = path.join(resolveProjectPath(projectId), 'chats')
+  const chatsDir = resolveChatsDir(projectId)
   const sessionFile = path.join(chatsDir, `${sessionId}.json`)
   if (!fs.existsSync(sessionFile)) return null
   return JSON.parse(fs.readFileSync(sessionFile, 'utf-8')) as ChatSessionData
 }
 
 export function readChatMessages(projectId: string, sessionId: string): ChatMessageEntry[] {
-  const chatsDir = path.join(resolveProjectPath(projectId), 'chats')
+  const chatsDir = resolveChatsDir(projectId)
   const logFile = path.join(chatsDir, 'logs', `${sessionId}.jsonl`)
   const messages: ChatMessageEntry[] = []
   if (!fs.existsSync(logFile)) return messages
@@ -92,7 +92,7 @@ You can help answer questions about the project's content, suggest improvements,
 
 export function persistUserMessage(projectId: string, sessionId: string, userMessage: string): void {
   try {
-    const chatsDir = path.join(resolveProjectPath(projectId), 'chats')
+    const chatsDir = resolveChatsDir(projectId)
     const logsDir = path.join(chatsDir, 'logs')
     if (!fs.existsSync(chatsDir)) fs.mkdirSync(chatsDir, { recursive: true })
     if (!fs.existsSync(logsDir)) fs.mkdirSync(logsDir, { recursive: true })
@@ -118,7 +118,7 @@ export function persistUserMessage(projectId: string, sessionId: string, userMes
 }
 
 export function persistSession(projectId: string, sessionId: string, assistantContent: string): void {
-  const chatsDir = path.join(resolveProjectPath(projectId), 'chats')
+  const chatsDir = resolveChatsDir(projectId)
   const logsDir = path.join(chatsDir, 'logs')
   if (!fs.existsSync(chatsDir)) fs.mkdirSync(chatsDir, { recursive: true })
   if (!fs.existsSync(logsDir)) fs.mkdirSync(logsDir, { recursive: true })
@@ -151,7 +151,7 @@ export function persistPartialSession(
   toolResults?: Array<{ tool_call_id: string; content: string }>
 ): void {
   try {
-    const chatsDir = path.join(resolveProjectPath(projectId), 'chats')
+    const chatsDir = resolveChatsDir(projectId)
     const logsDir = path.join(chatsDir, 'logs')
     if (!fs.existsSync(chatsDir)) fs.mkdirSync(chatsDir, { recursive: true })
     if (!fs.existsSync(logsDir)) fs.mkdirSync(logsDir, { recursive: true })
@@ -243,7 +243,7 @@ export function persistToolCalls(
   }>
 ): void {
   try {
-    const chatsDir = path.join(resolveProjectPath(projectId), 'chats')
+    const chatsDir = resolveChatsDir(projectId)
     const logsDir = path.join(chatsDir, 'logs')
     if (!fs.existsSync(chatsDir)) fs.mkdirSync(chatsDir, { recursive: true })
     if (!fs.existsSync(logsDir)) fs.mkdirSync(logsDir, { recursive: true })
@@ -286,7 +286,7 @@ export function persistToolResult(
   content: string
 ): void {
   try {
-    const chatsDir = path.join(resolveProjectPath(projectId), 'chats')
+    const chatsDir = resolveChatsDir(projectId)
     const logsDir = path.join(chatsDir, 'logs')
     if (!fs.existsSync(chatsDir)) fs.mkdirSync(chatsDir, { recursive: true })
     if (!fs.existsSync(logsDir)) fs.mkdirSync(logsDir, { recursive: true })

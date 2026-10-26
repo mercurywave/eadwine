@@ -3,7 +3,7 @@ import path from 'path'
 import { Router, Request, Response } from 'express'
 import { v4 as uuidv4 } from 'uuid'
 import { PROJECTS_ROOT } from '../config.js'
-import { param, resolveProjectPath, readProjectJson, writeProjectJson } from '../helpers.js'
+import { param, resolveProjectPath, resolveProjectMetadataPath, readProjectJson, writeProjectJson } from '../helpers.js'
 import { readSummaryMd, writeSummaryMd } from '../summary.js'
 
 const router = Router()
@@ -87,6 +87,7 @@ router.delete('/:id', (req: Request, res: Response) => {
     }
 
     fs.rmSync(projectPath, { recursive: true, force: true })
+    fs.rmSync(resolveProjectMetadataPath(id), { recursive: true, force: true })
     res.status(204).send()
   } catch (err: any) {
     console.error(err)

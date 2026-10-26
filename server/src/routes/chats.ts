@@ -2,8 +2,7 @@ import fs from 'fs'
 import path from 'path'
 import { Router, Request, Response } from 'express'
 import { v4 as uuidv4 } from 'uuid'
-import { param } from '../helpers.js'
-import { resolveProjectPath } from '../helpers.js'
+import { param, resolveChatsDir, resolveProjectPath } from '../helpers.js'
 import { readChatSession, readChatMessages, buildSystemPrompt, persistSession, persistPartialSession, persistUserMessage } from '../services/chat.js'
 import { runToolCallLoop } from '../services/agent.js'
 import { readSettings } from './settings.js'
@@ -17,7 +16,7 @@ router.get('/:id/chats', (req: Request, res: Response) => {
   try {
     const id = param(req, 'id')
     const projectPath = resolveProjectPath(id)
-    const chatsDir = path.join(projectPath, 'chats')
+    const chatsDir = resolveChatsDir(id)
 
     if (!fs.existsSync(chatsDir)) {
       return res.json([])
@@ -70,7 +69,7 @@ router.get('/:id/chats/:sessionId', (req: Request, res: Response) => {
   try {
     const id = param(req, 'id')
     const sessionId = param(req, 'sessionId')
-    const chatsDir = path.join(resolveProjectPath(id), 'chats')
+    const chatsDir = resolveChatsDir(id)
     const sessionFile = path.join(chatsDir, `${sessionId}.json`)
     const logFile = path.join(chatsDir, 'logs', `${sessionId}.jsonl`)
 
@@ -96,7 +95,7 @@ router.post('/:id/chats', (req: Request, res: Response) => {
     const sessionId = uuidv4()
     const now = new Date().toISOString()
 
-    const chatsDir = path.join(resolveProjectPath(id), 'chats')
+    const chatsDir = resolveChatsDir(id)
     const logsDir = path.join(chatsDir, 'logs')
 
     if (!fs.existsSync(chatsDir)) fs.mkdirSync(chatsDir, { recursive: true })
@@ -126,7 +125,7 @@ router.delete('/:id/chats/:sessionId', (req: Request, res: Response) => {
   try {
     const id = param(req, 'id')
     const sessionId = param(req, 'sessionId')
-    const chatsDir = path.join(resolveProjectPath(id), 'chats')
+    const chatsDir = resolveChatsDir(id)
 
     const sessionFile = path.join(chatsDir, `${sessionId}.json`)
     const logFile = path.join(chatsDir, 'logs', `${sessionId}.jsonl`)
@@ -156,7 +155,7 @@ router.put('/:id/chats/:sessionId/title', (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Title is required' })
     }
 
-    const chatsDir = path.join(resolveProjectPath(id), 'chats')
+    const chatsDir = resolveChatsDir(id)
     const sessionFile = path.join(chatsDir, `${sessionId}.json`)
 
     if (!fs.existsSync(sessionFile)) {
@@ -201,7 +200,7 @@ router.post('/:id/chats/stream', (req: Request, res: Response) => {
 
     if (!session) {
       const now = new Date().toISOString()
-      const chatsDir = path.join(resolveProjectPath(id), 'chats')
+      const chatsDir = resolveChatsDir(id)
       const logsDir = path.join(chatsDir, 'logs')
 
       if (!fs.existsSync(chatsDir)) fs.mkdirSync(chatsDir, { recursive: true })
@@ -254,7 +253,7 @@ router.post('/:id/chats/stream', (req: Request, res: Response) => {
         .then((generatedTitle) => {
           if (generatedTitle) {
             try {
-              const chatsDir = path.join(resolveProjectPath(id), 'chats')
+              const chatsDir = resolveChatsDir(id)
               const sessionFile = path.join(chatsDir, `${sessionId}.json`)
               const existingSession = JSON.parse(fs.readFileSync(sessionFile, 'utf-8'))
               existingSession.title = generatedTitle

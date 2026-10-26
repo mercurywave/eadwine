@@ -18,10 +18,10 @@ npm run dev
 
 This will:
 1. Install dependencies for both `client` and `server`
-2. Start the **server** on `http://localhost:3003`
-3. Start the **client** dev server on `http://localhost:6777` (configured to proxy API requests to the server)
+2. Start the **server** on an available loopback port
+3. Start the **client** dev server on a separate available loopback port, configured to proxy API requests to the server
 
-Open `http://localhost:6777` in your browser.
+The selected client URL is printed to the terminal.
 
 ### Building for Production
 
@@ -31,10 +31,24 @@ npm run build
 
 This builds both client and server.
 
-### Running Production Build
+### Running the Server Production Build
 
 ```bash
 npm run start
 ```
 
-Serves the built client from the server at `http://localhost:3003`.
+Serves the built client from an available loopback port, printed to the terminal.
+
+### Desktop Application
+
+```bash
+npm run dev:electron
+```
+
+Starts Vite and opens Eadwine in Electron. To run the compiled desktop application locally, use `npm run start:electron`. To create a Windows installer, use `npm run package:win`.
+
+### Storage
+
+Project Markdown files are stored in `Documents/Eadwine/projects`. Per-user application data, including settings, project metadata, and chat history, is stored in the operating system's application-data directory under `Eadwine`. The Electron application obtains both locations from Windows' known folders, including redirected or OneDrive-backed Documents folders.
+
+Set `CONTENT_DIR` or `APP_DATA_DIR` to override either location when running the server outside the desktop application.
