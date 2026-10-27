@@ -29,7 +29,7 @@ if (process.env.NODE_ENV === 'production') {
   app.use(express.static(clientDist))
 
   // Catch-all: serve index.html for SPA routing
-  app.get('*', (_req: Request, res: ExpressResponse) => {
+  app.get('/{*splat}', (_req: Request, res: ExpressResponse) => {
     res.sendFile(path.join(clientDist, 'index.html'))
   })
 }
