@@ -17,7 +17,6 @@ export interface ToolCallLoopOptions {
   openAiEndpoint: string
   sessionId: string
   projectId: string
-  projectPath: string
   projectTitle: string
   systemPrompt: string
   conversationHistory: ChatMessageEntry[]
@@ -35,7 +34,6 @@ export async function runToolCallLoop(options: ToolCallLoopOptions): Promise<voi
     openAiEndpoint,
     sessionId,
     projectId,
-    projectPath,
     systemPrompt,
     conversationHistory,
     userMessage,
@@ -213,7 +211,7 @@ export async function runToolCallLoop(options: ToolCallLoopOptions): Promise<voi
               messages.push(assistantMsg)
 
               // Execute tools — they emit their own events (e.g., file_changed) via the emit callback
-              const results = executeToolCalls(entries, projectId, projectPath, (event) => {
+              const results = executeToolCalls(entries, projectId, (event) => {
                 expressRes.write(`data: ${JSON.stringify(event)}\n`)
               })
 
@@ -356,7 +354,7 @@ export async function runToolCallLoop(options: ToolCallLoopOptions): Promise<voi
       messages.push(assistantMsg)
 
       // Execute tools — they emit their own events (e.g., file_changed) via the emit callback
-      const results = executeToolCalls(entries, projectId, projectPath, (event) => {
+      const results = executeToolCalls(entries, projectId, (event) => {
         expressRes.write(`data: ${JSON.stringify(event)}\n`)
       })
 

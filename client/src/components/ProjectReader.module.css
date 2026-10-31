@@ -52,6 +52,25 @@
   display: inline-block;
 }
 
+.rename-project-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  color: var(--text-color, #fff);
+  background: transparent;
+  border: 1px solid #444;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.rename-project-button:hover {
+  background-color: rgba(100, 108, 255, 0.1);
+  border-color: #646cff;
+}
+
 .page-tags {
   display: flex;
   flex-wrap: wrap;

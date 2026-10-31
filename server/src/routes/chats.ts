@@ -15,7 +15,6 @@ const router = Router()
 router.get('/:id/chats', (req: Request, res: Response) => {
   try {
     const id = param(req, 'id')
-    const projectPath = resolveProjectPath(id)
     const chatsDir = resolveChatsDir(id)
 
     if (!fs.existsSync(chatsDir)) {
@@ -178,6 +177,7 @@ router.put('/:id/chats/:sessionId/title', (req: Request, res: Response) => {
 router.post('/:id/chats/stream', (req: Request, res: Response) => {
   try {
     const id = param(req, 'id')
+    if (!resolveProjectPath(id)) return res.status(404).json({ error: 'Project not found' })
     const { message, sessionId: clientSessionId, endpoint: clientEndpoint, selectedModel: clientSelectedModel, personaId } = req.body
 
     if (!message || typeof message !== 'string') {
@@ -275,7 +275,6 @@ router.post('/:id/chats/stream', (req: Request, res: Response) => {
       openAiEndpoint: endpointToUse,
       sessionId,
       projectId: id,
-      projectPath: resolveProjectPath(id),
       projectTitle,
       systemPrompt: buildSystemPrompt(id, personaSystemPrompt, structureGuidelines),
       conversationHistory: messages,

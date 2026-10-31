@@ -21,7 +21,7 @@ router.get('/:id/pins', (req: Request, res: Response) => {
     const id = param(req, 'id')
     const projectPath = resolveProjectPath(id)
 
-    if (!fs.existsSync(projectPath)) {
+    if (!projectPath || !fs.existsSync(projectPath)) {
       return res.status(404).json({ error: 'Project not found' })
     }
 
@@ -39,7 +39,7 @@ router.put('/:id/pins', (req: Request, res: Response) => {
     const id = param(req, 'id')
     const projectPath = resolveProjectPath(id)
 
-    if (!fs.existsSync(projectPath)) {
+    if (!projectPath || !fs.existsSync(projectPath)) {
       return res.status(404).json({ error: 'Project not found' })
     }
 
@@ -71,7 +71,7 @@ router.get('/:id/files', (req: Request, res: Response) => {
     const id = param(req, 'id')
     const projectPath = resolveProjectPath(id)
 
-    if (!fs.existsSync(projectPath)) {
+    if (!projectPath || !fs.existsSync(projectPath)) {
       return res.status(404).json({ error: 'Project not found' })
     }
 
@@ -119,6 +119,7 @@ router.get('/:id/files/:filename', (req: Request, res: Response) => {
     const id = param(req, 'id')
     const filename = param(req, 'filename')
     const projectPath = resolveProjectPath(id)
+    if (!projectPath) return res.status(404).json({ error: 'Project not found' })
     const filePath = resolveFilePath(projectPath, filename)
 
     if (!filePath.startsWith(projectPath)) {
@@ -142,6 +143,7 @@ router.put('/:id/files/rename', (req: Request, res: Response) => {
   try {
     const id = param(req, 'id')
     const projectPath = resolveProjectPath(id)
+    if (!projectPath) return res.status(404).json({ error: 'Project not found' })
     const { from, to } = req.body
 
     if (!from || !to || typeof from !== 'string' || typeof to !== 'string') {
@@ -196,6 +198,7 @@ router.put('/:id/files/:filename', (req: Request, res: Response) => {
     const id = param(req, 'id')
     const filename = param(req, 'filename')
     const projectPath = resolveProjectPath(id)
+    if (!projectPath) return res.status(404).json({ error: 'Project not found' })
     const filePath = resolveFilePath(projectPath, filename)
 
     if (!filePath.startsWith(projectPath)) {
@@ -225,6 +228,7 @@ router.post('/:id/files', (req: Request, res: Response) => {
   try {
     const id = param(req, 'id')
     const projectPath = resolveProjectPath(id)
+    if (!projectPath) return res.status(404).json({ error: 'Project not found' })
     const { name } = req.body
 
     if (!name || typeof name !== 'string') {
@@ -266,6 +270,7 @@ router.delete('/:id/files/:filename', (req: Request, res: Response) => {
     const id = param(req, 'id')
     const filename = param(req, 'filename')
     const projectPath = resolveProjectPath(id)
+    if (!projectPath) return res.status(404).json({ error: 'Project not found' })
     const filePath = resolveFilePath(projectPath, filename)
 
     if (!filePath.startsWith(projectPath)) {

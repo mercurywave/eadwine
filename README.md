@@ -51,4 +51,6 @@ Starts Vite and opens Eadwine in Electron. To run the compiled desktop applicati
 
 Project Markdown files are stored in `Documents/Eadwine/projects`. Per-user application data, including settings, project metadata, and chat history, is stored in the operating system's application-data directory under `Eadwine`. The Electron application obtains both locations from Windows' known folders, including redirected or OneDrive-backed Documents folders.
 
+The body of each project's `SUMMARY.md` is its summary. YAML frontmatter may contain `title` and `tags`, but not a separate `summary` field. Older files can retain that field until edited; it is ignored when displaying the summary.
+
 Set `CONTENT_DIR` or `APP_DATA_DIR` to override either location when running the server outside the desktop application.

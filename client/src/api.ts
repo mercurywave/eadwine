@@ -38,6 +38,13 @@ export async function fetchProject(id: string): Promise<Project> {
   return request<Project>(`/projects/${id}`)
 }
 
+export async function renameProject(id: string, name: string): Promise<Project> {
+  return request<Project>(`/projects/${id}/name`, {
+    method: 'PUT',
+    body: JSON.stringify({ name }),
+  })
+}
+
 // ── Files ────────────────────────────────────────────────────────────
 
 export async function fetchFiles(projectId: string): Promise<FileItem[]> {

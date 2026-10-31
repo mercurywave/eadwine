@@ -4,39 +4,30 @@ import matter from 'gray-matter'
 
 export function parseSummaryMd(content: string): { title: string; summary: string; tags: string[] } {
   const result = matter(content)
-  const data = result.data as { title?: string; summary?: string; tags?: string[] }
+  const data = result.data as { title?: string; tags?: string[] }
 
   let title: string
-  let summary: string
   if (data.title) {
     title = data.title
   } else {
     const lines = result.content.split('\n').filter(l => l.trim())
     title = lines.length > 0 ? lines[0].replace(/^#\s+/, '') : 'Untitled Project'
   }
-  if (data.summary) {
-    summary = data.summary
-  } else {
-    // Strip the leading title line (e.g., "# Title") from the body
-    let body = result.content.trim()
-    const titleLineMatch = body.match(/^#\s+.+\n?/)
-    if (titleLineMatch) {
-      body = body.slice(titleLineMatch[0].length).trim()
-    }
-    summary = body
-  }
-
+  const summary = result.content.trim()
   const tags = Array.isArray(data?.tags) ? data.tags : []
   return { title, summary, tags }
 }
 
 export function createSummaryMd(title: string, summary: string, tags: string[] = []): string {
-  const frontmatter: Record<string, unknown> = { title, summary }
+  const frontmatter: Record<string, unknown> = {}
+  if (title) frontmatter.title = title
   if (tags.length > 0) {
     frontmatter.tags = tags
   }
   const body = title ? `# ${title}\n${summary ? `\n${summary}\n` : ''}` : summary ? `\n${summary}\n` : '\n'
-  const fmString = matter.stringify(body, frontmatter)
+  const fmString = Object.keys(frontmatter).length > 0
+    ? matter.stringify(body, frontmatter)
+    : `---\n---\n${body}`
   return fmString
 }
 
@@ -84,9 +75,9 @@ export function validateSummaryMdContent(content: string): { valid: true } | { v
     }
   }
 
-  // Check for title field
-  if (!data.title || typeof data.title !== 'string' || !data.title.trim()) {
-    errors.push('Missing or empty "title" field in YAML frontmatter')
+  // The folder name is the project name. A summary title remains supported but optional.
+  if (data.title !== undefined && (typeof data.title !== 'string' || !data.title.trim())) {
+    errors.push('"title" must be a non-empty string when provided')
   }
 
   // Validate tags if provided

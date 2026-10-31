@@ -1,4 +1,5 @@
 import { Project } from '../types'
+import { projectSummaryPreview } from '../projectSummary'
 import styles from './ProjectCard.module.css'
 
 
@@ -7,6 +8,7 @@ interface ProjectCardProps {
 }
 
 export function ProjectCard({ project }: ProjectCardProps) {
+  const summary = projectSummaryPreview(project.summary)
 
   return (
     <div
@@ -29,7 +31,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
           ))}
         </div>
         <h3 className={styles['project-card-title']}>{project.title || 'Untitled Project'}</h3>
-        <p className={styles['project-card-summary']}>{project.summary || 'No summary'}</p>
+        <p className={styles['project-card-summary']}>{summary || 'No summary'}</p>
       </div>
     </div>
   )

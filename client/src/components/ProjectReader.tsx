@@ -1,11 +1,12 @@
 import { forwardRef, useState, useEffect, useCallback, useImperativeHandle } from 'react'
 import { Project, FileItem } from '../types'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, Pencil } from 'lucide-react'
 import { RecentProjectsDropdown } from './RecentProjectsDropdown'
 import {
   fetchFiles,
   fetchFileContent,
   fetchProject,
+  renameProject,
   createFile,
   deleteFile,
   renameFile,
@@ -50,6 +51,8 @@ export const ProjectReader = forwardRef<{ refreshFiles: () => void; refreshFileC
   const [confirmDeleteFile, setConfirmDeleteFile] = useState<string | null>(null)
   const [renameFileFrom, setRenameFileFrom] = useState<string | null>(null)
   const [renameTo, setRenameTo] = useState('')
+  const [isRenamingProject, setIsRenamingProject] = useState(false)
+  const [projectName, setProjectName] = useState('')
 
   const refreshFileContent = useCallback(async (filename: string) => {
     try {
@@ -199,6 +202,18 @@ export const ProjectReader = forwardRef<{ refreshFiles: () => void; refreshFileC
     setRenameTo(filename)
   }
 
+  const handleRenameProject = async () => {
+    if (!projectName.trim()) return
+    try {
+      const updatedProject = await renameProject(projectId, projectName)
+      setProject(updatedProject)
+      setProjectName('')
+      setIsRenamingProject(false)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to rename project folder')
+    }
+  }
+
   return (
     <div className={styles['project-reader']}>
       <header className={styles['page-header']}>
@@ -210,6 +225,17 @@ export const ProjectReader = forwardRef<{ refreshFiles: () => void; refreshFileC
             projectId={projectId}
             currentTitle={project?.title || 'Project'}
           />
+          <button
+            className={styles['rename-project-button']}
+            onClick={() => {
+              setProjectName(project?.title || '')
+              setIsRenamingProject(true)
+            }}
+            title="Rename project folder"
+            aria-label="Rename project folder"
+          >
+            <Pencil className="btn-icon-small" />
+          </button>
         </div>
         {project?.tags.length ? (
           <div className={styles['page-tags']}>
@@ -321,6 +347,29 @@ export const ProjectReader = forwardRef<{ refreshFiles: () => void; refreshFileC
             <div className="modal-actions">
               <button className="btn-secondary" onClick={() => setRenameFileFrom(null)}>Cancel</button>
               <button className="btn-primary" onClick={handleRename}>Rename</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {isRenamingProject && (
+        <div className="modal-backdrop" onClick={() => setIsRenamingProject(false)}>
+          <div className="modal" onClick={e => e.stopPropagation()}>
+            <h2>Rename Project Folder</h2>
+            <input
+              className="modal-input"
+              type="text"
+              value={projectName}
+              onChange={e => setProjectName(e.target.value)}
+              onKeyDown={e => {
+                if (e.key === 'Enter') handleRenameProject()
+                if (e.key === 'Escape') setIsRenamingProject(false)
+              }}
+              autoFocus
+            />
+            <div className="modal-actions">
+              <button className="btn-secondary" onClick={() => setIsRenamingProject(false)}>Cancel</button>
+              <button className="btn-primary" onClick={handleRenameProject}>Rename</button>
             </div>
           </div>
         </div>

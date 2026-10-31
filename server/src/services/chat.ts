@@ -42,6 +42,7 @@ export function readChatMessages(projectId: string, sessionId: string): ChatMess
 
 export function buildSystemPrompt(projectId: string, personaPrompt?: string, structureGuidelines?: string): string {
   const projectPath = resolveProjectPath(projectId)
+  if (!projectPath) throw new Error(`Project not found: ${projectId}`)
   const summaryPath = path.join(projectPath, 'SUMMARY.md')
   let summaryContent = ''
   try {
@@ -63,7 +64,7 @@ export function buildSystemPrompt(projectId: string, personaPrompt?: string, str
 The folder should only consist of md files which help to describe this project. 
 
 The project has some reserved file names which have special meaning:
-- SUMMARY.md - Very brief executive description of the project. **30 words or fewer** (roughly 150-200 characters). Must use YAML frontmatter with \`title\` and \`summary\` fields, followed by the body text. Include only the core idea, key technologies, and purpose — no details, no background, no implementation notes.
+- SUMMARY.md - Very brief executive description of the project in the Markdown body. **30 words or fewer** (roughly 150-200 characters). Use YAML frontmatter with optional \`title\` and \`tags\` fields; do not use a \`summary\` frontmatter field. Remove that field if updating an older file that contains it. Include only the core idea, key technologies, and purpose — no details, no background, no implementation notes.
 - MEMORY.md - (Optional) Notes about decisions, and user preferences to always keep in mind. Keep notes extremely brief for handoff to future assistants. Max 1000 words.
 
 Additional md files should use Title Case file names. If a file grows to more than 1000 words, it should be split into multiple files.`
